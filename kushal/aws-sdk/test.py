@@ -1,15 +1,21 @@
 import s3wrapper
 import iamwrapper
 
-accesskeyid = 'AKIAJU7Y7BTWIZD2E4VA'
-secretkey = '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'
+accesskeyid = 'AKIAJGYWWGWRCJMQYMXQ'
+secretkey = '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'
 
 def createbucket(bucketname):
-    iamwrapperobj = iamwrapper(accesskeyid, secretkey)
-    s3wrapperobj = s3wrapper(iamwrapperobj)
-    s3wrapperobj.createbucket()
+    iamwrapperobj = iamwrapper.iamwrapper(accesskeyid, secretkey)
+    s3wrapperobj = s3wrapper.s3wrapper(iamwrapperobj)
+    s3wrapperobj.createbucket(bucketname)
+
+def deletebucket(bucketname):
+    iamwrapperobj = iamwrapper.iamwrapper(accesskeyid, secretkey)
+    s3wrapperobj = s3wrapper.s3wrapper(iamwrapperobj)
+    s3wrapperobj.deletebucket(bucketname)
 
 
 createbucket('testingkushal')
+deletebucket('testingkushal')
 
 

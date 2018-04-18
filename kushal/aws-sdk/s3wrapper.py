@@ -7,16 +7,13 @@ class s3wrapper:
     def __init__(self, iamwrapper):
         self.client = boto3.resource('s3', aws_access_key_id = iamwrapper.accesskeyid, aws_secret_access_key = iamwrapper.secretkey)
 
-    def createbucket(bucketname):
-        try:
-            results = self.client.create_bucket(Bucket = bucketname, CreateBucketConfiguration = {'LocationConstraint' : self.location})
-            return results
-        except:
-            return None
+    def createbucket(self, bucketname):
+        results = self.client.create_bucket(Bucket = bucketname, CreateBucketConfiguration = {'LocationConstraint' : self.location})
 
-    def listbucket():
+    def listbucket(self):
         return self.client.list_buckets()
 
-    def deletebucket(bucketname):
-        self.client.delete_bucket(Bucket = bucketname)
+    def deletebucket(self, bucketname):
+        bucket = self.client.Bucket(bucketname)
+        bucket.delete()
 
