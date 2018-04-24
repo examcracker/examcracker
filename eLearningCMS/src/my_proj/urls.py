@@ -15,6 +15,7 @@ urlpatterns = [
     path('about/', views.AboutPage.as_view(), name='about'),
     path('users/', include(profiles.urls)),
     path('admin/', admin.site.urls),
+    path('contact/', views.ContactPage.as_view(), name='contact'),
     path('', include(accounts.urls)),
 ]
 
