@@ -72,6 +72,9 @@
                     <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
                   </ul>
                 </li>
+                {% else %}
+                  <a class="btn btn-default" href="{% url 'accounts:login' %}" role="button">Log in</a>
+                  <a class="btn btn-primary" href="{% url 'accounts:signup' %}" role="button">Sign up</a>
               {% endif %}
             {% endblock %}
           </ul>
