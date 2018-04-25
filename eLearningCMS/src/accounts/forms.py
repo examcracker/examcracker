@@ -28,6 +28,10 @@ class LoginForm(AuthenticationForm):
 
 
 class SignupForm(authtoolsforms.UserCreationForm):
+    address = forms.CharField(required=False,max_length=100)
+    city = forms.CharField(required=False,max_length=20)
+    country = forms.CharField(required=False,max_length=20)
+    phone = forms.CharField(max_length=15)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,6 +43,10 @@ class SignupForm(authtoolsforms.UserCreationForm):
             Field('name', placeholder="Enter Full Name"),
             Field('password1', placeholder="Enter Password"),
             Field('password2', placeholder="Re-enter Password"),
+            Field('address', placeholder="Enter complete postal Address"),
+            Field('city', placeholder="Enter City"),
+            Field('country', placeholder="Enter Country"),
+            Field('phone', placeholder="Enter phone number with STD code"),
             Submit('sign_up', 'Sign up', css_class="btn-warning"),
         )
 
