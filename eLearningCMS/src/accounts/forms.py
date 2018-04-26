@@ -6,7 +6,7 @@ from crispy_forms.layout import Layout, Submit, HTML, Field
 from authtools import forms as authtoolsforms
 from django.contrib.auth import forms as authforms
 from django.urls import reverse
-
+from profiles import models
 
 class LoginForm(AuthenticationForm):
     remember_me = forms.BooleanField(required=False, initial=False)
@@ -28,7 +28,13 @@ class LoginForm(AuthenticationForm):
 
 
 class SignupForm(authtoolsforms.UserCreationForm):
-    address = forms.CharField(required=False,max_length=100)
+    ACCOUNT_CHOICES= [
+        ('student', 'Student'),
+        ('provider', 'Course Provider'),
+        ]
+    account_type= forms.ChoiceField(label='Account Type', choices=ACCOUNT_CHOICES)
+
+    address = forms.CharField(required=False,max_length=100,widget=forms.Textarea)
     city = forms.CharField(required=False,max_length=20)
     country = forms.CharField(required=False,max_length=20)
     phone = forms.CharField(max_length=15)
@@ -39,16 +45,45 @@ class SignupForm(authtoolsforms.UserCreationForm):
         self.fields["email"].widget.input_type = "email"  # ugly hack
 
         self.helper.layout = Layout(
+            Field('account_type'),
             Field('email', placeholder="Enter Email", autofocus=""),
             Field('name', placeholder="Enter Full Name"),
             Field('password1', placeholder="Enter Password"),
-            Field('password2', placeholder="Re-enter Password"),
+            Field('password2', placeholder="Re Enter Password"),
             Field('address', placeholder="Enter complete postal Address"),
             Field('city', placeholder="Enter City"),
             Field('country', placeholder="Enter Country"),
             Field('phone', placeholder="Enter phone number with STD code"),
             Submit('sign_up', 'Sign up', css_class="btn-warning"),
         )
+
+    def save(self, commit=True):
+        signedupuser = super(SignupForm, self).save(commit=False)
+
+        signedupuser.is_staff=True
+        if self.cleaned_data["account_type"].find("student") != -1:
+            signedupuser.is_staff=False
+
+        signedupuser.save()
+
+        if signedupuser.is_staff is False:
+            student = models.Student(address=self.cleaned_data["address"],
+                                     city=self.cleaned_data["city"],
+                                     phone=self.cleaned_data["phone"],
+                                     country=self.cleaned_data["country"],
+                                     user=signedupuser)
+            if commit:
+                student.save()
+        else:
+            provider = models.Provider(address=self.cleaned_data["address"],
+                                     city=self.cleaned_data["city"],
+                                     phone=self.cleaned_data["phone"],
+                                     country=self.cleaned_data["country"],
+                                     user=signedupuser)
+            if commit:
+                provider.save()
+
+        return signedupuser
 
 
 class PasswordChangeForm(authforms.PasswordChangeForm):

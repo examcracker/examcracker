@@ -3,6 +3,7 @@ from django.utils.encoding import python_2_unicode_compatible
 import uuid
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
 
 
 class BaseProfile(models.Model):
@@ -29,18 +30,14 @@ class Profile(BaseProfile):
         return "{}'s profile". format(self.user)
 
 class Student(models.Model):
-    name = models.CharField(max_length=50)
-    email = models.CharField(max_length=20)
-    password = models.CharField(max_length=20)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.CharField(max_length=100)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=30)
     phone = models.CharField(max_length=10)
 
 class Provider(models.Model):
-    name = models.CharField(max_length=50)
-    email = models.CharField(max_length=20)
-    password = models.CharField(max_length=20)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.CharField(max_length=100)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=30)
