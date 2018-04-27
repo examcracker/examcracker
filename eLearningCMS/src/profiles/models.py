@@ -17,6 +17,10 @@ class BaseProfile(models.Model):
                                 upload_to='profile_pics/%Y-%m-%d/',
                                 null=True,
                                 blank=True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
+    country = models.CharField(max_length=30, blank=True, null=True)
+    phone = models.CharField(max_length=10, blank=True, null=True)
     bio = models.CharField("Short Bio", max_length=200, blank=True, null=True)
     email_verified = models.BooleanField("Email verified", default=False)
 
@@ -31,17 +35,9 @@ class Profile(BaseProfile):
 
 class Student(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=50)
-    country = models.CharField(max_length=30)
-    phone = models.CharField(max_length=10)
 
 class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=50)
-    country = models.CharField(max_length=30)
-    phone = models.CharField(max_length=10)
 
 class Course(models.Model):
     name = models.CharField(max_length=50)

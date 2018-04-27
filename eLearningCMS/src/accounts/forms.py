@@ -34,11 +34,6 @@ class SignupForm(authtoolsforms.UserCreationForm):
         ]
     account_type= forms.ChoiceField(label='Account Type', choices=ACCOUNT_CHOICES)
 
-    address = forms.CharField(required=False,max_length=100,widget=forms.Textarea)
-    city = forms.CharField(required=False,max_length=20)
-    country = forms.CharField(required=False,max_length=20)
-    phone = forms.CharField(max_length=15)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -50,10 +45,6 @@ class SignupForm(authtoolsforms.UserCreationForm):
             Field('name', placeholder="Enter Full Name"),
             Field('password1', placeholder="Enter Password"),
             Field('password2', placeholder="Re Enter Password"),
-            Field('address', placeholder="Enter complete postal Address"),
-            Field('city', placeholder="Enter City"),
-            Field('country', placeholder="Enter Country"),
-            Field('phone', placeholder="Enter phone number with STD code"),
             Submit('sign_up', 'Sign up', css_class="btn-warning"),
         )
 
@@ -67,19 +58,11 @@ class SignupForm(authtoolsforms.UserCreationForm):
         signedupuser.save()
 
         if signedupuser.is_staff is False:
-            student = models.Student(address=self.cleaned_data["address"],
-                                     city=self.cleaned_data["city"],
-                                     phone=self.cleaned_data["phone"],
-                                     country=self.cleaned_data["country"],
-                                     user=signedupuser)
+            student = models.Student(user=signedupuser)
             if commit:
                 student.save()
         else:
-            provider = models.Provider(address=self.cleaned_data["address"],
-                                     city=self.cleaned_data["city"],
-                                     phone=self.cleaned_data["phone"],
-                                     country=self.cleaned_data["country"],
-                                     user=signedupuser)
+            provider = models.Provider(user=signedupuser)
             if commit:
                 provider.save()
 
