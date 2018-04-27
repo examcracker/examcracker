@@ -21,7 +21,7 @@ class BaseProfile(models.Model):
     city = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=30, blank=True, null=True)
     phone = models.CharField(max_length=10, blank=True, null=True)
-    bio = models.CharField("Short Bio", max_length=200, blank=True, null=True)
+    bio = models.CharField("About Me", max_length=200, blank=True, null=True)
     email_verified = models.BooleanField("Email verified", default=False)
 
     class Meta:
