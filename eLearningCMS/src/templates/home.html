@@ -104,9 +104,16 @@
 								</ul>
 							</li>
 							<li><a href="contact.html">Contact</a></li>
-							<li class="btn-cta"><a href="{% url 'accounts:login' %}"><span>Login</span></a></li>
-							<li class="btn-cta"><a href="{% url 'accounts:signup' %}"><span>Sign Up</span></a></li>
-							<li class="btn-cta"><a href="{% url 'teacherApp:teacherPage' %}"><span>Create a Course</span></a></li>
+							{% if user.is_authenticated %}
+								<h1>welcome {{ user.name }}</h1>
+								{% if user.is_staff %}
+									<li class="btn-cta"><a href="{% url 'teacherApp:teacherPage' %}"><span>Course Provider Workflow</span></a></li>
+								{% endif %}
+								<p><a href="/logout">Logout</a></p>
+							{% else %}
+								<li class="btn-cta"><a href="{% url 'accounts:login' %}"><span>Login</span></a></li>
+								<li class="btn-cta"><a href="{% url 'accounts:signup' %}"><span>Sign Up</span></a></li>
+							{% endif %}
 						</ul>
 					</div>
 				</div>
