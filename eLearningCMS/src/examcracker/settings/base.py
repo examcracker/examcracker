@@ -1,5 +1,5 @@
 """
-Django settings for my_proj project.
+Django settings for examcracker project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/dev/topics/settings/
@@ -89,9 +89,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'my_proj.urls'
+ROOT_URLCONF = 'examcracker.urls'
 
-WSGI_APPLICATION = 'my_proj.wsgi.application'
+WSGI_APPLICATION = 'examcracker.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -133,7 +133,7 @@ MESSAGE_TAGS = {
 
 # Authentication Settings
 AUTH_USER_MODEL = 'authtools.User'
-LOGIN_REDIRECT_URL = reverse_lazy("home")
+LOGIN_REDIRECT_URL = reverse_lazy("profiles:show_self")
 LOGIN_URL = reverse_lazy("accounts:login")
 
 THUMBNAIL_EXTENSION = 'png'     # Or any extn for your thumbnails

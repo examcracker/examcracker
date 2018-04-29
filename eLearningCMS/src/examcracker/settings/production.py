@@ -1,5 +1,5 @@
 # In production set the environment variable like this:
-#    DJANGO_SETTINGS_MODULE=my_proj.settings.production
+#    DJANGO_SETTINGS_MODULE=examcracker.settings.production
 from .base import *             # NOQA
 import logging.config
 
@@ -32,7 +32,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Must mention ALLOWED_HOSTS in production!
-# ALLOWED_HOSTS = ["my_proj.com"]
+# ALLOWED_HOSTS = ["examcracker.com"]
 
 # Cache the templates in memory for speed-up
 loaders = [
