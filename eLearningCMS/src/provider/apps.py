@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class TeacherappConfig(AppConfig):
-    name = 'teacherApp'
+class ProviderAppConfig(AppConfig):
+    name = 'provider'

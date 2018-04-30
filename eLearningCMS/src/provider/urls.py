@@ -3,5 +3,5 @@ from . import views
 
 app_name = 'provider'
 urlpatterns = [
-     path('', views.showTeacher.as_view(), name="provider_home"),
+     path('', views.showProviderHome.as_view(), name="provider_home"),
 ]
