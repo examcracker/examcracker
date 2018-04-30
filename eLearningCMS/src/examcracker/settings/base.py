@@ -76,7 +76,7 @@ INSTALLED_APPS = (
 
     'profiles',
     'accounts',
-    'teacherApp',
+    'provider',
 
 )
 

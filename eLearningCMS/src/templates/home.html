@@ -107,7 +107,7 @@
 							{% if user.is_authenticated %}
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
-									<li class="btn-cta"><a href="{% url 'teacherApp:teacherPage' %}"><span>Course Provider Workflow</span></a></li>
+									<li class="btn-cta"><a href="{% url 'provider:provider_home' %}"><span>Course Provider Workflow</span></a></li>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}

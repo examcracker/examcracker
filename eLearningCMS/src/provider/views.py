@@ -3,4 +3,4 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 
 class showTeacher(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'teacherPage.html'
+    template_name = 'provider_home.html'
