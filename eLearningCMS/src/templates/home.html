@@ -103,7 +103,7 @@
 									<li><a href="#">API</a></li>
 								</ul>
 							</li>
-							<li><a href="contact.html">Contact</a></li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
 							{% if user.is_authenticated %}
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
