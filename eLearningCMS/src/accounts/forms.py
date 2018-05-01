@@ -6,7 +6,8 @@ from crispy_forms.layout import Layout, Submit, HTML, Field
 from authtools import forms as authtoolsforms
 from django.contrib.auth import forms as authforms
 from django.urls import reverse
-from profiles import models
+import student
+import provider
 
 class LoginForm(AuthenticationForm):
     remember_me = forms.BooleanField(required=False, initial=False)
@@ -58,13 +59,13 @@ class SignupForm(authtoolsforms.UserCreationForm):
         signedupuser.save()
 
         if signedupuser.is_staff is False:
-            student = models.Student(user=signedupuser)
+            studentobj = student.models.Student(user=signedupuser)
             if commit:
-                student.save()
+                studentobj.save()
         else:
-            provider = models.Provider(user=signedupuser)
+            providerobj = provider.models.Provider(user=signedupuser)
             if commit:
-                provider.save()
+                providerobj.save()
 
         return signedupuser
 
