@@ -8,8 +8,8 @@ import provider.urls
 from . import views
 
 # Personalized admin site settings like title and header
-admin.site.site_title = 'My_Proj Site Admin'
-admin.site.site_header = 'My_Proj Administration'
+admin.site.site_title = 'ExamCracker Site Admin'
+admin.site.site_header = 'ExamCracker Administration'
 
 urlpatterns = [
     path('', views.HomePage.as_view(), name='home'),
@@ -17,7 +17,11 @@ urlpatterns = [
     path('users/', include(profiles.urls)),
     path('admin/', admin.site.urls),
     path('contact/', views.ContactPage.as_view(), name='contact'),
+    path('pricing/', views.PricingPage.as_view(), name='pricing'),
+    path('blog/', views.BlogPage.as_view(), name='blog'),
+    path('courses/', views.CoursesPage.as_view(), name='courses'),
     path('provider/',include(provider.urls)),
+    path('home/', views.HomePage.as_view(), name='home'),
     path('', include(accounts.urls)),
     
 ]

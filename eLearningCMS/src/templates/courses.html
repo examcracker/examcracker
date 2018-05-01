@@ -89,11 +89,11 @@
 					</div>
 					<div class="col-xs-11 text-right menu-1">
 						<ul>
-							<li><a href="index.html">Home</a></li>
-							<li class="active"><a href="courses.html">Courses</a></li>
-							<li><a href="pricing.html">Pricing</a></li>
+							<li><a href="{% url 'home' %}">Home</a></li>
+							<li class="active"><a href="{% url 'courses' %}">Courses</a></li>
+							<li><a href="{% url 'pricing' %}">Pricing</a></li>
 							<li class="has-dropdown">
-								<a href="blog.html">Blog</a>
+								<a href="{% url 'blog' %}">Blog</a>
 								<ul class="dropdown">
 									<li><a href="#">Web Design</a></li>
 									<li><a href="#">eCommerce</a></li>
@@ -101,9 +101,17 @@
 									<li><a href="#">API</a></li>
 								</ul>
 							</li>
-							<li><a href="contact.html">Contact</a></li>
-							<li class="btn-cta"><a href="#"><span>Login</span></a></li>
-							<li class="btn-cta"><a href="#"><span>Create a Course</span></a></li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
+							{% if user.is_authenticated %}
+								<h1>welcome {{ user.name }}</h1>
+								{% if user.is_staff %}
+									<li class="btn-cta"><a href="{% url 'provider:provider_home' %}"><span>Course Provider Workflow</span></a></li>
+								{% endif %}
+								<p><a href="/logout">Logout</a></p>
+							{% else %}
+								<li class="btn-cta"><a href="{% url 'accounts:login' %}"><span>Login</span></a></li>
+								<li class="btn-cta"><a href="{% url 'accounts:signup' %}"><span>Sign Up</span></a></li>
+							{% endif %}
 						</ul>
 					</div>
 				</div>

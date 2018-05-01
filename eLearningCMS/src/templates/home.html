@@ -87,15 +87,15 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-xs-1">
-						<div id="fh5co-logo"><a href="home.html">ExamCracker</a></div>
+						<div id="fh5co-logo"><a href="{% url 'home' %}">ExamCracker</a></div>
 					</div>
 					<div class="col-xs-11 text-right menu-1">
 						<ul>
-							<li class="active"><a href="home.html">Home</a></li>
-							<li><a href="courses.html">Courses</a></li>
-							<li><a href="pricing.html">Pricing</a></li>
+							<li class="active"><a href="{% url 'home' %}">Home</a></li>
+							<li><a href="{% url 'courses' %}">Courses</a></li>
+							<li><a href="{% url 'pricing' %}">Pricing</a></li>
 							<li class="has-dropdown">
-								<a href="blog.html">Blog</a>
+								<a href="{% url 'blog' %}">Blog</a>
 								<ul class="dropdown">
 									<li><a href="#">Web Design</a></li>
 									<li><a href="#">eCommerce</a></li>
