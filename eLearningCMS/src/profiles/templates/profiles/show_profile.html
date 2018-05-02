@@ -10,7 +10,7 @@
 <div class="container profile-head">
   <div class="row">
     <div class="col-sm-10">
-      <h1>{{ show_user.get_full_name }}</h1>
+      <h1><a href="{% url 'home' %}"</a>{{ show_user.get_full_name }}</h1>
       {% if editable %}
       <a href="{% url 'profiles:edit_self' %}" class="btn btn-info">Edit Profile</a>
       {% endif %}
