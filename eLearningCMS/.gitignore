@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.pyc
 
 # Installer logs
 pip-log.txt
@@ -23,6 +24,7 @@ build
 # Django stuff:
 *.mo
 *.pot
+migrations/
 
 # Eclipse
 .project
