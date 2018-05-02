@@ -9,5 +9,5 @@ class Provider(models.Model):
 
 class Session(models.Model):
     url = models.CharField(max_length=100)
-    provider_id = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
 
