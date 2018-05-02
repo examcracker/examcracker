@@ -108,7 +108,10 @@
 							    <li><a href="{% url 'profiles:show_self' %}">Profile</a></li>
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
-									<li class="btn-cta"><a href="{% url 'provider:provider_home' %}"><span>Course Provider Workflow</span></a></li>
+								    {% if user.is_superuser %}
+									{% else %}
+									    <li class="btn-cta"><a href="{% url 'provider:provider_home' %}"><span>Course Provider Workflow</span></a></li>
+									{% endif %}
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}

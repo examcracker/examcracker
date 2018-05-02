@@ -57,7 +57,7 @@
           <ul class="nav navbar-nav navbar-right">
             {% block navbar-right %}
               {% if user.is_authenticated %}
-                {% if user.is_staff %}
+                {% if user.is_superuser %}
                 <li><a href="{% url 'admin:index' %}">Admin</a></li>
                 {% endif %}
                 <li class="dropdown">
