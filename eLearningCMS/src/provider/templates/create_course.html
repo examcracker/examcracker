@@ -110,9 +110,15 @@
 								{% if user.is_staff %}
 								    {% if user.is_superuser %}
 									{% else %}
-									    <li><a href="{% url 'provider:upload_video' %}"><span>Upload Video Lecture</span></a></li>
-										<li><a href="{% url 'provider:create_course' %}"><span>Create Course</span></a></li>
-										<li class="btn-cta"><a href="{% url 'provider:view_courses' %}"><span>Courses</span></a></li>
+                                        <form action="" method="post" enctype="multipart/form-data">
+                                            {% csrf_token %}
+	                                        {{ form.as_p }}
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-success">Submit</button>
+                                                </div>
+                                            </div>
+                                        </form>
 									{% endif %}
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
@@ -557,4 +563,3 @@
 
 	</body>
 </html>
-
