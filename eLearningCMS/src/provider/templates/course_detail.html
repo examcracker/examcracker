@@ -110,13 +110,14 @@
 								{% if user.is_staff %}
 								    {% if user.is_superuser %}
 									{% else %}
-									    {% if courses %}
-										    <ol>
-											    {% for course in courses %}
-												    <li><a href="{% url 'provider:course_detail' course.id %}"><strong>{{course.name}}</strong></li><br>
-												{% endfor %}
-											</ol>
-										{% endif %}
+                                        <div class="panel-body">
+	                                        <strong>Name</strong>: {{ course_detail.name }}<br>
+	                                        <strong>Created On</strong>: {{ course_detail.created }}<br>
+	                                        <strong>Exam</strong>: {{ course_detail.exam }}<br>
+	                                        <strong>Cost (INR)</strong>: {{ course_detail.cost }}<br>
+	                                        <strong>Duration (months)</strong>: {{ course_detail.duration }}<br>
+											<strong>Published</strong>: {{ course_detail.published }}<br>
+	                                    </div>
 									{% endif %}
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
@@ -561,4 +562,3 @@
 
 	</body>
 </html>
-

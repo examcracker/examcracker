@@ -41,10 +41,24 @@ class createCourse(LoginRequiredMixin, CreateView):
         courseForm.save()
         return redirect("provider:provider_home")
 
-def viewCourses(request):
-    loggedinuser = request.user
-    providerObj = models.Provider.objects.filter(id=loggedinuser.id)[0]
-    courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
-    return render(request, "view_courses.html", {'courses' : courseList})
+class viewCourses(LoginRequiredMixin, generic.TemplateView):
+    template_name = "view_courses.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        providerObj = getProvider(request)
+        courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
+        kwargs["courses"] = courseList
+        return super().get(request, *args, **kwargs);
+
+class courseDetail(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'course_detail.html'
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+        kwargs["course_detail"] = courseObj
+        return super().get(request, *args, **kwargs)
 
 

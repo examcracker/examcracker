@@ -7,15 +7,15 @@ import provider
 # Create your models here.
 
 EXAM_CHOICES = (
-    ('iit','IIT-JEE'),
-    ('aieee', 'AIEEE'),
-    ('cat','CAT'),
-    ('aiims','AIIMs'),
-    ('pmt','PMT'),
-    ('ias', 'IAS'),
-    ('gate', 'GATE'),
-    ('gre', 'GRE'),
-    ('toefl', 'TOEFL')
+    ('IIT-JEE','IIT-JEE'),
+    ('AIEEE', 'AIEEE'),
+    ('CAT','CAT'),
+    ('AIIMS','AIIMS'),
+    ('PMT','PMT'),
+    ('IAS', 'IAS'),
+    ('GATE', 'GATE'),
+    ('GRE', 'GRE'),
+    ('TOEFL', 'TOEFL')
 )
     
 class Course(models.Model):
