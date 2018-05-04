@@ -62,6 +62,9 @@ class courseDetail(LoginRequiredMixin, generic.TemplateView):
 
         sessionsNotInCourse = models.Session.objects.raw('SELECT * FROM provider_session WHERE id NOT IN (SELECT session_id FROM course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
         kwargs["excluded_sessions"] = sessionsNotInCourse
+
+        sessionsInCourse = models.Session.objects.raw('SELECT * FROM provider_session WHERE id IN (SELECT session_id from course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
+        kwargs["included_sessions"] = sessionsInCourse
         return super().get(request, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):
@@ -87,5 +90,3 @@ class courseDetail(LoginRequiredMixin, generic.TemplateView):
             maxsequence = maxsequence + 1
 
         return redirect("provider:course_detail", courseObj.id)
-
-
