@@ -111,31 +111,27 @@
 								    {% if user.is_superuser %}
 									{% else %}
                                         <div class="panel-body">
-	                                        <strong>Name</strong>: {{ course_detail.name }}<br>
-	                                        <strong>Created On</strong>: {{ course_detail.created }}<br>
-	                                        <strong>Exam</strong>: {{ course_detail.exam }}<br>
-	                                        <strong>Cost (INR)</strong>: {{ course_detail.cost }}<br>
-	                                        <strong>Duration (months)</strong>: {{ course_detail.duration }}<br>
-											<strong>Published</strong>: {{ course_detail.published }}<br>
+	                                        <strong>Name</strong>: {{ session_detail.name }}<br>
+	                                        <strong>Uploaded On</strong>: {{ session_detail.uploaded }}<br>
 	                                    </div>
 										<div class="panel-body">
-										    <strong>Course Sessions</strong><br>
-											{% if included_sessions %}
+										    <strong>Included in Courses</strong><br>
+											{% if included_courses %}
 											    <ol>
-											        {% for session in included_sessions %}
-												        <label for="video">{{ session.name }}</label><br>
+											        {% for course in included_courses %}
+												        <label for="video">{{ course.name }}</label><br>
 												    {% endfor %}
 											    </ol>
 											{% endif %}
 										</div>
 										<div>
-										    <strong>Sessions Not In course</strong><br>
+										    <strong>Add to Course</strong><br>
 											<form action="" method="post" enctype="multipart/form-data">
-											    {% if excluded_sessions %}
+											    {% if excluded_courses %}
 										            <ol>
-											            {% for session in excluded_sessions %}
-												            <input type="checkbox" name="sessions[]" value="{{ session.id }}"</input>
-													        <label for="video">{{ session.name }}</label><br>
+											            {% for course in excluded_courses %}
+												            <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
+													        <label for="course">{{ course.name }}</label><br>
 												        {% endfor %}
 											        </ol>
 										        {% endif %}

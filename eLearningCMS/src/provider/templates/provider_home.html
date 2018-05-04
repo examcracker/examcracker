@@ -110,9 +110,10 @@
 								{% if user.is_staff %}
 								    {% if user.is_superuser %}
 									{% else %}
-									    <li><a href="{% url 'provider:upload_video' %}"><span>Upload Video Lecture</span></a></li>
+									    <li><a href="{% url 'provider:upload_video' %}"><span>Upload a Session</span></a></li>
 										<li><a href="{% url 'provider:create_course' %}"><span>Create Course</span></a></li>
 										<li class="btn-cta"><a href="{% url 'provider:view_courses' %}"><span>Courses</span></a></li>
+										<li class="btn-cta"><a href="{% url 'provider:view_videos' %}"><span>Sessions</span></a></li>
 									{% endif %}
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
