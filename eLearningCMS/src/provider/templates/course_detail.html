@@ -118,6 +118,25 @@
 	                                        <strong>Duration (months)</strong>: {{ course_detail.duration }}<br>
 											<strong>Published</strong>: {{ course_detail.published }}<br>
 	                                    </div>
+										<div class="panel-body">
+										    <strong>Excluded Videos</strong><br>
+											<form action="" method="post" enctype="multipart/form-data">
+											{% if excluded_sessions %}
+										        <ol>
+											        {% for session in excluded_sessions %}
+												        <input type="checkbox" name="sessions[]" value="{{ session.id }}"</input>
+													    <label for="video">{{ session.name }}</label><br>
+												    {% endfor %}
+											    </ol>
+										    {% endif %}
+											{% csrf_token %}
+										    <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-success">Add</button>
+                                                </div>
+                                            </div>
+											</form>
+	                                    </div>
 									{% endif %}
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>

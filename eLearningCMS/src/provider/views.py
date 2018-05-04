@@ -53,12 +53,39 @@ class viewCourses(LoginRequiredMixin, generic.TemplateView):
 
 class courseDetail(LoginRequiredMixin, generic.TemplateView):
     template_name = 'course_detail.html'
-    http_method_names = ['get']
+    http_method_names = ['get', 'post']
 
     def get(self, request, id, *args, **kwargs):
         courseid = id
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         kwargs["course_detail"] = courseObj
+
+        sessionsNotInCourse = models.Session.objects.raw('SELECT * FROM provider_session WHERE id NOT IN (SELECT session_id FROM course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
+        kwargs["excluded_sessions"] = sessionsNotInCourse
         return super().get(request, *args, **kwargs)
+
+    def post(self, request, id, *args, **kwargs):
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+        addedVideos = request.POST.getlist('sessions[]')
+        totalcourses = course.models.CoursePattern.objects.filter(course_id=id)
+        i = 0
+        maxsequence = 0
+        while i < len(totalcourses):
+            obj = totalcourses[i]
+            if obj.sequence > maxsequence:
+                maxsequence = obj.sequence
+            i = i + 1
+
+        for video in addedVideos:
+            sessionObj = models.Session.objects.filter(id=video)[0]
+            coursePatternObj = course.models.CoursePattern()
+            coursePatternObj.sequence = maxsequence + 1
+            coursePatternObj.course = courseObj
+            coursePatternObj.session = sessionObj
+            coursePatternObj.save()
+            maxsequence = maxsequence + 1
+
+        return redirect("provider:course_detail", courseObj.id)
 
 
