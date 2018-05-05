@@ -129,6 +129,8 @@
 									{% else %}
 									    <li class="btn-cta"><a href="{% url 'provider:provider_home' %}"><span>Course Provider Workflow</span></a></li>
 									{% endif %}
+								{% else %}
+								    <li class="btn-cta"><a href="{% url 'student:student_home' %}"><span>Student Workflow</span></a></li>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}

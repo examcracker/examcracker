@@ -5,6 +5,7 @@ from django.urls import include, path
 import profiles.urls
 import accounts.urls
 import provider.urls
+import student.urls
 from . import views
 
 # Personalized admin site settings like title and header
@@ -21,6 +22,7 @@ urlpatterns = [
     path('blog/', views.BlogPage.as_view(), name='blog'),
     path('courses/', views.CoursesPage.as_view(), name='courses'),
     path('provider/',include(provider.urls)),
+    path('student/',include(student.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('', include(accounts.urls)),
     
