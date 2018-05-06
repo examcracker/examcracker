@@ -25,11 +25,27 @@
 							<li><a href="{% url 'contact' %}">Contact</a></li>
 							{% if user.is_authenticated %}
 							    <li><a href="{% url 'profiles:show_self' %}">Profile</a></li>
-								<h1>welcome {{ user.name }}</h1>
+								<h1>welcome1 {{ user.name }}</h1>
 								{% if user.is_staff %}
 								{% else %}
-									<li><a href="{% url 'student:join_courses' %}"><span>Join Courses</span></a></li>
-									<li><a href="{% url 'student:my_courses' %}"><span>My Courses</span></a></li>
+                                    <div class="panel-body">
+	                                    <strong>Name</strong>: {{ course_detail.name }}<br>
+	                                    <strong>Created On</strong>: {{ course_detail.created }}<br>
+	                                    <strong>Exam</strong>: {{ course_detail.exam }}<br>
+	                                    <strong>Cost (INR)</strong>: {{ course_detail.cost }}<br>
+	                                    <strong>Duration (months)</strong>: {{ course_detail.duration }}<br>
+										<strong>Published</strong>: {{ course_detail.published }}<br>
+	                                </div>
+							        <div class="panel-body">
+										<strong>Course Sessions</strong><br>
+										{% if included_sessions %}
+											<ol>
+											    {% for session in included_sessions %}
+												    <label for="video"><a href="{% url 'student:video_details' session.id %}">{{ session.name }}</label><br>
+												{% endfor %}
+											</ol>
+									    {% endif %}
+									</div>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}
@@ -42,9 +58,7 @@
 				
 			</div>
 		</div>
-{% endblock topMainMenu %}
+		{% endblock topMainMenu %}
 
-{% block container %}
-{% endblock container %}
-
-
+		{% block container %}
+		{% endblock container %}
