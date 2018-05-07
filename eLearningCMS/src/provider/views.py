@@ -81,6 +81,12 @@ class courseDetail(LoginRequiredMixin, generic.TemplateView):
         courseid = id
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         addedVideos = request.POST.getlist('sessions[]')
+
+        if len(addedVideos) == 0:
+            courseObj.published = True
+            courseObj.save()
+            return redirect("provider:course_detail", id)
+
         totalVideos = course.models.CoursePattern.objects.filter(course_id=id)
         maxsequence = 0
 
