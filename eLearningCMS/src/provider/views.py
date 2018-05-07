@@ -119,7 +119,6 @@ class sessionDetail(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):
-
         sessionid = id
         sessionObj = models.Session.objects.filter(id=sessionid)[0]
         addedCourses = request.POST.getlist('courses[]')

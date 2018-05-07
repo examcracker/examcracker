@@ -28,8 +28,10 @@
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
 								{% else %}
-									<li><a href="{% url 'student:join_courses' %}"><span>Join Courses</span></a></li>
-									<li><a href="{% url 'student:my_courses' %}"><span>My Courses</span></a></li>
+                                    <div class="panel-body">
+	                                    <strong>Name</strong>: {{ session_detail.name }}<br>
+	                                    <strong>Uploaded On</strong>: {{ session_detail.uploaded }}<br>
+	                                </div>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}
@@ -42,9 +44,7 @@
 				
 			</div>
 		</div>
-{% endblock topMainMenu %}
+		{% endblock topMainMenu %}
 
-{% block container %}
-{% endblock container %}
-
-
+		{% block container %}
+		{% endblock container %}

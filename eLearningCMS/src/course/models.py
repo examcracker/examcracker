@@ -30,7 +30,7 @@ class Course(models.Model):
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    finished = models.BooleanField(default=False)
+    enrolled = models.DateTimeField(auto_now_add=True)
 
 class CoursePattern(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
