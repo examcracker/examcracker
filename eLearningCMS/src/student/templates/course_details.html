@@ -41,7 +41,7 @@
 										{% if included_sessions %}
 											<ol>
 											    {% for session in included_sessions %}
-												    <label for="video"><a href="{% url 'student:video_details' session.id %}">{{ session.name }}</label><br>
+												    <a href="{% url 'student:video_details' session.id %}"><label for="video">{{ session.name }}</label></a><br>
 												{% endfor %}
 											</ol>
 									    {% endif %}

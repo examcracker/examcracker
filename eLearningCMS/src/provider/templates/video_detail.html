@@ -38,7 +38,7 @@
 											{% if included_courses %}
 											    <ol>
 											        {% for course in included_courses %}
-												        <label for="video">{{ course.name }}</label><br>
+												        <label for="video"><a href="{% url 'provider:course_detail' course.id %}">{{ course.name }}</a></label><br>
 												    {% endfor %}
 											    </ol>
 											{% endif %}
@@ -50,7 +50,7 @@
 										            <ol>
 											            {% for course in excluded_courses %}
 												            <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-													        <label for="course">{{ course.name }}</label><br>
+													        <label for="course"><a href="{% url 'provider:course_detail' course.id %}">{{ course.name }}</a></label><br>
 												        {% endfor %}
 											        </ol>
 										        {% endif %}

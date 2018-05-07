@@ -3,6 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
+from collections import OrderedDict
+from operator import itemgetter
 from . import models
 from . import forms
 import course
@@ -70,3 +72,28 @@ class sessionDetails(LoginRequiredMixin, generic.TemplateView):
         kwargs["session_detail"] = sessionObj
         return super().get(request, id, *args, **kwargs)
 
+class searchCourses(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'search_courses.html'
+    http_method_names = ['get', 'post']
+
+    def get(self, request, *args, **kwargs):
+        courseList = course.models.Course.objects.filter(published=1)
+        kwargs["courses"] = courseList
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        searchtext = request.POST.get('search_course')
+        tokens = searchtext.split(' ')
+        coursesDict = {}
+
+        for text in tokens:
+            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND name LIKE \'%' + text + '%\'')
+
+            for c in courses:
+                if c in coursesDict.keys():
+                    coursesDict[c] = coursesDict[c] + 1
+                else:
+                    coursesDict[c] = 1
+
+        courseList = OrderedDict(sorted(coursesDict.items(), key = itemgetter(1)))
+        return render(request, self.template_name, {"courses" : courseList})

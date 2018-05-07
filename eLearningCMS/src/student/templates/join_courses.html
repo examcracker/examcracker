@@ -35,7 +35,7 @@
 											    <ol>
 											        {% for course in remaining_courses %}
 												        <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-													    <label for="course">{{ course.name }}</label><br>
+													    <label for="course"><a href="{% url 'student:course_details' course.id %}">{{ course.name }}</a></label><br>
 												    {% endfor %}
 											    </ol>
 											{% endif %}

@@ -28,16 +28,24 @@
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
 								{% else %}
-									<div class="panel-body">
-										<strong>My Courses</strong><br>
-										{% if courses %}
+                                    <div class="panel-body">
+									    {% if courses %}
 										    <ol>
 											    {% for course in courses %}
 												    <a href="{% url 'student:course_details' course.id %}"><li><strong>{{course.name}}</strong></li></a><br>
 												{% endfor %}
 											</ol>
 										{% endif %}
-									</div>
+										<form action="" method="post" enctype="multipart/form-data">
+										    {% csrf_token %}
+											<input type="text" name="search_course" class="search" value="Enter Course Name" >
+										    <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-success">Search</button>
+                                                </div>
+                                            </div>
+										</form>
+	                                </div>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}
@@ -50,9 +58,7 @@
 				
 			</div>
 		</div>
-{% endblock topMainMenu %}
+		{% endblock topMainMenu %}
 
-{% block container %}
-{% endblock container %}
-
-
+		{% block container %}
+		{% endblock container %}
