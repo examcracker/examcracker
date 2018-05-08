@@ -28,9 +28,16 @@
 								<h1>welcome {{ user.name }}</h1>
 								{% if user.is_staff %}
 								{% else %}
-									<li><a href="{% url 'student:join_courses' %}"><span>Join Courses</span></a></li>
-									<li><a href="{% url 'student:my_courses' %}"><span>My Courses</span></a></li>
-									<li><a href="{% url 'student:search_courses' %}"><span>Search Courses</span></a></li>
+									<div class="panel-body">
+										<strong>My Courses</strong><br>
+										{% if courses %}
+										    <ol>
+											    {% for course in courses %}
+												    <a href="{% url 'student:course_details' course.id %}"><li><strong>{{course.name}}</strong></li></a><br>
+												{% endfor %}
+											</ol>
+										{% endif %}
+									</div>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>
 							{% else %}

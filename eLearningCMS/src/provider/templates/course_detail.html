@@ -35,14 +35,13 @@
 	                                        <strong>Exam</strong>: {{ course_detail.exam }}<br>
 	                                        <strong>Cost (INR)</strong>: {{ course_detail.cost }}<br>
 	                                        <strong>Duration (months)</strong>: {{ course_detail.duration }}<br>
-											<strong>Published</strong>: {{ course_detail.published }}<br>
 	                                    </div>
 										<div class="panel-body">
 										    <strong>Course Sessions</strong><br>
 											{% if included_sessions %}
 											    <ol>
 											        {% for session in included_sessions %}
-												        <label for="video">{{ session.name }}</label><br>
+												        <label for="video"><a href="{% url 'provider:video_detail' session.id %}">{{ session.name }}</a></label><br>
 												    {% endfor %}
 											    </ol>
 											{% endif %}
@@ -54,7 +53,7 @@
 										            <ol>
 											            {% for session in excluded_sessions %}
 												            <input type="checkbox" name="sessions[]" value="{{ session.id }}"</input>
-													        <label for="video">{{ session.name }}</label><br>
+													        <label for="video"><a href="{% url 'provider:video_detail' session.id %}">{{ session.name }}</a></label><br>
 												        {% endfor %}
 											        </ol>
 										        {% endif %}
@@ -63,6 +62,12 @@
                                                     <div class="col-sm-offset-2 col-sm-10">
                                                         <button type="submit" class="btn btn-success">Add</button>
                                                     </div>
+													{% if course_detail.published %}
+													{% else %}
+													    <div class="col-sm-offset-2 col-sm-10">
+                                                            <button type="submit" class="btn btn-success">Publish</button>
+                                                        </div>
+													{% endif %}
                                                 </div>
 											</form>
 	                                    </div>

@@ -23,6 +23,7 @@ TEMPLATES = [
         'DIRS': [
             str(BASE_DIR / 'templates'),
             # insert more TEMPLATE_DIRS here
+            str(BASE_DIR / 'student' / 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+		{% load staticfiles %}
+		{% load staticfiles %}
+		{% load crispy_forms_tags %}	
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Responsive vertical menu navigation</title>
+		<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:700, 600,500,400,300' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+		<link rel="stylesheet" href="{% static 'userDashBoard/main.css' %}">
+
+		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/data.js"></script>
+		<script src="{% static 'userDashBoard/main.js' %}"></script>
+	</head>
+	<body>
+		<div class="header">
+			<div class="logo">
+				<i class="fa fa-tachometer"></i>
+				<span>Brand</span>
+			</div>
+			<a href="#" class="nav-trigger"><span></span></a>
+		</div>
+		<div class="side-nav">
+			<div class="logo">
+				<i class="fa fa-tachometer"></i>
+				<span>Exam Cracker</span>
+			</div>
+			<nav>
+				<ul>
+					<li>
+						<a href="{% url 'profiles:show_self' %}">
+							<span><i class="fa fa-user"></i></span>
+							<span>profile</span>
+						</a>
+					</li>
+				{% if user.is_staff or user.is_superuser %}
+					<li>
+						<a href="{% url 'provider:upload_video' %}">
+							<span><i class="fa fa-user"></i></span>
+							<span>Upload a Session</span>
+						</a>
+					</li>
+					<li>
+						<a href="{% url 'provider:create_course' %}">
+
+							<span><i class="fa fa-envelope"></i></span>
+							<span>Create Course</span>
+						</a>
+					</li>
+					<li class="active">
+						<a href="{% url 'provider:view_courses' %}">
+							<span><i class="fa fa-bar-chart"></i></span>
+							<span>Courses</span>
+						</a>
+					</li>
+					<li>
+						<a href="{% url 'provider:view_videos' %}">
+							<span><i class="fa fa-credit-card-alt"></i></span>
+							<span>Sessions</span>
+						</a>
+					</li>
+					{% else %}
+						<li>
+							<a href="#">
+								<span><i class="fa fa-envelope"></i></span>
+								<span>Courses</span>
+							</a>
+						</li>
+						<li class="active">
+							<a href="#">
+								<span><i class="fa fa-bar-chart"></i></span>
+								<span>Bookmarks</span>
+							</a>
+						</li>
+						<li>
+							<a href="#">
+								<span><i class="fa fa-credit-card-alt"></i></span>
+								<span>Sessions</span>
+							</a>
+						</li>
+				{% endif %}
+				<li>
+						<a href="/logout">
+							<span><i class="fa fa-credit-card-alt"></i></span>
+							<span>Logout</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+		<div class="main-content">
+			<div class="title">
+				Analytics
+			</div>
+			<div class='ad'>
+				<div class="close">
+					<i class="ion-ios-close-empty"></i>
+				</div>
+				<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+				<!-- kodhus demos -->
+				<ins class="adsbygoogle"
+				     style="display:inline-block;width:300px;height:250px"
+				     data-ad-client="ca-pub-8408356133845039"
+				     data-ad-slot="8154430505"></ins>
+				<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+				</script>
+			</div>
+			<div class="main">
+				<div class="widget">
+					<div class="title">Number of views</div>
+					<div class="chart"></div>
+				</div>
+				<div class="widget">
+					<div class="title">Number of likes</div>
+					<div class="chart"></div>
+				</div>
+				<div class="widget">
+					<div class="title">Number of comments</div>
+					<div class="chart"></div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		$(function() {
+			$('.close').click(function() {
+				$('.ad').css('display', 'none');
+			})
+		})
+	</script>
+
+</html>

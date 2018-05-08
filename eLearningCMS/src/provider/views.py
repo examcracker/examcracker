@@ -11,7 +11,7 @@ def getProvider(request):
     return models.Provider.objects.filter(user_id=request.user.id)[0]
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'provider_home.html'
+    template_name = 'userDashBoard.html'
 
 class uploadVideo(LoginRequiredMixin, CreateView):
     template_name = 'upload_video.html'
@@ -81,6 +81,12 @@ class courseDetail(LoginRequiredMixin, generic.TemplateView):
         courseid = id
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         addedVideos = request.POST.getlist('sessions[]')
+
+        if len(addedVideos) == 0:
+            courseObj.published = True
+            courseObj.save()
+            return redirect("provider:course_detail", id)
+
         totalVideos = course.models.CoursePattern.objects.filter(course_id=id)
         maxsequence = 0
 
@@ -119,7 +125,6 @@ class sessionDetail(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):
-
         sessionid = id
         sessionObj = models.Session.objects.filter(id=sessionid)[0]
         addedCourses = request.POST.getlist('courses[]')

@@ -1,16 +1,379 @@
-{% extends "__base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+	{% load staticfiles %}
+    {% load thumbnail %}
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>ExamCracker --Teach Learn and Crack with us</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+	<link href="{% static 'ec/style.css' %}" rel="stylesheet">
+    <!-- Custom styles for this site -->
+    {% block styles %}
+ 	{% endblock styles %}
+	
+	<!-- Custom tags for the head tag -->
+    {% block extrahead %}
+	{% endblock extrahead %}
+	
+</head>
+<body>
 
-{% load staticfiles %}
-{% load crispy_forms_tags %}
+<!-- Navigation -->
+{% block topHeader %}
+<nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.png' %}"></a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse"
+			data-target = "#navbarResponsive">
+		<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarResponsive">
+			<!--<ul class="navbar-nav ml-auto">-->
+			<ul class="navbar-nav">
+				<li class="nav-item active">
+					<a class="nav-link" href="#">Exams</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Courses</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Teachers</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Connect</a>
+				</li>
+			</ul>
+			<div class="input-group input-group-sm">
+				<input class="form-control" type="search" placeholder="Search courses..." aria-label="searchInput" aria-describedby="search-input">
+				<div class="input-group-append">
+					<div class="input-group-text" id="btnGroupAddon2"><i class="fa fa-search"></i></div>
+				</div>
+			</div>
+			{% if user.is_authenticated %}
+				<div class="dropdown">
+					<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					  {{user.name }}
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					{% if user.is_staff %}
+						{% if user.is_superuser %}
+						{% else %}
+					  		<a class="dropdown-item" href="{% url 'provider:provider_home' %}">DashBoard</a>
+						{% endif %}
+					{% else %}
+						<a class="dropdown-item" href="{% url 'student:student_home' %}">DashBoard</a>
+					{% endif %}
+					  <a class="dropdown-item" href="{% url 'profiles:show_self' %}">Profile</a>
+					  <a class="dropdown-item" href="/logout">Logout</a>
+					</div>
+				</div>
+				{% else %}
+				<ul class="navbar-nav">
+					<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-md">Login</button></a>
+					</li>
+					<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-md">SignUp</button></a>
+					</li>
+				</ul>
+				{% endif %}	
+			<!---
+			<ul class="navbar-nav">
+				{% if user.is_authenticated %}
+				<li class="nav-item">
+						<a class="nav-link" href="{% url 'profiles:show_self' %}">Profile</a>
+				</li>
+				{% if user.is_staff %}
+				{% if user.is_superuser %}
+				{% else %}
+				<li class="nav-item">
+						<a class="nav-link" href="{% url 'provider:provider_home' %}">Provider Flow</a>
+				</li>
+				{% endif %}
+				{% else %}
+				<li class="nav-item">
+						<a class="nav-link" href="{% url 'student:student_home' %}">Student Flow</a>
+				</li>
+				{% endif %}
+				<li class="nav-item">
+					<a class="nav-link" href="/logout">Logout</a>
+				</li>
+				{% else %}
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-md">Login</button></a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-md">SignUp</button></a>
+				</li>
+				{% endif %}
+			</ul>
+		-->
+		</div>
+	</div>
+</nav>
+{% endblock topHeader %}
 
-{% block numberCounters %}
-{% endblock numberCounters %}
+{% block container %}
+<!--- Image Slider -->
+<div id="slides" class="carousel slide" data-ride = "carousel">
+	<ul class="carousel-indicators">
+		<li data-target="#slides" data-slide-to="0" class="active"></li>
+		<li data-target="#slides" data-slide-to="1"></li>
+		<li data-target="#slides" data-slide-to="2"></li>
+	</ul>
+	<div class="carousel-inner">
+		<div class="carousel-item active">
+			<img src="{% static 'ec/img/background.png' %}">
+			<div class="carousel-caption">
+				<h1 class="display-2">ExamCracker</h1>
+				<h3>Teach Learn and Crack with us</h3>
+				<button type="button" class="btn btn-outline-light btn-lg">Sign in</button>
+				<button type="button" class="btn btn-primary btn-lg">Explore Courses</button>
+			</div>
+		</div>
+		<div class="carousel-item">
+			<img src="{% static 'ec/img/background2.png' %}">
+		</div>
+		<div class="carousel-item">
+			<img src="{% static 'ec/img/background3.png' %}">
+		</div>
+	</div>
+</div>
+<!--- Jumbotron -->
+<div class="container-fluid">
+	<div class="row jumbotron">
+		<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
+			<p class="lead">
+				This is a ExamCracker Website. We will gonna rock the VOD solution in Exams 
+				preparation. Yo Yo.
+			</p>
+		</div>
+		<div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-2">
+			<a href="#"><button type="button" class="btn btn-outline-secondary btn-lg">Subscribe to courses</button>
+			</a>
+		</div>
+	</div>
+</div>
 
-{% block uselessSection %}
-{% endblock uselessSection %}
+<!--- Welcome Section -->
+<div class="container-fluid padding">
+	<div class="row welcome text-center">
+		<div class="col-12">
+			<h1 class="display-4">Build with ease</h1>
+		</div>
+		<hr>
+		<div class="col-12">
+			<p class="lead">Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution.
+					Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution.
+					Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution.
+			</p>
+		</div>
+	</div>
+</div>
 
-{% block testimonials %}
-{% endblock testimonials %}
+<!--- Three Column Section -->
+<div class="container-fluid padding">
+	<div class="row text-center padding">
+		<div class="col-xs-12 col-xm-6 col-md-4">
+			<i class=" fas fa-code"></i>
+			<h3>HTML5</h3>
+			<p>Learn HTML5. Learn latest version of it</p>
+		</div>
+		<div class="col-xs-12 col-xm-6 col-md-4">
+				<i class=" fas fa-bold"></i>
+				<h3>BootStreap</h3>
+				<p>Learn BootStreap. Learn latest version of it</p>
+		</div>
+		<div class="col-s-12 col-md-4">
+			<i class=" fab fa-css3"></i>
+			<h3>CSS3</h3>
+			<p>Learn CCSS3 Learn latest version of it</p>
+		</div>
+	</div>
+<hr class="my-4">
+</div>
 
-{% block recentPost %}
-{% endblock recentPost %}
+<!--- Two Column Section -->
+<div class="container-fluid padding">
+	<div class="row padding">
+		<div class="col-md-12 col-lg-6">
+			<h2>If you subscribe with us...</h2>
+			<p>Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution</p>
+			<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
+			<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
+			<br>
+			<a href="#" class="btn btn-primary">Learn More</a>
+		</div>
+		<div class="col-md-12 col-lg-6">
+			<img src="{% static 'ec/img/desk.png' %}" class="img-fluid">
+		</div>
+	</div>
+</div>
+<hr class="my-4">
+
+<!--- Fixed background -->
+<figure>
+	<div class="fixed-wrap">
+		<div id="fixed"></div>
+	</div>
+</figure>
+
+<!--- Emoji Section -->
+<div class="container-fluid padding">
+	<button class="fun" data-toggle="collapse" data-target="#emoji">click here for Emoji</button>
+	<div id="emoji" class="collapse">
+		<div class="container-fluid padding">
+			<div class="row text-center">
+				<div class="col-sm-6 col-md-3">
+					<img class="gif" src="{% static 'ec/img/gif/panda.gif' %}">
+				</div>
+				<div class="col-sm-6 col-md-3">
+					<img class="gif" src="{% static 'ec/img/gif/chicken.gif' %}">
+				</div>
+				<div class="col-sm-6 col-md-3">
+					<img class="gif" src="{% static 'ec/img/gif/poo.gif' %}">
+				</div>
+				<div class="col-sm-6 col-md-3">
+					<img class="gif" src="{% static 'ec/img/gif/unicorn.gif' %}">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+  
+<!--- Meet the team -->
+<div class="container-fluid padding">
+	<div class="row welcome text-center">
+		<div class="col-12">
+			<h1 class="display-4">Meet the Team</h1>
+		</div>
+		<hr>
+	</div>
+</div>
+<!--- Cards -->
+<div class="container-fluid padding">
+	<div class="row padding">
+		<div class="col-md-4">
+			<div class="card">
+				<img class="card-img-top" src="{% static 'ec/img/team1.png' %}">
+				<div class="card-body">
+					<h4 class="card-title">Executive</h4>
+					<p class="card-text"> He is an executive of ExamsCracker</p>
+					<a href="#" class="btn btn-outline-secondary"> See Profile</a>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+				<div class="card">
+					<img class="card-img-top" src="{% static 'ec/img/team2.png' %}">
+					<div class="card-body">
+						<h4 class="card-title">Executive3</h4>
+						<p class="card-text"> He is an executive3 of ExamsCracker</p>
+						<a href="#" class="btn btn-outline-secondary"> See Profile</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+					<div class="card">
+						<img class="card-img-top" src="{% static 'ec/img/team3.png' %}">
+						<div class="card-body">
+							<h4 class="card-title">Executive2</h4>
+							<p class="card-text"> He is an executive2 of ExamsCracker</p>
+							<a href="#" class="btn btn-outline-secondary"> See Profile</a>
+						</div>
+					</div>
+				</div>
+	</div>
+</div>
+
+<!--- Two Column Section -->
+<div class="container-fluid padding">
+		<div class="row padding">
+			<div class="col-md-12 col-lg-6">
+				<h2>Our Philosophy</h2>
+				<p>Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution</p>
+				<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
+				<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
+				<br>
+			</div>
+			<div class="col-md-12 col-lg-6">
+				<img src="{% static 'ec/img/bootstrap2.png' %}" class="img-fluid">
+			</div>
+		</div>
+		<hr class="my-4">
+	</div>
+
+
+<!--- Connect -->
+<div class="container-fluid padding">
+	<div class="row text-center padding">
+		<div class="col-12">
+			<h2>Connect</h2>
+		</div>
+		<div class="col-12 social padding">
+			<a href="#"><i class="fab fa-facebook"></i></a>
+			<a href="#"><i class="fab fa-twitter"></i></a>
+			<a href="#"><i class="fab fa-google-plus-g"></i></a>
+			<a href="#"><i class="fab fa-instagram"></i></a>
+			<a href="#"><i class="fab fa-youtube"></i></a>
+		</div>
+	</div>
+</div>
+{% endblock container %}
+
+{% block footer %}
+<!--- Footer -->
+<footer>
+	<div class="container-fluid padding">
+		<div class="row text-center">
+			<div class="col-md-4">
+				<img src="{% static 'ec/img/w3newbie.png' %}">
+				<hr class="light">
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+			</div>
+			<div class="col-md-4">
+				<hr class="light">
+				<h5>Our Hours</h5>
+				<hr class="light">
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+			</div>
+			<div class="col-md-4">
+				<hr class="light">
+				<h5>Locations</h5>
+				<hr class="light">
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+				<p>Our company details here</p>
+			</div>
+		</div>
+	</div>
+</footer>
+{% endblock footer %}
+
+{% block scripts %}
+{% endblock scripts %}
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

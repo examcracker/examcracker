@@ -1,0 +1,76 @@
+{% extends "__base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+{% block topMainMenu %}
+		<div class="top-menu">
+			<div class="container">
+				<div class="row">
+					<div class="col-xs-1">
+						<div id="fh5co-logo"><a href="{% url 'home' %}">ExamCracker</a></div>
+					</div>
+					<div class="col-xs-11 text-right menu-1">
+						<ul>
+							<li class="active"><a href="{% url 'home' %}">Home</a></li>
+							<li><a href="{% url 'courses' %}">Courses</a></li>
+							<li><a href="{% url 'pricing' %}">Pricing</a></li>
+							<li class="has-dropdown">
+								<a href="{% url 'blog' %}">Blog</a>
+								<ul class="dropdown">
+									<li><a href="#">Web Design</a></li>
+									<li><a href="#">eCommerce</a></li>
+									<li><a href="#">Branding</a></li>
+									<li><a href="#">API</a></li>
+								</ul>
+							</li>
+							<li><a href="{% url 'contact' %}">Contact</a></li>
+							{% if user.is_authenticated %}
+							    <li><a href="{% url 'profiles:show_self' %}">Profile</a></li>
+								<h1>welcome {{ user.name }}</h1>
+								{% if user.is_staff %}
+								{% else %}
+                                    <div class="panel-body">
+									    {% if courses %}
+										    <ol>
+											    {% for course in courses %}
+												    <a href="{% url 'student:course_details' course.id %}"><li><strong>{{course.name}}</strong></li></a><br>
+												{% endfor %}
+											</ol>
+										{% endif %}
+										<form action="" method="post" enctype="multipart/form-data">
+										    {% csrf_token %}
+											<input type="text" name="search_course" class="search" value="Enter Course Name" >
+											<fieldset>
+                                                <p>
+                                                    <label>Select Exam</label>
+                                                    <select name = "examlist">
+													    {% if exams %}
+														    {% for exam in exams %}
+												                <option>{{exam.exam}}</option>
+												            {% endfor %}
+														{% endif %}
+                                                    </select>
+                                                </p>
+                                            </fieldset>
+										    <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-success">Search</button>
+                                                </div>
+                                            </div>
+										</form>
+	                                </div>
+								{% endif %}
+								<p><a href="/logout">Logout</a></p>
+							{% else %}
+								<li class="btn-cta"><a href="{% url 'accounts:login' %}"><span>Login</span></a></li>
+								<li class="btn-cta"><a href="{% url 'accounts:signup' %}"><span>Sign Up</span></a></li>
+							{% endif %}
+						</ul>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		{% endblock topMainMenu %}
+
+		{% block container %}
+		{% endblock container %}
