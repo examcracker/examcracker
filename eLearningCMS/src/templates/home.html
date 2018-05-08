@@ -24,32 +24,69 @@
 <body>
 
 <!-- Navigation -->
-
+{% block topHeader %}
 <nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="#"><img src="{% static 'ec/img/logo.png' %}"></a>
+		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.png' %}"></a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
-			data-target = "#navbar-Responsive">
+			data-target = "#navbarResponsive">
 		<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarResponsive">
-			<ul class="navbar-nav ml-auto">
+			<!--<ul class="navbar-nav ml-auto">-->
+			<ul class="navbar-nav">
 				<li class="nav-item active">
-					<a class="nav-link" href="#">Home</a>
+					<a class="nav-link" href="#">Exams</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">About</a>
+					<a class="nav-link" href="#">Courses</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="#">Team</a>
+					<a class="nav-link" href="#">Teachers</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="#">Connect</a>
 				</li>
+			</ul>
+			<div class="input-group input-group-sm">
+				<input class="form-control" type="search" placeholder="Search courses..." aria-label="searchInput" aria-describedby="search-input">
+				<div class="input-group-append">
+					<div class="input-group-text" id="btnGroupAddon2"><i class="fa fa-search"></i></div>
+				</div>
+			</div>
+			{% if user.is_authenticated %}
+				<div class="dropdown">
+					<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					  {{user.name }}
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					{% if user.is_staff %}
+						{% if user.is_superuser %}
+						{% else %}
+					  		<a class="dropdown-item" href="{% url 'provider:provider_home' %}">DashBoard</a>
+						{% endif %}
+					{% else %}
+						<a class="dropdown-item" href="{% url 'student:student_home' %}">DashBoard</a>
+					{% endif %}
+					  <a class="dropdown-item" href="{% url 'profiles:show_self' %}">Profile</a>
+					  <a class="dropdown-item" href="/logout">Logout</a>
+					</div>
+				</div>
+				{% else %}
+				<ul class="navbar-nav">
+					<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-md">Login</button></a>
+					</li>
+					<li class="nav-item">
+					<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-md">SignUp</button></a>
+					</li>
+				</ul>
+				{% endif %}	
+			<!---
+			<ul class="navbar-nav">
 				{% if user.is_authenticated %}
 				<li class="nav-item">
 						<a class="nav-link" href="{% url 'profiles:show_self' %}">Profile</a>
-						<h3>welcome {{ user.name }}</h3>
 				</li>
 				{% if user.is_staff %}
 				{% if user.is_superuser %}
@@ -68,17 +105,20 @@
 				</li>
 				{% else %}
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+					<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-md">Login</button></a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" href="{% url 'accounts:signup' %}">Sign-up</a>
+					<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-md">SignUp</button></a>
 				</li>
 				{% endif %}
 			</ul>
+		-->
 		</div>
 	</div>
 </nav>
+{% endblock topHeader %}
 
+{% block container %}
 <!--- Image Slider -->
 <div id="slides" class="carousel slide" data-ride = "carousel">
 	<ul class="carousel-indicators">
@@ -284,6 +324,7 @@
 		</div>
 	</div>
 </div>
+{% endblock container %}
 
 {% block footer %}
 <!--- Footer -->
