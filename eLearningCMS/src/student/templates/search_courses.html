@@ -39,6 +39,18 @@
 										<form action="" method="post" enctype="multipart/form-data">
 										    {% csrf_token %}
 											<input type="text" name="search_course" class="search" value="Enter Course Name" >
+											<fieldset>
+                                                <p>
+                                                    <label>Select Exam</label>
+                                                    <select name = "examlist">
+													    {% if exams %}
+														    {% for exam in exams %}
+												                <option>{{exam.exam}}</option>
+												            {% endfor %}
+														{% endif %}
+                                                    </select>
+                                                </p>
+                                            </fieldset>
 										    <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
                                                     <button type="submit" class="btn btn-success">Search</button>

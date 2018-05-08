@@ -79,6 +79,8 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         courseList = course.models.Course.objects.filter(published=1)
         kwargs["courses"] = courseList
+        examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
+        kwargs["exams"] = examList
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -86,8 +88,10 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
         tokens = searchtext.split(' ')
         coursesDict = {}
 
+        exam = request.POST.get('examlist')
+
         for text in tokens:
-            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND name LIKE \'%' + text + '%\'')
+            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND exam = \'' + exam + '\'AND name LIKE \'%' + text + '%\'')
 
             for c in courses:
                 if c in coursesDict.keys():
@@ -96,4 +100,6 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
                     coursesDict[c] = 1
 
         courseList = OrderedDict(sorted(coursesDict.items(), key = itemgetter(1)))
-        return render(request, self.template_name, {"courses" : courseList})
+        examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
+        kwargs["exams"] = examList
+        return render(request, self.template_name, {"courses" : courseList, "exams" : examList})
