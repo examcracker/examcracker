@@ -5,10 +5,13 @@ from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
 from collections import OrderedDict
 from operator import itemgetter
+from django.contrib.auth import get_user_model
 from . import models
 from . import forms
 import course
 import provider
+
+User = get_user_model()
 
 def getStudent(request):
     return models.Student.objects.filter(user_id=request.user.id)[0]
@@ -81,6 +84,9 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
         kwargs["courses"] = courseList
         examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
         kwargs["exams"] = examList
+        providerList = User.objects.filter(is_staff=1)
+        kwargs["providers"] = providerList
+        kwargs["search"] = "Search your Course"
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -89,9 +95,12 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
         coursesDict = {}
 
         exam = request.POST.get('examlist')
+        providerstr = request.POST.get('providerlist')
+        userObj = User.objects.filter(name=providerstr)[0]
+        providerObj = provider.models.Provider.objects.filter(user_id=userObj.id)[0]
 
         for text in tokens:
-            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND exam = \'' + exam + '\'AND name LIKE \'%' + text + '%\'')
+            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND exam = \'' + exam + '\'AND provider_id = ' + str(providerObj.id) + ' AND name LIKE \'%' + text + '%\'')
 
             for c in courses:
                 if c in coursesDict.keys():
@@ -101,5 +110,5 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
 
         courseList = OrderedDict(sorted(coursesDict.items(), key = itemgetter(1)))
         examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
-        kwargs["exams"] = examList
-        return render(request, self.template_name, {"courses" : courseList, "exams" : examList})
+        providerList = User.objects.filter(is_staff=1)
+        return render(request, self.template_name, {"courses" : courseList, "exams" : examList, "providers" : providerList, "search" : searchtext})

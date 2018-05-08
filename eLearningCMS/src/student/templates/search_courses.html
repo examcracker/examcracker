@@ -38,7 +38,7 @@
 										{% endif %}
 										<form action="" method="post" enctype="multipart/form-data">
 										    {% csrf_token %}
-											<input type="text" name="search_course" class="search" value="Enter Course Name" >
+											<input type="text" name="search_course" class="search" value="{{search}}" >
 											<fieldset>
                                                 <p>
                                                     <label>Select Exam</label>
@@ -46,6 +46,18 @@
 													    {% if exams %}
 														    {% for exam in exams %}
 												                <option>{{exam.exam}}</option>
+												            {% endfor %}
+														{% endif %}
+                                                    </select>
+                                                </p>
+                                            </fieldset>
+											<fieldset>
+                                                <p>
+                                                    <label>Select Course Provider</label>
+                                                    <select name = "providerlist">
+													    {% if providers %}
+														    {% for provider in providers %}
+												                <option>{{provider.name}}</option>
 												            {% endfor %}
 														{% endif %}
                                                     </select>
