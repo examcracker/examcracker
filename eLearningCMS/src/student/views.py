@@ -9,7 +9,9 @@ from django.contrib.auth import get_user_model
 from . import models
 from . import forms
 import course
+from course import algos
 import provider
+import re
 
 User = get_user_model()
 
@@ -80,10 +82,7 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
-        courseList = course.models.Course.objects.filter(published=1)
-        kwargs["courses"] = courseList
-        examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
-        kwargs["exams"] = examList
+        kwargs["exams"] = course.algos.getExams()
         providerList = User.objects.filter(is_staff=1)
         kwargs["providers"] = providerList
         kwargs["search"] = "Search your Course"
@@ -91,24 +90,12 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
 
     def post(self, request, *args, **kwargs):
         searchtext = request.POST.get('search_course')
-        tokens = searchtext.split(' ')
-        coursesDict = {}
-
         exam = request.POST.get('examlist')
         providerstr = request.POST.get('providerlist')
         userObj = User.objects.filter(name=providerstr)[0]
         providerObj = provider.models.Provider.objects.filter(user_id=userObj.id)[0]
 
-        for text in tokens:
-            courses = course.models.Course.objects.raw('SELECT * from course_course WHERE published = 1 AND exam = \'' + exam + '\'AND provider_id = ' + str(providerObj.id) + ' AND name LIKE \'%' + text + '%\'')
-
-            for c in courses:
-                if c in coursesDict.keys():
-                    coursesDict[c] = coursesDict[c] + 1
-                else:
-                    coursesDict[c] = 1
-
-        courseList = OrderedDict(sorted(coursesDict.items(), key = itemgetter(1)))
-        examList = course.models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
+        courseList = course.algos.searchCourses(searchtext, providerObj.id, exam)
+        examList = course.algos.getExams()
         providerList = User.objects.filter(is_staff=1)
         return render(request, self.template_name, {"courses" : courseList, "exams" : examList, "providers" : providerList, "search" : searchtext})
