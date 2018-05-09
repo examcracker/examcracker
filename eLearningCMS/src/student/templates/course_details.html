@@ -45,6 +45,16 @@
 												{% endfor %}
 											</ol>
 									    {% endif %}
+										{% if not_joined %}
+										    <form action="" method="post" enctype="multipart/form-data">
+											    {% csrf_token %}
+										        <div class="form-group">
+                                                    <div class="col-sm-offset-2 col-sm-10">
+                                                        <button type="submit" class="btn btn-success">Join</button>
+                                                    </div>
+                                                </div>
+									        </form>
+										{% endif %}
 									</div>
 								{% endif %}
 								<p><a href="/logout">Logout</a></p>

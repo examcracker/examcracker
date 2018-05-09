@@ -56,16 +56,35 @@ class myCourses(LoginRequiredMixin, generic.TemplateView):
 
 class courseDetails(LoginRequiredMixin, generic.TemplateView):
     template_name = 'course_details.html'
-    http_method_names = ['get']
+    http_method_names = ['get', 'post']
 
     def get(self, request, id, *args, **kwargs):
         courseid = id
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         kwargs["course_detail"] = courseObj
 
+        studentObj = models.Student.objects.filter(user_id=request.user.id)[0]
+
         sessionsInCourse = provider.models.Session.objects.raw('SELECT * FROM provider_session WHERE id IN (SELECT session_id from course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
         kwargs["included_sessions"] = sessionsInCourse
+
+        present = len(course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id))
+        if present == 0:
+            kwargs["not_joined"] = True
         return super().get(request, id, *args, **kwargs)
+
+    def post(self, request, id, *args, **kwargs):
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+
+        studentObj = models.Student.objects.filter(user_id=request.user.id)[0]
+
+        enrolledCourseObj = course.models.EnrolledCourse()
+        enrolledCourseObj.student = studentObj
+        enrolledCourseObj.course = courseObj
+        enrolledCourseObj.save()
+
+        return redirect("student:course_details", id)
 
 class sessionDetails(LoginRequiredMixin, generic.TemplateView):
     template_name = 'video_details.html'
