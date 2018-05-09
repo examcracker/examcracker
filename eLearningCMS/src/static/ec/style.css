@@ -45,7 +45,7 @@ html,body {
   background-color: #6648b1;
   border: 1px solid #6648b1;
 }
-.btn-primary :hover {
+.btn-primary:hover {
   background-color: #563d7c;
   border: 1px solid #563d7c;
 }
@@ -180,6 +180,11 @@ hr.light-100 {
     font-size: 2.5em;
     padding: 1.2rem;
   }
+}
+
+.form-inline .form-control {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 @media (max-width: 576px) {
   .carousel-caption {
