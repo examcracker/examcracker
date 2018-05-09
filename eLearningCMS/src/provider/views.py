@@ -6,13 +6,14 @@ from django.shortcuts import redirect
 from . import models
 from . import forms
 import course
+import datetime
 
 def getProvider(request):
     return models.Provider.objects.filter(user_id=request.user.id)[0]
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'userDashBoard.html'
-
+'''
 class uploadVideo(LoginRequiredMixin, CreateView):
     template_name = 'upload_video.html'
     model = models.Session
@@ -25,6 +26,21 @@ class uploadVideo(LoginRequiredMixin, CreateView):
             sessionObj.provider = getProvider(request)
             sessionObj.save()
         videoForm.save()
+        return redirect("provider:provider_home")
+'''
+class uploadVideo(LoginRequiredMixin, generic.TemplateView):
+    template_name = "upload_video_multiple.html"
+    http_method_names = ['get', 'post']
+
+    def post(self, request):
+        providerObj = getProvider(request)
+        filesUploaded = request.FILES.getlist('videos')
+        for file in filesUploaded:
+            sessionObj = models.Session()
+            sessionObj.name = str(datetime.datetime.now())
+            sessionObj.provider = providerObj
+            sessionObj.video = file
+            sessionObj.save()
         return redirect("provider:provider_home")
 
 class createCourse(LoginRequiredMixin, CreateView):
