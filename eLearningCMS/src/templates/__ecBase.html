@@ -73,7 +73,7 @@
 					<a class="dropdown-item" href="{% url 'student:student_home' %}">My Dashboard</a>
 				{% endif %}
 				<a class="dropdown-item" href="{% url 'profiles:show_self' %}">Profile</a>
-				<a class="dropdown-item" href="/logout">Logout</a>
+				<a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a>
 				</div>
 			</li>
 			{% else %}
