@@ -37,7 +37,7 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
         filesUploaded = request.FILES.getlist('videos')
         for file in filesUploaded:
             sessionObj = models.Session()
-            sessionObj.name = str(datetime.datetime.now())
+            sessionObj.name = file
             sessionObj.provider = providerObj
             sessionObj.video = file
             sessionObj.save()
