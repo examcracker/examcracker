@@ -21,6 +21,15 @@ def getStudent(request):
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'student_home.html'
 
+class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'my_profile.html'
+
+class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'recommended_courses.html'
+
+class showProgress(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'progress.html'
+
 class joinCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'join_courses.html'
     http_method_names = ['get', 'post']
