@@ -1,25 +1,9 @@
-{% extends "__base.html" %}
+{% extends "__ecBase.html" %}
 
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
 {% block container %}
-<header id="fh5co-header" class="fh5co-cover fh5co-cover-sm" role="banner" style="background-image:url({% static 'images/img_bg_2.jpg' %});" data-stellar-background-ratio="0.5">
-	<div class="overlay"></div>
-	<div class="container">
-		<div class="row">
-			<div class="col-md-8 col-md-offset-2 text-center">
-				<div class="display-t">
-					<div class="display-tc animate-box" data-animate-effect="fadeIn">
-						<h1>Contact Us</h1>
-						<h2>Free html5 templates Made by <a href="http://freehtml5.co" target="_blank">freehtml5.co</a></h2>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</header>
-
 <div id="fh5co-contact">
 	<div class="container">
 		<div class="row">
@@ -29,9 +13,8 @@
 					<h3>Contact Information</h3>
 					<ul>
 						<li class="address">198 West 21th Street, <br> Suite 721 New York NY 10016</li>
-						<li class="phone"><a href="tel://1234567920">+ 1235 2355 98</a></li>
-						<li class="email"><a href="mailto:info@yoursite.com">info@yoursite.com</a></li>
-						<li class="url"><a href="http://gettemplates.co">gettemplates.co</a></li>
+						<li class="phone"><a href="#">+ 1235 2355 98</a></li>
+						<li class="email"><a href="#">info@yoursite.com</a></li>
 					</ul>
 				</div>
 
@@ -81,27 +64,12 @@
 	</div>
 </div>
 <div id="map" class="fh5co-map"></div>
-<div id="fh5co-started" style="background-image:url({% static 'images/img_bg_2.jpg' %});">
-	<div class="overlay"></div>
-	<div class="container">
-		<div class="row animate-box">
-			<div class="col-md-8 col-md-offset-2 text-center fh5co-heading">
-				<h2>Lets Get Started</h2>
-				<p>Dignissimos asperiores vitae velit veniam totam fuga molestias accusamus alias autem provident. Odit ab aliquam dolor eius.</p>
-			</div>
-		</div>
-		<div class="row animate-box">
-			<div class="col-md-8 col-md-offset-2 text-center">
-				<p><a href="#" class="btn btn-default btn-lg">Create A Free Course</a></p>
-			</div>
-		</div>
-	</div>
 </div>
 {% endblock container %}
 
 {% block scripts %}
 <!-- Google Map -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCefOgb1ZWqYtj7raVSmN4PL2WkTrc-KyA&sensor=false"></script>
-<script src="{% static 'learn/js/google_map.js' %}"></script>
+<script src="{% static 'ec/js/google_map.js' %}"></script>
 {% endblock scripts %}
 

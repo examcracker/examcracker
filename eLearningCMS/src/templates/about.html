@@ -1,13 +1,7 @@
-{% extends "base.html" %}
+{% extends "__ecBase.html" %}
 
 {% load staticfiles %}
 {% load crispy_forms_tags %}
-
-{% block title %}{{ block.super }}About{% endblock %}
-
-{% block navbar-left %}
-  {% include "_navbar.html" with active_link="about" %}
-{% endblock %}
 
 <!-- Benefits of the Django application -->
 {% block container %}
@@ -16,37 +10,26 @@
   <div class="container">
     <div class="row">
       <div class="col-md-12 text-center">
-        <h1>{% include "_brandname.html" %}</h1>
-        <p class="lead">The ultimate platform to excel</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="sec2" class="text-page">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12 text-center">
         <h2>Meet The Team</h2>
         <p class="lead">The Wonderful People Behind the ExamCracker</p>
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-4">
+      <div class="col-md-4">
         <div class="text-center"><!--img class="img-circle centered" <!--src="http://lorempixel.com/128/128/people/9/" alt="profile pic"--></div>
         <!--h1 class="heavy text-center">Iron Man</h1-->
         <h1>Iron Man</h1>
         <h2>Executive</h2>
         <p>From Noida</p>
       </div>
-      <div class="col-lg-4">
+      <div class="col-md-4">
         <div class="text-center"><!--img class="img-circle centered" src="http://lorempixel.com/128/128/people/2/" alt="profile pic"--></div>
         <!--h1 class="heavy text-center">The Hulk</h1-->
         <h1>The Hulk</h1>
         <h2>Executive</h2>
         <p>From Bangalore</p>
       </div>
-      <div class="col-lg-4">
+      <div class="col-md-4">
         <div class="text-center"><!--img class="img-circle centered" src="http://lorempixel.com/128/128/people/1/" alt="profile pic"--></div>
         <!--h1 class="heavy text-center">Thor</h1-->
 		<h1>Thor</h1>
@@ -54,14 +37,12 @@
         <p>From Delhi</p>
       </div>
     </div>
-    </div>
   </div>
 </div>
 
-<div id="sec3">
+<div id="sec2">
   <div class="container">
     <div class="row">
-      <div id="map-outer" class="col-md-12">
         <div id="address" class="col-md-4">
           <h2>Our Location</h2>
           <address>
@@ -74,7 +55,6 @@
         </div>
         <div id="map-container" class="col-md-8"></div>
       </div>
-    </div>
   </div>
 </div>
 {% endblock container %}
