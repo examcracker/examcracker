@@ -23,9 +23,9 @@ def searchCourses(searchtext, provider = None, exam = None):
 
     for text in tokens:
             if text == '':
-                courses = models.Course.objects.raw(query)
-            else:    
-                courses = models.Course.objects.raw(query + ' AND name LIKE \'%' + text + '%\'')
+                continue
+            courses = models.Course.objects.raw(query + ' AND name LIKE \'%' + text + '%\'')
+
             for c in courses:
                 if c in coursesDict.keys():
                     coursesDict[c] = coursesDict[c] + 1
