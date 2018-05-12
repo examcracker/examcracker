@@ -20,12 +20,41 @@ def getStudent(request):
 
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'student_home.html'
+    
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        category = "ALL Courses"
+        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course ORDER BY created')
+        kwargs["allCourses"] = allCourses
+        kwargs["category"] = category
+        return super().get(request, *args, **kwargs)
 
 class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_profile.html'
 
 class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'recommended_courses.html'
+    http_method_names = ['get', 'post']
+
+    def get(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
+        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
+        kwargs["remaining_courses"] = notJoinedCourses
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
+        joinedCourses = request.POST.getlist('courses[]')
+
+        for courses in joinedCourses:
+            courseObj = course.models.Course.objects.filter(id=courses)[0]
+            enrolledCourseObj = course.models.EnrolledCourse()
+            enrolledCourseObj.student = studentObj
+            enrolledCourseObj.course = courseObj
+            enrolledCourseObj.save()
+
+        return redirect("student:join_courses")
 
 class showProgress(LoginRequiredMixin, generic.TemplateView):
     template_name = 'progress.html'
