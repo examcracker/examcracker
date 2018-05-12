@@ -8,25 +8,10 @@
       <a href="#">Dashboard</a>
     </li>
     <li class="breadcrumb-item active">My Courses</li>
-  </ol>
-  
-	<div class="panel-body">
-	<strong>My Courses</strong><br>
-	<form action="" method="post" enctype="multipart/form-data">
-			<ol>
-				{% for course in courses %}
-					<input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-					<label for="course"><a href="{% url 'student:course_details' course.id %}">{{ course.name }}</a></label><br>
-				{% endfor %}
-				{% csrf_token %}
-			</ol>
-		<div class="form-group">
-			<div class="col-sm-offset-2 col-sm-10">
-				<button type="submit" class="btn btn-success">Join</button>
-			</div>
-		</div>
-	</form>
-	</div>
+	</ol>
+	 
+
+	{% include "__baseCourseNavigator.html" with allCourses=courses category="Joined Courses" %}
 									
     
 {% endblock active %}

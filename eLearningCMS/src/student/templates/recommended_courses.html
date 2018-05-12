@@ -10,24 +10,6 @@
     <li class="breadcrumb-item active">Recommended Courses</li>
   </ol>
 
-  <div class="panel-body">
-    <strong>Recommended Courses</strong><br>
-    <form action="" method="post" enctype="multipart/form-data">
-      {% if remaining_courses %}
-      <ol>
-          {% for course in remaining_courses %}
-            <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-          <label for="course"><a href="{% url 'student:course_details' course.id %}">{{ course.name }}</a></label><br>
-        {% endfor %}
-      </ol>
-    {% endif %}
-    {% csrf_token %}
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <button type="submit" class="btn btn-success">Join</button>
-        </div>
-      </div>
-    </form>
-    </div>
+  {% include "__baseCourseNavigator.html" with allCourses=remaining_courses category="Recommended Courses" %}
     
 {% endblock active %}
