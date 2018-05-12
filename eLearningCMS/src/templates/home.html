@@ -1,4 +1,31 @@
+<!-- This file has following objects with it 
+exams ( from course model)
+courses ( all courses ,course model)
+-->
 {% extends "__ecBase.html" %}
 
 {% load staticfiles %}
 {% load crispy_forms_tags %}
+
+{% block container %}
+<div class="container-fluid">
+        <p class="text-left mb-3"> Courses By Exams
+        <button class="btn float-right">See all</button> </p>
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" %}
+</div>
+<hr>
+
+<div class="container-fluid">
+        <p class="text-left mb-3"> Popular Courses
+        <button class="btn float-right">See all</button> </p>
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" %}
+</div>
+<hr>
+
+<div class="container-fluid">
+        <p class="text-left mb-3"> Instructors with us
+        <button class="btn float-right">See all</button> </p>
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" %}
+</div>
+<hr>
+{%  endblock container %}
