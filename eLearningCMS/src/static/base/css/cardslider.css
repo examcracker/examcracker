@@ -39,9 +39,9 @@ body{margin-top: 0px; margin-bottom: 10px;}
 
 @media (min-width: 600px) {
     /* show 3 items */
-    .carousel-inner .active,
-    .carousel-inner .active + .carousel-item,
-    .carousel-inner .active + .carousel-item + .carousel-item {
+    .myCarousel .carousel-inner .active,
+    .myCarousel .carousel-inner .active + .carousel-item,
+    .myCarousel .carousel-inner .active + .carousel-item + .carousel-item {
       display: block;
     }
   
