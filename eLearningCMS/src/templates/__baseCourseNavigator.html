@@ -23,6 +23,12 @@
             <div class="card-body">
                 <h4 class="card-title">{{ course.name }}</h4>
                 <table>
+                  {% if course.providerName %}
+                  <tr>
+                      <td>Provider: </td>
+                      <td align="right">{{ course.providerName }}</td>
+                  </tr>
+                  {% endif %}
                     <tr>
                         <td>Exam: </td>
                         <td align="right">{{ course.exam }}</td>
@@ -36,7 +42,6 @@
                         <td align="right">{{ course.duration }}</td>
                     </tr>
                 </table>
-
                 <p class="card-text"><small class="text-muted">Published date: {{ course.created }}</small></p>
             </div>
             </div>

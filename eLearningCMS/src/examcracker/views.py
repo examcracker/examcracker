@@ -2,10 +2,12 @@ from django.views import generic
 from course.models import Course
 from provider.models import Provider
 from course.algos import *
+from django.shortcuts import redirect,render
+from django.urls import reverse,reverse_lazy
 
 class HomePage(generic.TemplateView):
     template_name = "home.html"
-    http_method_names = ['get']
+    http_method_names = ['get','post']
 
     def get(self, request, *args, **kwargs):
         examsList = getExams()
@@ -13,6 +15,14 @@ class HomePage(generic.TemplateView):
         kwargs["exams"] = examsList
         kwargs["allCourses"] = courseList
         return super().get(request, *args, **kwargs)
+
+    def post(self, request):
+        searchText = request.POST['searchText']
+        # if search string is blank, do nothing. Go to home again
+        if searchText == '':
+            return redirect(reverse_lazy('home'))
+        courseList = searchCourseByText(searchText)
+        return render(request, self.template_name, {"searchResult" : courseList,"searchText" : searchText} )
 
 class AboutPage(generic.TemplateView):
     template_name = "about.html"
