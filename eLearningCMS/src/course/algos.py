@@ -40,21 +40,13 @@ def searchCourses(searchtext, provider = None, exam = None):
 # Assuming search text to be either substring of course , provider or exam
 def searchCourseByText(searchText):
     User = get_user_model()
-    #basic query to extract all courses
-    #query = 'SELECT c.id,c.name, c.created,c.exam, c.duration,c.cost ,authtools_user.name as providerName'
-    #query = query + ' from course_course c'
-    #query = query + ' INNER JOIN authtools_user ON c.id = authtools_user.id'
-    #query = query + ' WHERE (c.published = 1 AND (c.name LIKE \'%'+ searchText + '%\' OR c.exam LIKE \'%'+ searchText +'%\' OR c.id in (select id from authtools_user WHERE name like \'%'+ searchText + '%\')))'
-    #courses = models.Course.objects.raw(query)
-    #courseList = models.Course.objects.filter(name__icontains=searchText,exam__icontains=searchText)
-    providers = User.objects.all()
-    providers = providers.filter( Q(name__icontains = searchText))
+    providers = User.objects.all().filter( Q(name__icontains = searchText))
     courseList = models.Course.objects.filter(Q(published=1)).filter(
     Q(name__icontains=searchText) |
     Q(exam__icontains=searchText) |
     Q( id__in=providers)
     )
-    return courseList
+    return courseList.values('name','created','exam','cost','duration','provider__user__name')
 
 # return all published courses
 def getPublishedCourses():

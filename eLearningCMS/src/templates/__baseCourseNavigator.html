@@ -23,10 +23,10 @@
             <div class="card-body">
                 <h4 class="card-title">{{ course.name }}</h4>
                 <table>
-                  {% if course.providerName %}
+                  {% if course.provider__user__name %}
                   <tr>
                       <td>Provider: </td>
-                      <td align="right">{{ course.providerName }}</td>
+                      <td align="right">{{ course.provider__user__name }}</td>
                   </tr>
                   {% endif %}
                     <tr>
