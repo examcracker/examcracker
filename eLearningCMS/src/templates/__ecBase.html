@@ -35,11 +35,15 @@
 		<div class="collapse navbar-collapse" id="navbarResponsive">
 			<!--<ul class="navbar-nav ml-auto">-->
 			<ul class="navbar-nav mr-auto">
-				<li class="nav-item active">
-					<a class="nav-link" href="#">Exams</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#">Courses</a>
+				<li class="nav-item active dropdown">
+					<a class="nav-link dropdown-toggle" data-toggle="dropdown" id="coursesDropDown" href="#" aria-haspopup="true" aria-expanded="true">
+						Exams
+					</a>
+					<div class="dropdown-menu" aria-labelledby="coursesDropDown">
+						{% for exam in exams %}
+						<a class="dropdown-item" href="#">{{exam.exam}}</a>
+						{% endfor %}
+					</div>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="#">Teachers</a>
@@ -63,7 +67,7 @@
 			{% if user.is_authenticated %}
 
 			<li class="nav-item dropdown">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" id="Preview" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" id="Preview" href="#" aria-haspopup="true" aria-expanded="false">
 					{{user.name }}
 				</a>
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="Preview">
@@ -160,6 +164,7 @@
 		</div>
 	</div>
 </div>
+
 {% endblock jumbotronBlock %}
 {% block container %}
 <!--- Welcome Section -->
@@ -372,6 +377,10 @@
 	</div>
 </footer>
 {% endblock footer %}
+
+<script>
+
+</script>
 
 {% block scripts %}
 {% endblock scripts %}

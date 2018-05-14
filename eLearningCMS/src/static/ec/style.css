@@ -11,7 +11,7 @@ html,body {
   padding: .8rem;
 }
 .nav-link {
-  font-size: 0.9em !important;
+  font-size: 1em !important;
 }
 .navbar-brand img {
   width: 100px;
@@ -164,6 +164,9 @@ hr.light-100 {
   width: 100%;
   height: 500px;
   position: relative;
+}
+.dropdown:hover>.dropdown-menu {
+  display: block;
 }
 @media screen and (max-width: 768px) {
   #map {
