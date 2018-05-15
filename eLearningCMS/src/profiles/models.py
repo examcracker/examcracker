@@ -13,13 +13,10 @@ class BaseProfile(models.Model):
     slug = models.UUIDField(default=uuid.uuid4, blank=True, editable=False)
     # Add more user profile fields here. Make sure they are nullable
     # or with default values
-    # TODO Kushal, how to save image
     picture = models.ImageField('Profile picture',
                                 upload_to='profile_pics/%Y-%m-%d/',
                                 null=True,
                                 blank=True)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    email = models.EmailField(max_length=100, blank=True, null=True, unique= True)
     address = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
     country = models.CharField(max_length=30, blank=True, null=True)

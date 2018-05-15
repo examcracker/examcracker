@@ -20,9 +20,8 @@
         <!-- left column -->
         <div class="col-md-3">
           <div class="text-center">
-            <!-- TODO kushal, how to load next time-->
             <img id="profilePic" src="{% thumbnail userDetails.picture|default:'default_profile.png' 100x100 crop %}" class="rounded-circle" alt="avatar">
-            <p>Upload a different photo...</p>
+            <p>Upload Profile photo</p>
             
             <input type="file" onchange="readURL(this);" class="form-control" name="profile_pic">
           </div>
@@ -37,51 +36,72 @@
           </div> -->
           <h3>Personal info</h3>
           
-          <form class="form-horizontal" role="form" method="post">
-              {% csrf_token %}
+		  <form class="form-horizontal" role="form" method="post" action="" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="form-group">
               <label class="col-lg-3 control-label">Name:</label>
               <div class="col-lg-8">
-                <input class="form-control" type="text" value={{ userDetails.name }} name="name">
+                <input class="form-control" type="text" value="{{ authUserDetails.name }}" name="name">
               </div>
+            </div>
+			<div class="form-group">
+              <label class="col-md-3 control-label">About Me:</label>
+              <div class="col-md-8">
+               {% if userDetails.bio|length > 0 %}
+                <input class="form-control" type="text" style="height:50px;width:250px" value="{{ userDetails.bio }}" name="bio">
+               {% else %}
+                <input class="form-control" type="text" style="height:50px;width:250px" value="" name="bio">
+               {% endif %}
+             </div>
             </div>
             <div class="form-group">
               <label class="col-lg-3 control-label">Mobile:</label>
               <div class="col-lg-8">
-              {% if userDetails.phone|length > 0 %}
-                  <input class="form-control" type="text" value={{ userDetails.phone }} name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
-              {% else %}
+               {% if userDetails.phone|length > 0 %}
+                  <input class="form-control" type="text" value="{{ userDetails.phone }}" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
+               {% else %}
                   <input class="form-control" type="text" value="" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
-              {% endif %}
+               {% endif %}
               </div>
             </div>
             <div class="form-group">
               <label class="col-lg-3 control-label">Email:</label>
               <div class="col-lg-8">
-                <input class="form-control" type="email" value={{ userDetails.email }} name="email">
+                <input class="form-control" type="email" value="{{ authUserDetails.email }}" name="email">
               </div>
             </div>
             <div class="form-group">
               <label class="col-md-3 control-label">Address:</label>
               <div class="col-md-8">
-              {% if userDetails.address|length > 0 %}
-                <input class="form-control" type="text" value={{ userDetails.address }} name="address">
-              {% else %}
+               {% if userDetails.address|length > 0 %}
+                <input class="form-control" type="text" value="{{ userDetails.address }}" name="address">
+               {% else %}
                 <input class="form-control" type="text" value="" name="address">
-              {% endif %}
+               {% endif %}
+             </div>
             </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-3 control-label">Password:</label>
+			<div class="form-group">
+              <label class="col-md-3 control-label">City:</label>
               <div class="col-md-8">
-                <input class="form-control" type="password" value="11111122333" name="password">
-              </div>
+               {% if userDetails.city|length > 0 %}
+                <input class="form-control" type="text" value="{{ userDetails.city }}" name="city">
+               {% else %}
+                <input class="form-control" type="text" value="" name="city">
+               {% endif %}
+             </div>
             </div>
-            <div class="form-group">
-              <label class="col-md-3 control-label">Confirm password:</label>
+			<div class="form-group">
+              <label class="col-md-3 control-label">Country:</label>
               <div class="col-md-8">
-                <input class="form-control" type="password" value="11111122333">
-              </div>
+               {% if userDetails.country|length > 0 %}
+                <input class="form-control" type="text" value="{{ userDetails.country }}" name="country">
+               {% else %}
+                <input class="form-control" type="text" value="" name="country">
+               {% endif %}
+             </div>
+            </div>
+			<div class="form-group">
+              <label class="col-md-3 control-label"><a href="{% url 'accounts:password-change' %}">Change Password</a></label>
             </div>
             <div class="form-group">
               <label class="col-md-3 control-label"></label>

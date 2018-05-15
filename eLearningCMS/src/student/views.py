@@ -21,7 +21,6 @@ def getStudent(request):
 
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'student_home.html'
-    
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
@@ -34,26 +33,29 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
 class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_profile.html'
     http_method_names = ['get', 'post']
-    
 
     def get(self, request, *args, **kwargs):
-        dbObject = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        kwargs["userDetails"] = dbObject
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        kwargs["userDetails"] = profileObj
+        kwargs["authUserDetails"] = request.user
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        userDataToUpdate = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        import pdb
-        pdb.set_trace()
-        userDataToUpdate.name = self.request.POST.get("name")
-        # TODO Kushal how to save the image
-        userDataToUpdate.picture = self.request.POST.get("profile_pic")
-        userDataToUpdate.phone = self.request.POST.get("mobile")
-        userDataToUpdate.email = self.request.POST.get("email")
-        userDataToUpdate.address = self.request.POST.get("address")
-        #userDataToUpdate.name = self.request.POST.get("password")
+        userObj = request.user
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
 
-        userDataToUpdate.save()
+        profileObj.picture = self.request.FILES.get("profile_pic")
+        profileObj.bio = self.request.POST.get("bio")
+        profileObj.address = self.request.POST.get("address")
+        profileObj.city = self.request.POST.get("city")
+        profileObj.country = self.request.POST.get("country")
+        profileObj.phone = self.request.POST.get("mobile")
+
+        userObj.name = self.request.POST.get("name")
+        userObj.email = self.request.POST.get("email")
+
+        userObj.save()
+        profileObj.save()
         return redirect("student:my_profile")
 
 class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
