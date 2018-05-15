@@ -54,5 +54,4 @@ def getPublishedCourses():
 
 #returns exam list
 def getExams():
-    return
-    #return models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
+    return models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
