@@ -44,7 +44,10 @@ class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
         userObj = request.user
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
 
-        profileObj.picture = self.request.FILES.get("profile_pic")
+        picture = self.request.FILES.get("profile_pic")
+        if picture is not None:
+            profileObj.picture = picture
+
         profileObj.bio = self.request.POST.get("bio")
         profileObj.address = self.request.POST.get("address")
         profileObj.city = self.request.POST.get("city")
