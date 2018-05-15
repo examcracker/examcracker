@@ -12,6 +12,7 @@ import course
 from course import algos
 import provider
 import re
+import profiles
 
 User = get_user_model()
 
@@ -32,6 +33,28 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
 
 class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_profile.html'
+    http_method_names = ['get', 'post']
+    
+
+    def get(self, request, *args, **kwargs):
+        dbObject = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        kwargs["userDetails"] = dbObject
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        userDataToUpdate = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        import pdb
+        pdb.set_trace()
+        userDataToUpdate.name = self.request.POST.get("name")
+        # TODO Kushal how to save the image
+        userDataToUpdate.picture = self.request.POST.get("profile_pic")
+        userDataToUpdate.phone = self.request.POST.get("mobile")
+        userDataToUpdate.email = self.request.POST.get("email")
+        userDataToUpdate.address = self.request.POST.get("address")
+        #userDataToUpdate.name = self.request.POST.get("password")
+
+        userDataToUpdate.save()
+        return redirect("student:my_profile")
 
 class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'recommended_courses.html'
