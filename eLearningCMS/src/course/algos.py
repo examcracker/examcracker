@@ -6,6 +6,7 @@ import re
 from collections import OrderedDict
 from operator import itemgetter
 from django.db.models import Q
+from django.db.models import Count
 from django.contrib.auth import get_user_model
 
 # returns the 'count' courses which have maximum students
@@ -54,4 +55,4 @@ def getPublishedCourses():
 
 #returns exam list
 def getExams():
-    return models.Course.objects.raw('SELECT * from course_course GROUP BY (exam)')
+    return models.Course.objects.values('exam').annotate(Count('exam')).order_by('exam')

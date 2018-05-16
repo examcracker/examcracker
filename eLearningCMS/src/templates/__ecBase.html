@@ -41,7 +41,7 @@
 					</a>
 					<div class="dropdown-menu" aria-labelledby="coursesDropDown">
 						{% for exam in exams %}
-						<a class="dropdown-item" href="#">{{exam.exam}}</a>
+						<a class="dropdown-item" href="{% url 'searchResults' %}?exam={{exam.exam}}" >{{exam.exam}}</a>
 						{% endfor %}
 					</div>
 				</li>
@@ -53,7 +53,7 @@
 		<div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
 			<ul class="navbar-nav ml-auto">
 				<li class="nav-item">
-					<form class="form-inline my-2 my-lg-0 mr-lg-2" method = 'POST'>{% csrf_token %}
+					<form class="form-inline my-2 my-lg-0 mr-lg-2" method = 'POST' action="{% url 'searchResults' %}">{% csrf_token %}
 					  <div class="input-group">
 						<input class="form-control" name="searchText" type="text" placeholder="Search Courses...">
 						<span class="input-group-append">
@@ -382,7 +382,6 @@
 {% endblock footer %}
 
 <script>
-
 </script>
 
 {% block scripts %}
