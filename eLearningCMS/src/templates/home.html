@@ -7,44 +7,7 @@ courses ( all courses ,course model)
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
-{% block ImageSlider %}
-{% if searchResult.count >= 0 %}
-{% else %}
-{{ block.super }}
-{% endif %}
-{% endblock ImageSlider %}
- 
-
-{% block jumbotronBlock %}
-{% if searchResult.count >= 0 %}
-<div class="container-fluid">
-	        <div class="row jumbotron">
-		        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
-			        <p class="lead">
-                                Search Results for {{searchText}}
-                                </p>
-			        <p class="lead">
-                                Total {{searchResult.count}} Results found
-                                </p
-	        </div>
-        </div>
-</div>
-{% else %}
-{{ block.super }}
-{% endif %}
-{% endblock jumbotronBlock %}
-
 {% block container %}
-{% if searchResult.count >= 0 %}
-<div class="container-fluid">
-                <p class="text-left mb-3"> Courses from  '{{searchText}}'
-                <button class="btn float-right">See all</button> </p>
-                {% include "__baseCourseNavigator.html" with allCourses=searchResult category="" %}
-        </div>
-        <hr>
-
-{% else %}
-
 <div class="container-fluid">
         <p class="text-left mb-3"> Courses By Exams
         <button class="btn float-right">See all</button> </p>
@@ -65,8 +28,6 @@ courses ( all courses ,course model)
         {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" %}
 </div>
 <hr>
-
-{% endif %}
 {%  endblock container %}
 
 

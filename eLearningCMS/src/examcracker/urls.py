@@ -24,6 +24,7 @@ urlpatterns = [
     path('provider/',include(provider.urls)),
     path('student/',include(student.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
+    path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
     path('', include(accounts.urls)),
     
 ]
