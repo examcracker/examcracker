@@ -86,10 +86,13 @@
 			{% else %}
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-sm">Login</button></a>
-				</li>
-				<li class="nav-item">
+			</li>
+			<li class="nav-item">
 				<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-sm">SignUp</button></a>
-				</li>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'accounts:registerprovider' %}"><button type="button" class="btn  btn-sm">Be Course Provider</button></a>
+			</li>
 			{% endif %}	
 			</ul>
 		</div>
