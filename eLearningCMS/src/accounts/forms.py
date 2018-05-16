@@ -27,21 +27,13 @@ class LoginForm(AuthenticationForm):
                    css_class="btn btn-lg btn-primary btn-block"),
         )
 
-
-class SignupForm(authtoolsforms.UserCreationForm):
-    ACCOUNT_CHOICES= [
-        ('student', 'Student'),
-        ('provider', 'Course Provider'),
-        ]
-    account_type= forms.ChoiceField(label='Account Type', choices=ACCOUNT_CHOICES)
-
+class RegisterForm(authtoolsforms.UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.fields["email"].widget.input_type = "email"  # ugly hack
+        self.fields["email"].widget.input_type = "email"
 
         self.helper.layout = Layout(
-            Field('account_type'),
             Field('email', placeholder="Enter Email", autofocus=""),
             Field('name', placeholder="Enter Full Name"),
             Field('password1', placeholder="Enter Password"),
@@ -49,24 +41,24 @@ class SignupForm(authtoolsforms.UserCreationForm):
             Submit('sign_up', 'Sign up', css_class="btn-warning"),
         )
 
+class SignupForm(RegisterForm):
     def save(self, commit=True):
         signedupuser = super(SignupForm, self).save(commit=False)
-
-        signedupuser.is_staff=True
-        if self.cleaned_data["account_type"].find("student") != -1:
-            signedupuser.is_staff=False
-
+        signedupuser.is_staff = False
         signedupuser.save()
 
-        if signedupuser.is_staff is False:
-            studentobj = student.models.Student(user=signedupuser)
-            if commit:
-                studentobj.save()
-        else:
-            providerobj = provider.models.Provider(user=signedupuser)
-            if commit:
-                providerobj.save()
+        studentobj = student.models.Student(user=signedupuser)
+        studentobj.save()
+        return signedupuser
 
+class RegisterProviderForm(RegisterForm):
+    def save(self, commit=True):
+        signedupuser = super(RegisterProviderForm, self).save(commit=False)
+        signedupuser.is_staff = True
+        signedupuser.save()
+
+        providerobj = provider.models.Provider(user=signedupuser)
+        providerobj.save()
         return signedupuser
 
 
