@@ -6,6 +6,8 @@ from crispy_forms.layout import Layout, Submit, HTML, Field
 from authtools import forms as authtoolsforms
 from django.contrib.auth import forms as authforms
 from django.urls import reverse
+from snowpenguin.django.recaptcha2.fields import ReCaptchaField
+from snowpenguin.django.recaptcha2.widgets import ReCaptchaWidget
 import student
 import provider
 
@@ -28,6 +30,8 @@ class LoginForm(AuthenticationForm):
         )
 
 class RegisterForm(authtoolsforms.UserCreationForm):
+    captcha = ReCaptchaField(widget=ReCaptchaWidget())
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -38,6 +42,7 @@ class RegisterForm(authtoolsforms.UserCreationForm):
             Field('name', placeholder="Enter Full Name"),
             Field('password1', placeholder="Enter Password"),
             Field('password2', placeholder="Re Enter Password"),
+            Field('captcha'),
             Submit('sign_up', 'Sign up', css_class="btn-warning"),
         )
 

@@ -61,6 +61,9 @@ SECRET_KEY = env('SECRET_KEY')
 
 ALLOWED_HOSTS = []
 
+RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
+RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
+
 # Application definition
 
 INSTALLED_APPS = (
@@ -79,7 +82,8 @@ INSTALLED_APPS = (
     'accounts',
     'provider',
     'student',
-    'course'
+    'course',
+    'snowpenguin.django.recaptcha2',
 )
 
 MIDDLEWARE = [

@@ -1,5 +1,5 @@
 {% extends "accounts/auth_base.html" %}
-
+{% load recaptcha2 %}
 {% load crispy_forms_tags %}
 
 {% block title %}{{ block.super }}Sign Up{% endblock %}
@@ -8,7 +8,7 @@
 
 {% block form %}
   {% crispy form %}
-
+  {% recaptcha_init %}
   <div class="form-message">
     <p>
       Already signed up? <a href="{% url 'accounts:login' %}">Log in</a>.
