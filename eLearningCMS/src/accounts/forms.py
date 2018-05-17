@@ -13,6 +13,7 @@ import provider
 
 class LoginForm(AuthenticationForm):
     remember_me = forms.BooleanField(required=False, initial=False)
+    captcha = ReCaptchaField(widget=ReCaptchaWidget())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,6 +25,7 @@ class LoginForm(AuthenticationForm):
             Field('password', placeholder="Enter Password"),
             HTML('<a href="{}">Forgot Password?</a>'.format(
                 reverse("accounts:password-reset"))),
+            Field('captcha'),
             Field('remember_me'),
             Submit('sign_in', 'Log in',
                    css_class="btn btn-lg btn-primary btn-block"),
@@ -68,6 +70,7 @@ class RegisterProviderForm(RegisterForm):
 
 
 class PasswordChangeForm(authforms.PasswordChangeForm):
+    captcha = ReCaptchaField(widget=ReCaptchaWidget())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,6 +81,7 @@ class PasswordChangeForm(authforms.PasswordChangeForm):
                   autofocus=""),
             Field('new_password1', placeholder="Enter new password"),
             Field('new_password2', placeholder="Enter new password (again)"),
+            Field('captcha'),
             Submit('pass_change', 'Change Password', css_class="btn-warning"),
         )
 
