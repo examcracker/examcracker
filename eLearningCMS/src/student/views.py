@@ -43,7 +43,6 @@ class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
     def post(self, request, *args, **kwargs):
         userObj = request.user
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-
         picture = self.request.FILES.get("profile_pic")
         if picture is not None:
             profileObj.picture = picture

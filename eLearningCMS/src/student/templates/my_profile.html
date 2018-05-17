@@ -11,111 +11,181 @@
     <li class="breadcrumb-item active">Profile</li>
   </ol>
 
-
   <div class="container">
-      <h1>Edit Profile</h1>
-      <hr>
-    <form class="row" role="form" enctype="multipart/form-data" method="post">
-        {% csrf_token %}
-        <!-- left column -->
-        <div class="col-md-3">
-          <div class="text-center">
-            <img id="profilePic" src="{% thumbnail userDetails.picture|default:'default_profile.png' 100x100 crop %}" class="rounded-circle" alt="avatar">
-            <p>Upload Profile photo</p>
-            
-            <input type="file" onchange="readURL(this);" class="form-control" name="profile_pic">
+      <div class="row my-2">
+          <div class="col-lg-8 order-lg-2">
+              <ul class="nav nav-tabs">
+                  <li class="nav-item">
+                      <a href="" data-target="#profile" data-toggle="tab" class="nav-link active">Profile</a>
+                  </li>
+                  <li class="nav-item">
+                      <a href="" data-target="#edit" data-toggle="tab" class="nav-link">Edit</a>
+                  </li>
+              </ul>
+              <div class="tab-content py-4">
+                  <div class="tab-pane active" id="profile">
+                      <h2 class="mb-3">{{ authUserDetails.name }}</h2>
+                      <hr>
+                      <div class="row">
+                          <div class="col-md-6">
+                              <h6>About</h6>
+                              <p>
+                                  {{ userDetails.bio }}
+                              </p>
+                              <hr>
+                              <table class="table table-sm table-hover table-striped">
+                                  <tbody>                                    
+                                      <tr>
+                                          <td>
+                                            <strong>Email</strong>
+                                          </td>
+                                            <td>
+                                            {{ authUserDetails.email }}
+                                          </td>
+                                      </tr>
+                                      <tr>
+                                          <td>
+                                              <strong>Address</strong>
+                                          </td>
+                                          <td>
+                                              {{ userDetails.address }}
+                                          </td>
+                                      </tr>
+                                      <tr>
+                                          <td>
+                                              <strong>City</strong>
+                                          </td>
+                                          <td>
+                                              {{ userDetails.city }}
+                                          </td>
+                                      </tr>
+                                      <tr>
+                                          <td>
+                                              <strong>Country</strong>
+                                          </td>
+                                          <td>
+                                              {{ userDetails.country }}
+                                          </td>
+                                      </tr>
+                                      <tr>
+                                          <td>
+                                              <strong>Phone</strong>
+                                          </td>
+                                          <td>
+                                              {{ userDetails.phone }}
+                                          </td>
+                                      </tr>
+                                  </tbody>
+                              </table>
+                              <hr>
+                              <h6>Joined courses</h6>
+                              <a href="#" class="badge badge-primary badge-pill">Course 1</a>
+                              <a href="#" class="badge badge-primary badge-pill">Course 2</a>
+                              <hr>
+                            </div>
+                          <div class="col-md-12">
+                              <h5 class="mt-2"><span class="fa fa-clock-o ion-clock float-right"></span> Recent Activity</h5>
+                              <table class="table table-sm table-hover table-striped">
+                                  <tbody>                                    
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                      <!--/row-->
+                  </div>
+                  <div class="tab-pane" id="edit">
+                      <form class="form-horizontal" role="form" method="post" action="" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                          <label class="col-lg-3 control-label">Name:</label>
+                          <div class="col-lg-7">
+                            <input class="form-control" type="text" value="{{ authUserDetails.name }}" name="name">
+                          </div>
+                        </div>
+                  <div class="form-group">
+                          <label class="col-md-3 control-label">About Me:</label>
+                          <div class="col-md-8">
+                           {% if userDetails.bio|length > 0 %}
+                           <textarea class="form-control" rows="4" cols="50" name="bio">{{ userDetails.bio }}</textarea>
+                            <!-- <input class="form-control" type="text" style="height:50px;width:250px" value="{{ userDetails.bio }}" name="bio"> -->
+                           {% else %}
+                           <textarea class="form-control" rows="4" cols="50" name="bio"></textarea>
+                            <!-- <input class="form-control" type="text" style="height:50px;width:250px" value="" name="bio"> -->
+                           {% endif %}
+                         </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="col-lg-3 control-label">Mobile:</label>
+                          <div class="col-lg-8">
+                           {% if userDetails.phone|length > 0 %}
+                              <input class="form-control" type="text" value="{{ userDetails.phone }}" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
+                           {% else %}
+                              <input class="form-control" type="text" value="" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
+                           {% endif %}
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="col-lg-3 control-label">Email:</label>
+                          <div class="col-lg-8">
+                            <input class="form-control" type="email" value="{{ authUserDetails.email }}" name="email">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="col-md-3 control-label">Address:</label>
+                          <div class="col-md-8">
+                           {% if userDetails.address|length > 0 %}
+                            <input class="form-control" type="text" value="{{ userDetails.address }}" name="address">
+                           {% else %}
+                            <input class="form-control" type="text" value="" name="address">
+                           {% endif %}
+                         </div>
+                        </div>
+                  <div class="form-group">
+                          <label class="col-md-3 control-label">City:</label>
+                          <div class="col-md-8">
+                           {% if userDetails.city|length > 0 %}
+                            <input class="form-control" type="text" value="{{ userDetails.city }}" name="city">
+                           {% else %}
+                            <input class="form-control" type="text" value="" name="city">
+                           {% endif %}
+                         </div>
+                        </div>
+                  <div class="form-group">
+                          <label class="col-md-3 control-label">Country:</label>
+                          <div class="col-md-8">
+                           {% if userDetails.country|length > 0 %}
+                            <input class="form-control" type="text" value="{{ userDetails.country }}" name="country">
+                           {% else %}
+                            <input class="form-control" type="text" value="" name="country">
+                           {% endif %}
+                         </div>
+                        </div>
+                  <div class="form-group">
+                          <label class="col-md-3 control-label"><a href="{% url 'accounts:password-change' %}">Change Password</a></label>
+                        </div>
+                        <div class="form-group">
+                          <label class="col-md-3 control-label"></label>
+                          <div class="col-md-8">
+                            <input type="submit" class="btn btn-primary" value="Save Changes">
+                            <span></span>
+                            <input type="reset" class="btn btn-default" value="Cancel">
+                          </div>
+                        </div>
+                  </div>
+              </div>
           </div>
-        </div>
-        
-        <!-- edit form column -->
-        <div class="col-md-9 personal-info">
-          <!--<div class="alert alert-info alert-dismissable">
-            <a class="panel-close close" data-dismiss="alert">×</a> 
-            <i class="fa fa-warning"></i>
-            This is an <strong>.alert</strong>. Use this to show important messages to the user.
-          </div> -->
-          <h3>Personal info</h3>
-          
-		  <form class="form-horizontal" role="form" method="post" action="" enctype="multipart/form-data">
+
+          <form id="picForm" class="row" role="form" enctype="multipart/form-data" method="post">
             {% csrf_token %}
-            <div class="form-group">
-              <label class="col-lg-3 control-label">Name:</label>
-              <div class="col-lg-8">
-                <input class="form-control" type="text" value="{{ authUserDetails.name }}" name="name">
-              </div>
+            <div class="col-lg-3 order-lg-1 text-center">
+                <img id="profilePic" src="{% thumbnail userDetails.picture|default:'default_profile.png' 100x100 crop %}" class="mx-auto img-fluid img-circle d-block" alt="avatar">
+                <p>Upload Profile photo</p>
+                <input type="file" onchange="readURL(this);" class="form-control" name="profile_pic">
+                <hr>  
             </div>
-			<div class="form-group">
-              <label class="col-md-3 control-label">About Me:</label>
-              <div class="col-md-8">
-               {% if userDetails.bio|length > 0 %}
-                <input class="form-control" type="text" style="height:50px;width:250px" value="{{ userDetails.bio }}" name="bio">
-               {% else %}
-                <input class="form-control" type="text" style="height:50px;width:250px" value="" name="bio">
-               {% endif %}
-             </div>
-            </div>
-            <div class="form-group">
-              <label class="col-lg-3 control-label">Mobile:</label>
-              <div class="col-lg-8">
-               {% if userDetails.phone|length > 0 %}
-                  <input class="form-control" type="text" value="{{ userDetails.phone }}" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
-               {% else %}
-                  <input class="form-control" type="text" value="" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
-               {% endif %}
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-lg-3 control-label">Email:</label>
-              <div class="col-lg-8">
-                <input class="form-control" type="email" value="{{ authUserDetails.email }}" name="email">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-md-3 control-label">Address:</label>
-              <div class="col-md-8">
-               {% if userDetails.address|length > 0 %}
-                <input class="form-control" type="text" value="{{ userDetails.address }}" name="address">
-               {% else %}
-                <input class="form-control" type="text" value="" name="address">
-               {% endif %}
-             </div>
-            </div>
-			<div class="form-group">
-              <label class="col-md-3 control-label">City:</label>
-              <div class="col-md-8">
-               {% if userDetails.city|length > 0 %}
-                <input class="form-control" type="text" value="{{ userDetails.city }}" name="city">
-               {% else %}
-                <input class="form-control" type="text" value="" name="city">
-               {% endif %}
-             </div>
-            </div>
-			<div class="form-group">
-              <label class="col-md-3 control-label">Country:</label>
-              <div class="col-md-8">
-               {% if userDetails.country|length > 0 %}
-                <input class="form-control" type="text" value="{{ userDetails.country }}" name="country">
-               {% else %}
-                <input class="form-control" type="text" value="" name="country">
-               {% endif %}
-             </div>
-            </div>
-			<div class="form-group">
-              <label class="col-md-3 control-label"><a href="{% url 'accounts:password-change' %}">Change Password</a></label>
-            </div>
-            <div class="form-group">
-              <label class="col-md-3 control-label"></label>
-              <div class="col-md-8">
-                <input type="submit" class="btn btn-primary" value="Save Changes">
-                <span></span>
-                <input type="reset" class="btn btn-default" value="Cancel">
-              </div>
-            </div>
-          </form>
-        </div>
-    </div>
+        </form>
+      </div>
   </div>
-  <hr>
 
   <script>
       function readURL(input) {
