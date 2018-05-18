@@ -8,6 +8,7 @@ from operator import itemgetter
 from django.db.models import Q
 from django.db.models import Count
 from django.contrib.auth import get_user_model
+import provider
 
 # returns the 'count' courses which have maximum students
 def mostEnrolledCourses(count):
@@ -44,21 +45,23 @@ def searchCourseByText(searchText,examText=None,providerText=None):
     
     # get all courses and providers, then apply filter queries on them
     courseList = models.Course.objects.filter(published=1)
-    providersList = getProviders()
+    allProviders = getProviders()
 
     if examText is not None:
         courseList = courseList.filter(Q(exam__icontains=examText))
     if providerText is not None:
-        providersList = providersList.filter( Q(name__icontains = providerText))
-        courseList = courseList.filter(Q( id__in=providersList))
+        userList = allProviders.filter( Q(name__icontains = providerText))
+        providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
+        courseList = courseList.filter(Q(provider_id__in=providerList))
     if searchText == '':
         return courseList.values('name','created','exam','cost','duration','provider__user__name')
         
-    providers = providersList.filter( Q(name__icontains = searchText))
+    userList = allProviders.filter( Q(name__icontains = searchText))
+    providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
     courseList = courseList.filter(
     Q(name__icontains=searchText) |
     Q(exam__icontains=searchText) |
-    Q( id__in=providers)
+    Q(provider_id__in=providerList)
     )
     return courseList.values('name','created','exam','cost','duration','provider__user__name')
 

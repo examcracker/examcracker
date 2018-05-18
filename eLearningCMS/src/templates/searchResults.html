@@ -13,7 +13,7 @@
         <div class="row jumbotron">
             <div class="col-md-3">
                <p>
-                Search Results for <strong> '{{searchText}}' </strong>
+                Search Results for <p><strong> '{{searchText}}' </strong> </p>
                 </p>
                 <p>
                 Total <strong> ' {{searchResult.count}} '</strong> Results found
@@ -22,9 +22,9 @@
               <div class="row">
               </div>
               <div class="row">
-              <form class="form-inline" method = 'POST' action="{% url 'searchResults' %}">{% csrf_token %}
+              <form id='searchBox' class="form-inline" method = 'POST' action="{% url 'searchResults' %}">{% csrf_token %}
                 <div class="form-group padding">
-                    <input list="examList" type="text" name="examText" class="form-control" placeholder="Select Exams Filer" />
+                    <input list="examList" type="text" name="examText" class="form-control" placeholder="Select Exams Filter" />
                        <datalist id="examList">
                          {% for exam in exams %}
                            <option value="{{exam.exam}}"/>
