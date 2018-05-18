@@ -13,15 +13,15 @@ body{margin-top: 0px; margin-bottom: 10px;}
 }
 
 /* ensure equal card height inside carousel */
-.carousel-inner>.row-equal.active, 
-.carousel-inner>.row-equal.next, 
-.carousel-inner>.row-equal.prev {
+#myCarousel .carousel-inner>.row-equal.active, 
+#myCarousel .carousel-inner>.row-equal.next, 
+#myCarousel .carousel-inner>.row-equal.prev {
     display: flex;
 }
 
 /* prevent flicker during transition */
-.carousel-inner>.row-equal.active.left, 
-.carousel-inner>.row-equal.active.right {
+#myCarousel .carousel-inner>.row-equal.active.left, 
+#myCarousel .carousel-inner>.row-equal.active.right {
     opacity: 0.5;
     display: flex;
 }
@@ -39,9 +39,9 @@ body{margin-top: 0px; margin-bottom: 10px;}
 
 @media (min-width: 600px) {
     /* show 3 items */
-    .myCarousel .carousel-inner .active,
-    .myCarousel .carousel-inner .active + .carousel-item,
-    .myCarousel .carousel-inner .active + .carousel-item + .carousel-item {
+    #myCarousel .carousel-inner .active,
+    #myCarousel .carousel-inner .active + .carousel-item,
+    #myCarousel .carousel-inner .active + .carousel-item + .carousel-item {
       display: block;
     }
   
@@ -57,8 +57,8 @@ body{margin-top: 0px; margin-bottom: 10px;}
       transition: none;
     }
   
-    .carousel-inner .carousel-item-next,
-    .carousel-inner .carousel-item-prev {
+    #myCarousel .carousel-inner .carousel-item-next,
+    #myCarousel .carousel-inner .carousel-item-prev {
       position: relative;
       transform: translate3d(0, 0, 0);
     }
@@ -88,7 +88,7 @@ body{margin-top: 0px; margin-bottom: 10px;}
   color: grey;
 }
   
-    .carousel-inner
+#myCarousel .carousel-inner
       .active.carousel-item
       + .carousel-item
       + .carousel-item
