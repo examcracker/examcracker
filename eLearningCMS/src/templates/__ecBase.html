@@ -19,7 +19,6 @@
 	<!-- Custom tags for the head tag -->
     {% block extrahead %}
 	{% endblock extrahead %}
-	
 </head>
 <body>
 
@@ -45,9 +44,9 @@
 						{% endfor %}
 					</div>
 				</li>
-				<li class="nav-item">
+			<!--	<li class="nav-item">
 					<a class="nav-link" href="#">Teachers</a>
-				</li>
+				</li> -->
 			</ul>
 		</div>
 		<div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
@@ -110,7 +109,7 @@
 	</ul>
 	<div class="carousel-inner">
 		<div class="carousel-item active">
-			<img src="{% static 'ec/img/teach.jpg' %}">
+			<img src="{% static 'ec/img/teach.jpg' %}" >
 			<div class="carousel-caption">
 				<h1 class="display-2">ExamCracker</h1>
 				<h3>Teach Learn and Crack with us</h3>
@@ -382,10 +381,11 @@
 {% endblock footer %}
 
 <script>
-</script>
 
+</script>
 {% block scripts %}
 {% endblock scripts %}
+
 
 </body>
 </html>

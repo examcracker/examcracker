@@ -39,10 +39,23 @@ def searchCourses(searchtext, provider = None, exam = None):
     return courseList
 
 # Assuming search text to be either substring of course , provider or exam
-def searchCourseByText(searchText):
+def searchCourseByText(searchText,examText=None,providerText=None):
     User = get_user_model()
-    providers = User.objects.all().filter( Q(name__icontains = searchText))
-    courseList = models.Course.objects.filter(Q(published=1)).filter(
+    
+    # get all courses and providers, then apply filter queries on them
+    courseList = models.Course.objects.filter(published=1)
+    providersList = getProviders()
+
+    if examText is not None:
+        courseList = courseList.filter(Q(exam__icontains=examText))
+    if providerText is not None:
+        providersList = providersList.filter( Q(name__icontains = providerText))
+        courseList = courseList.filter(Q( id__in=providersList))
+    if searchText == '':
+        return courseList.values('name','created','exam','cost','duration','provider__user__name')
+        
+    providers = providersList.filter( Q(name__icontains = searchText))
+    courseList = courseList.filter(
     Q(name__icontains=searchText) |
     Q(exam__icontains=searchText) |
     Q( id__in=providers)
@@ -56,3 +69,7 @@ def getPublishedCourses():
 #returns exam list
 def getExams():
     return models.Course.objects.values('exam').annotate(Count('exam')).order_by('exam')
+
+def getProviders():
+    User = get_user_model()
+    return User.objects.filter(is_staff=1)

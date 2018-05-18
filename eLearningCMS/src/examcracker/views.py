@@ -5,28 +5,38 @@ from course.algos import *
 from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 
-examsList = getExams()
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(generic.TemplateView):
     template_name = "searchResults.html"
     http_method_names = ['get','post']
    
     def get(self, request, *args, **kwargs):
-        searchText = request.GET["exam"]
+        searchText = request.GET.get("exam",'')
+        if searchText == '':
+            return redirect(reverse_lazy('home'))
         courseList = searchCourseByText(searchText)
-        kwargs["exams"] = examsList
+        kwargs["exams"] = getExams()
+        kwargs["providers"] = getProviders()
         kwargs["searchResult"] = courseList
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
-        searchText = request.POST['searchText']
+        searchText = request.POST.get('searchText','')
+        examText = request.POST.get('examText','')
+        providerText = request.POST.get('providerText','')
         # if search string is blank, do nothing. Go to home again
-        if searchText == '':
+        if searchText == '' and examText == '' and providerText == '':
             return redirect(reverse_lazy('home'))
-        courseList = searchCourseByText(searchText)
-        kwargs["exams"] = examsList
+        courseList = searchCourseByText(searchText,examText,providerText)
+        kwargs["exams"] = getExams()
         kwargs["searchResult"] = courseList
+        
+        if examText != '':
+            searchText = searchText+ ' Exam=' +examText
+        if providerText != '':
+            searchText = searchText+ ' Provider = ' +providerText
+
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
         

@@ -8,16 +8,43 @@
  
 {% block jumbotronBlock %}
 {% if searchResult.count >= 0 %}
+
 <div class="container-fluid">
-	        <div class="row jumbotron">
-		        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
-			        <p class="lead">
-                                Search Results for {{searchText}}
-                                </p>
-			        <p class="lead">
-                                Total {{searchResult.count}} Results found
-                    </p>
-	        </div>
+        <div class="row jumbotron">
+            <div class="col-md-3">
+               <p>
+                Search Results for <strong> '{{searchText}}' </strong>
+                </p>
+                <p>
+                Total <strong> ' {{searchResult.count}} '</strong> Results found
+                </p>
+              </div>
+              <div class="row">
+              </div>
+              <div class="row">
+              <form class="form-inline" method = 'POST' action="{% url 'searchResults' %}">{% csrf_token %}
+                <div class="form-group">
+                    <input list="examList" type="text" name="examText" class="form-control" placeholder="Select Exams Filer" />
+                                    <datalist id="examList">
+                                      {% for exam in exams %}
+                                         <option value="{{exam.exam}}"/>
+                                      {% endfor %}
+                                     </datalist>
+                  </div>
+                  <div class="form-group"> <!-- Password field -->
+                    <input list="providerList1" type="text" name="providerText" class="form-control" placeholder="Select Providers Filter" />
+                                  <datalist id="providerList1">
+                                     {% for provider in providers %}
+                                         <option value="{{provider.name}}"/>
+                                      {% endfor %}
+                                     </datalist>     
+                  </div>
+                  <div class="form-group"> <!-- Login button -->
+                    <button class="btn btn-primary " name="submit" type="submit">search</button>
+                  </div>
+                </form>
+                </div>
+                </div>
         </div>
 </div>
 
@@ -30,9 +57,14 @@
                 <p class="text-left mb-3"> Courses from  '{{searchText}}'
                 <button class="btn float-right">See all</button> </p>
                 {% include "__baseCourseNavigator.html" with allCourses=searchResult category="" %}
-        </div>
-        <hr>
+                </div>
+<hr>
 {% endif %}
 {%  endblock container %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock scripts %}
 
 
