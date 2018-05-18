@@ -9,13 +9,16 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--email', dest='email', required=True)
         parser.add_argument('--name', dest='name', required=True)
+        parser.add_argument('--password', dest='password', required=True)
 
     def handle(self, *args, **options):
         email = options['email']
         name = options['name']
+        password = options['password']
         userObj = User()
         userObj.email = email
         userObj.name = name
+        userObj.set_password(password)
         userObj.is_staff = True
         userObj.save()
 
