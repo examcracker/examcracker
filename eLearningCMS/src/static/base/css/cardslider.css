@@ -12,6 +12,12 @@ body{margin-top: 0px; margin-bottom: 10px;}
    width: 100%;
 }
 
+#myCarousel .carousel-inner {
+  box-shadow: 0 0 10px black;
+  padding: 15px;
+}
+
+
 /* ensure equal card height inside carousel */
 #myCarousel .carousel-inner>.row-equal.active, 
 #myCarousel .carousel-inner>.row-equal.next, 
