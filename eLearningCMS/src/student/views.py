@@ -7,6 +7,7 @@ from django.urls import reverse
 from collections import OrderedDict
 from operator import itemgetter
 from django.contrib.auth import get_user_model
+from django.http import QueryDict
 from . import models
 from . import forms
 import course
@@ -73,18 +74,19 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
 
     def post(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        joinedCourses = request.POST.getlist('courses[]')
-        '''
-        for courses in joinedCourses:
-            courseObj = course.models.Course.objects.filter(id=courses)[0]
-            enrolledCourseObj = course.models.EnrolledCourse()
-            enrolledCourseObj.student = studentObj
-            enrolledCourseObj.course = courseObj
-            enrolledCourseObj.save()
+        courseid = request.POST.get('course')
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
 
-        return redirect("student:join_courses")
-        '''
-        return redirect(reverse("payment:process"))
+        enrolledCourseObj = course.models.EnrolledCourse()
+        enrolledCourseObj.student = studentObj
+        enrolledCourseObj.course = courseObj
+        enrolledCourseObj.save()
+
+        query_dictionary = QueryDict('', mutable=True)
+        query_dictionary.update({'id': courseid})
+        url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+                                                querystring=query_dictionary.urlencode())
+        return redirect(url)
 
 class showProgress(LoginRequiredMixin, generic.TemplateView):
     template_name = 'progress.html'
