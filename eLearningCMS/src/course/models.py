@@ -27,6 +27,7 @@ class Course(models.Model):
     cost = models.IntegerField(default=10000)
     duration = models.IntegerField(default=6)
     subjects = models.CharField(max_length=100)
+    published = models.BooleanField(default=False)
 
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
