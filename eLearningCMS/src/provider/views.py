@@ -12,7 +12,7 @@ def getProvider(request):
     return models.Provider.objects.filter(user_id=request.user.id)[0]
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'userDashBoard.html'
+    template_name = '__user_base.html'
 '''
 class uploadVideo(LoginRequiredMixin, CreateView):
     template_name = 'upload_video.html'
