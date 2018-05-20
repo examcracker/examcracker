@@ -83,8 +83,13 @@ INSTALLED_APPS = (
     'provider',
     'student',
     'course',
+    'payments',
     'snowpenguin.django.recaptcha2',
+    'paypal.standard.ipn',
 )
+
+PAYPAL_RECEIVER_EMAIL = 'eexamcracker@gmail.com'
+PAYPAL_TEST = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

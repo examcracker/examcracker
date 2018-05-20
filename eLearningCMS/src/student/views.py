@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
+from django.urls import reverse
 from collections import OrderedDict
 from operator import itemgetter
 from django.contrib.auth import get_user_model
@@ -73,7 +74,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
     def post(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         joinedCourses = request.POST.getlist('courses[]')
-
+        '''
         for courses in joinedCourses:
             courseObj = course.models.Course.objects.filter(id=courses)[0]
             enrolledCourseObj = course.models.EnrolledCourse()
@@ -82,6 +83,8 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
             enrolledCourseObj.save()
 
         return redirect("student:join_courses")
+        '''
+        return redirect(reverse("payment:process"))
 
 class showProgress(LoginRequiredMixin, generic.TemplateView):
     template_name = 'progress.html'

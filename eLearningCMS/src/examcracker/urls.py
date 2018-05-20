@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from django.conf.urls import url
 import profiles.urls
 import accounts.urls
 import provider.urls
@@ -14,6 +15,8 @@ admin.site.site_title = 'ExamCracker Site Admin'
 admin.site.site_header = 'ExamCracker Administration'
 
 urlpatterns = [
+    url(r'^paypal/', include('paypal.standard.ipn.urls')),
+    url(r'^payment/', include('payments.urls')),
     path('', views.HomePage.as_view(), name='home'),
     path('about/', views.AboutPage.as_view(), name='about'),
     path('users/', include(profiles.urls)),
@@ -28,7 +31,6 @@ urlpatterns = [
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
     path('', include(accounts.urls)),
-    
 ]
 
 # User-uploaded files like profile pics need to be served in development

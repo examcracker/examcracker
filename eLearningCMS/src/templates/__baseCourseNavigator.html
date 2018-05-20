@@ -55,7 +55,12 @@
                 <p align='center'>
                   <table width='100%'>
                     <tr>
-                      <td><form><input type=submit value="Join Now" style="width:100%;"></form></td>
+                      <td>
+					   <form method="post" action="">
+					    {% csrf_token %}
+					    <input type=submit value="Join Now" style="width:100%;">
+					   </form>
+					  </td>
                     </tr>
                   </table>
                 </p>
