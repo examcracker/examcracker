@@ -4,17 +4,21 @@ from provider.models import Provider
 from course.algos import *
 from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
+from provider.views import *
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(generic.TemplateView):
     template_name = "searchResults.html"
     http_method_names = ['get','post']
-   
+    
     def get(self, request, *args, **kwargs):
         searchText = request.GET.get('exam','')
         if searchText == '':
             return redirect(reverse_lazy('home'))
         courseList = searchCourseByText(searchText)
+        providerObj = getProvider(request)
+        if providerObj:
+            kwargs["providerId"] = providerObj.id
         kwargs["exams"] = getExams()
         kwargs["providers"] = getProviders()
         kwargs["searchResult"] = courseList
@@ -32,6 +36,9 @@ class SearchResultsPage(generic.TemplateView):
         kwargs["exams"] = getExams()
         kwargs["providers"] = getProviders()
         kwargs["searchResult"] = courseList
+        providerObj = getProvider(request)
+        if providerObj:
+            kwargs["providerId"] = providerObj.id
         if examText != '':
             searchText = searchText+ ' Exam=' +examText
         if providerText != '':
@@ -47,6 +54,9 @@ class HomePage(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         examsList = getExams()
         courseList = getPublishedCourses()
+        providerObj = getProvider(request)
+        if providerObj:
+            kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
         kwargs["allCourses"] = courseList
         return super().get(request, *args, **kwargs)

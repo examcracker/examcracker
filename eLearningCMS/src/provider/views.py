@@ -76,6 +76,8 @@ class viewCourses(LoginRequiredMixin, generic.TemplateView):
         providerObj = getProvider(request)
         courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
         kwargs["courses"] = courseList
+        if providerObj:
+            kwargs["providerId"] = providerObj.id
         return super().get(request, *args, **kwargs)
 
 class courseDetail(LoginRequiredMixin, generic.TemplateView):

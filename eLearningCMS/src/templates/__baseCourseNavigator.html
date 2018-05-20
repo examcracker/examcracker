@@ -19,8 +19,8 @@
                 <div class="carousel-item col-md-4">
             {% endif %}
             <div class="card">
-              {% if user.is_staff %}
-                <a href="{% url 'provider:course_detail' course.id %}">
+              {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+                <a href="{% url 'provider:course_detail' currentCourse.id %}">
               {% endif %}
             <img class="card-img-top img-fluid" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
             {% if user.is_staff %}
