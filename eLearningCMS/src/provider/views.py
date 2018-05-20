@@ -12,7 +12,8 @@ def getProvider(request):
     return models.Provider.objects.filter(user_id=request.user.id)[0]
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
-    template_name = '__user_base.html'
+    template_name = 'provider_home.html'
+
 '''
 class uploadVideo(LoginRequiredMixin, CreateView):
     template_name = 'upload_video.html'
@@ -75,7 +76,7 @@ class viewCourses(LoginRequiredMixin, generic.TemplateView):
         providerObj = getProvider(request)
         courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
         kwargs["courses"] = courseList
-        return super().get(request, *args, **kwargs);
+        return super().get(request, *args, **kwargs)
 
 class courseDetail(LoginRequiredMixin, generic.TemplateView):
     template_name = 'course_detail.html'

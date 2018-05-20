@@ -54,7 +54,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
         providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
         courseList = courseList.filter(Q(provider_id__in=providerList))
     if searchText == '':
-        return courseList.values('name','created','exam','cost','duration','provider__user__name')
+        return courseList.values('id','name','created','exam','cost','duration','provider__user__name')
         
     userList = allProviders.filter( Q(name__icontains = searchText))
     providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
@@ -63,7 +63,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
     Q(exam__icontains=searchText) |
     Q(provider_id__in=providerList)
     )
-    return courseList.values('name','created','exam','cost','duration','provider__user__name')
+    return courseList.values('id','name','created','exam','cost','duration','provider__user__name')
 
 # return all published courses
 def getPublishedCourses():

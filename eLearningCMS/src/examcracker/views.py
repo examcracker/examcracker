@@ -11,7 +11,7 @@ class SearchResultsPage(generic.TemplateView):
     http_method_names = ['get','post']
    
     def get(self, request, *args, **kwargs):
-        searchText = request.GET.get("exam",'')
+        searchText = request.GET.get('exam','')
         if searchText == '':
             return redirect(reverse_lazy('home'))
         courseList = searchCourseByText(searchText)

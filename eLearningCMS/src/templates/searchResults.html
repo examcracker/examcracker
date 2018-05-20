@@ -54,10 +54,10 @@
 {% block container %}
 {% if searchResult.count >= 0 %}
 <div class="container-fluid">
-                <p class="text-left mb-3"> Courses from  '{{searchText}}'
-                <button class="btn float-right">See all</button> </p>
-                {% include "__baseCourseNavigator.html" with allCourses=searchResult category="" %}
-                </div>
+  <p class="text-left mb-3"> Courses from  '{{searchText}}'
+    <button class="btn float-right">See all</button> </p>
+      {% include "__baseCourseNavigator.html" with allCourses=searchResult category="" %}
+</div>
 <hr>
 {% endif %}
 {%  endblock container %}
