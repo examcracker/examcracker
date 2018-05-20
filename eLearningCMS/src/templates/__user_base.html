@@ -17,7 +17,6 @@
   <!-- Custom styles for this template-->
   <link href="{% static 'userDashBoard/css/sb-admin.css' %}" rel="stylesheet">
 </head>
-
 <body class="fixed-nav sticky-footer bg-dark" id="page-top">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
@@ -28,38 +27,79 @@
     <div class="collapse navbar-collapse" id="navbarResponsive">
       <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
-          <a class="nav-link" href="{% url 'student:student_home' %}">
+          <a class="nav-link" 
+            href="{% if user.is_staff %}
+                    {% url 'provider:provider_home' %}
+                  {% else %}
+                    {% url 'student:student_home' %}
+                  {% endif %}">
             <i class="fa fa-fw fa-dashboard"></i>
             <span class="nav-link-text">Dashboard</span>
           </a>
         </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Courses">
-          <a class="nav-link" href="{% url 'student:my_courses' %}">
+          <a class="nav-link" 
+          href="{% if user.is_staff %}
+                  {% url 'provider:view_courses' %}
+                {% else %}
+                  {% url 'student:my_courses' %}
+                {% endif %}">
             <i class="fa fa-fw fa-bookmark-o"></i>
             <span class="nav-link-text">My Courses</span>
           </a>
         </li>
+        {% if user.is_staff %}
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">
+          <a class="nav-link" href="{% url 'provider:create_course' %}">
+            <i class="fa fa-fw fa-graduation-cap"></i>
+            <span class="nav-link-text">Create Course</span>
+          </a>
+        </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Upload Sessions">
+          <a class="nav-link" href="{% url 'provider:upload_video' %}">
+            <i class="fa fa-fw fa-file-video-o"></i>
+            <span class="nav-link-text">Upload Sessions</span>
+          </a>
+        </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="View Sessions">
+          <a class="nav-link" href="{% url 'provider:view_videos' %}">
+            <i class="fa fa-fw fa-file-video-o"></i>
+            <span class="nav-link-text">View Sessions</span>
+          </a>
+        </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Students">
+          <a class="nav-link" href="#">
+            <i class="fa fa-fw fa-child"></i>
+            <span class="nav-link-text">My Students</span>
+          </a>
+        </li>
+        {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Profile">
-          <a class="nav-link" href="{% url 'student:my_profile' %}">
+          <a class="nav-link" 
+          href="{% if user.is_staff %}
+                  {% url 'profiles:show_self' %}
+                {% else %}
+                  {% url 'student:my_profile' %}
+                {% endif %}">
             <i class="fa fa-fw fa-user"></i>
             <span class="nav-link-text">Profile</span>
           </a>
         </li>
-
+        {% if not user.is_staff %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Recommended Courses">
           <a class="nav-link" href="{% url 'student:recommended_courses' %}">
             <i class="fa fa-fw fa-graduation-cap"></i>
             <span class="nav-link-text">Recommended Courses</span>
           </a>
         </li>
-
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Progress">
           <a class="nav-link" href="{% url 'student:progress' %}">
             <i class="fa fa-fw fa-trophy"></i>
             <span class="nav-link-text">Progress</span>
           </a>
         </li>
-
+        {% endif %}
+        
       </ul>
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">

@@ -30,13 +30,12 @@ class SearchResultsPage(generic.TemplateView):
             return redirect(reverse_lazy('home'))
         courseList = searchCourseByText(searchText,examText,providerText)
         kwargs["exams"] = getExams()
+        kwargs["providers"] = getProviders()
         kwargs["searchResult"] = courseList
-        
         if examText != '':
             searchText = searchText+ ' Exam=' +examText
         if providerText != '':
             searchText = searchText+ ' Provider = ' +providerText
-
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
         
