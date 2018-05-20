@@ -9,7 +9,11 @@ import course
 import datetime
 
 def getProvider(request):
-    return models.Provider.objects.filter(user_id=request.user.id)[0]
+    providerObj = models.Provider.objects.filter(user_id=request.user.id)
+    if providerObj.exists():
+      return providerObj[0]
+    else:
+      return providerObj
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'provider_home.html'
