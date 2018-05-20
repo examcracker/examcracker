@@ -1,0 +1,126 @@
+<!-- This file has following objects with it 
+exams ( from course model)
+courses ( all courses ,course model)
+-->
+{% extends "__ecBase.html" %}
+
+<html>
+    {% load staticfiles %}
+    {% load crispy_forms_tags %}
+    {% load thumbnail %}
+
+    <head>
+        <link href="{% static 'course/base.css' %}" rel="stylesheet">
+    </head>
+
+    <body>
+
+    {% block ImageSlider %}
+    {% endblock ImageSlider %}
+
+    {% block jumbotronBlock %}
+    {% endblock jumbotronBlock %}
+
+    {% block container %}
+
+
+    <div class="container">
+
+        <div class="card bg-dark text-white">
+            <div class="course-header">
+                <div class="row">
+                    <div class="col">
+                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.png' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
+                    </div>
+                    <div class="col">
+                        <div class="card-body">
+                            <h5 class="card-title">Card title</h5>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <a href="#" class="btn btn-primary">Go somewhere</a>
+                            <hr>
+                            <!-- Turquoise -->
+                            <div class="progress">
+                                <div class="progress-bar bg-info" style="width:30%">30%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="course-header">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#overview" role="tab" data-toggle="tab">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#content" role="tab" data-toggle="tab">Course Content</a>
+                </li>
+            </ul>
+        </div>
+            
+            <!-- Tab panes -->
+            <div class="card-body">
+                    <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="overview">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="content">
+                        <div class="container">
+                                <div id="accordion">
+                           
+                                 <div class="card">
+                                   <div class="card-header">
+                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menuone">Menu 1</a>
+                                   </div>
+                                   <div id="menuone" class="collapse show">
+                                     <div class="card-body">
+                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
+                                     </div>
+                                   </div>
+                                 </div>
+                           
+                           <br>
+                           
+                                 <div class="card">
+                                   <div class="card-header">
+                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menutwo">Menu 2</a>
+                                   </div>
+                                   <div id="menutwo" class="collapse">
+                                     <div class="card-body">
+                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
+                                     </div>
+                                   </div>
+                                 </div>
+                           
+                           <br>
+                           
+                                 <div class="card">
+                                   <div class="card-header">
+                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menuthree">Menu 3</a>
+                                   </div>
+                                   <div id="menuthree" class="collapse">
+                                     <div class="card-body">
+                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
+                                     </div>
+                                   </div>
+                                 </div>
+                           
+                           
+                              </div>
+                           </div>
+
+                </div>
+            </div>
+        </div>
+        </div>
+
+    </div>
+
+    {%  endblock container %}
+
+    </body>
+</html>
