@@ -11,7 +11,6 @@
     <h1 class="text-center mb-3">{{ category }}</h1>
     <div id="myCarousel" class="carousel slide" data-ride="carousel">
       <div class="carousel-inner row w-100 mx-auto">
-        
         {% for course in allCourses %}
             {% if forloop.first %}
                 <div class="carousel-item col-md-4 active">
@@ -19,8 +18,15 @@
                 <div class="carousel-item col-md-4">
             {% endif %}
             <div class="card">
-            <img class="card-img-top img-fluid" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
-            <div class="card-body">
+              {% if user.is_staff %}
+                <a href="{% url 'provider:course_detail' course.id %}">
+              {% endif %}
+              <img class="card-img-top img-fluid" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
+              {% if user.is_staff %}
+                </a>
+              {% endif %}
+            
+              <div class="card-body">
                 <h4 class="card-title">{{ course.name }}</h4>
                 <table>
                   {% if course.provider__user__name %}
@@ -44,13 +50,15 @@
 
                 </table>
                 <p class="card-text"><small class="text-muted">Published date: {{ course.created }}</small></p>
+                {% if not user.is_staff %}
                 <p align='center'>
-                    <table width='100%'>
+                  <table width='100%'>
                     <tr>
-                    <td><form><input type=submit value="Join Now" style="width:100%;"></form></td>
+                      <td><form><input type=submit value="Join Now" style="width:100%;"></form></td>
                     </tr>
-                    </table>
-                    </p>
+                  </table>
+                </p>
+                {% endif %}
             </div>
             </div>
             </div>
