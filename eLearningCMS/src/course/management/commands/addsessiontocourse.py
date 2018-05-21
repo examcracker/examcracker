@@ -7,19 +7,22 @@ import provider
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--sessionid', dest='sessionid', required=True)
-        parser.add_argument('--courseid', dest='courseid', required=True)
+        parser.add_argument('--chapterid', dest='chapterid', required=True)
 
     def handle(self, *args, **options):
         sessionid = options['sessionid']
-        courseid = options['courseid']
+        chapterid = options['chapterid']
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
-        courseObj = models.Course.objects.filter(id=courseid)[0]
+        chapterObj = models.CourseChapter.objects.filter(id=chapterid)[0]
+        courseObj = models.Course.objects.filter(id=chapterObj.course_id)[0]
         coursepatternObj = models.CoursePattern()
-        coursepatternObj.course = courseObj
+        coursepatternObj.chapter = chapterObj
         coursepatternObj.session = sessionObj
+        coursepatternObj.course = courseObj
+        coursepatternObj.published = True
 
-        sessions = models.CoursePattern.objects.filter(course_id=courseid)
+        sessions = models.CoursePattern.objects.filter(course_id=courseObj.id)
         maxseq = 0
         for s in sessions:
             if s.sequence > maxseq:

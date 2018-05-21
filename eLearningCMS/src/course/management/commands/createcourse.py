@@ -9,17 +9,20 @@ class Command(BaseCommand):
         parser.add_argument('--providerid', dest='providerid', required=True)
         parser.add_argument('--name', dest='name', required=True)
         parser.add_argument('--exam', dest='exam', required=True)
+        parser.add_argument('--subject', dest='subject', required=True)
 
     def handle(self, *args, **options):
         providerid = options['providerid']
         name = options['name']
         exam = options['exam']
+        subject = options['subject']
 
         providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
         courseObj = models.Course()
         courseObj.provider = providerObj
         courseObj.name = name
         courseObj.exam = exam
+        courseObj.subject = subject
         courseObj.duration = 6
         courseObj.price = 10000
         courseObj.published = True
