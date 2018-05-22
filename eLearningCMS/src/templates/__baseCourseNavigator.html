@@ -59,7 +59,8 @@
 					   <form method="post" action="">
 					    {% csrf_token %}
 						<input type="hidden" name="course" value="{{ currentCourse.id }}">
-					    <input type=submit value="Join Now" style="width:100%;">
+					    <input name="join" type=submit value="Join Now">
+						<input name="add" type=submit value="Add to Cart">
 					   </form>
 					  </td>
                     </tr>
