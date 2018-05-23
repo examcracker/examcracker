@@ -73,12 +73,19 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
         if len(selectedCourses) == 0:
             return redirect("payments:my_cart")
 
-        coursesStr = ''
-        for course in selectedCourses:
-            coursesStr = coursesStr + " " + course
+        if "delete" in request.POST:
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            for course in selectedCourses:
+                cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=course)[0]
+                cartObj.delete()
+            return redirect("payments:my_cart")
+        else:
+            coursesStr = ''
+            for course in selectedCourses:
+                coursesStr = coursesStr + " " + course
 
-        query_dictionary = QueryDict('', mutable=True)
-        query_dictionary.update({'id': coursesStr})
-        url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+            query_dictionary = QueryDict('', mutable=True)
+            query_dictionary.update({'id': coursesStr})
+            url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
                                                 querystring=query_dictionary.urlencode())
-        return redirect(url)
+            return redirect(url)
