@@ -51,22 +51,32 @@
                 </table>
 
                 <p class="card-text"><small class="text-muted">Published date: {{ currentCourse.created }}</small></p>
-                {% if not user.is_staff %}
+                
                 <p align='center'>
                   <table width='100%'>
                     <tr>
                       <td>
-					   <form method="post" action="">
+
+              {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+              <form method="post" action="{% url 'provider:create_course' %}">
+                {% csrf_token %}
+                <input type="hidden" name="courseId" value="{{ currentCourse.id }}">
+                <input type=submit value="Edit" style="width:100%;">
+              
+              {% else %}
+              <form method="post" action="">
 					    {% csrf_token %}
 						<input type="hidden" name="course" value="{{ currentCourse.id }}">
 					    <input name="join" type=submit value="Join Now">
 						<input name="add" type=submit value="Add to Cart">
+
+              {% endif %}
 					   </form>
 					  </td>
                     </tr>
                   </table>
                 </p>
-                {% endif %}
+                
             </div>
             </div>
             </div>

@@ -49,12 +49,26 @@
           </a>
         </li>
         {% if user.is_staff %}
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">
-          <a class="nav-link" href="{% url 'provider:create_course' %}">
+        <!--
+        <li class="nav-item" id="createCourseDropdown" data-toggle="tooltip" data-placement="right" title="Create Course">
+            <a class="nav-link" href="#createCourseSubmenu" data-toggle="collapse" aria-expanded="false">
+          <a class="nav-link" href="{% url 'provider:create_course' %}"> 
             <i class="fa fa-fw fa-graduation-cap"></i>
-            <span class="nav-link-text">Create Course</span>
+            <span class="caret nav-link-text">Create New Course</span>
           </a>
+          <ul class="collapse list-unstyled" id="createCourseSubmenu" >
+            <li id="createCourseDesc"><a class="nav-link" href="{% url 'provider:create_course' %}">Start Course Creation</a></li>
+            <li id="createContent"><a class="nav-link" href="{% url 'provider:create_course' %}">Create Content</a></li>
+            <li id="publishCourse"><a class="nav-link" href="{% url 'provider:create_course' %}">Publish Course</a></li>
+          </ul>
         </li>
+      -->
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create New Course">
+            <a class="nav-link" href="{% url 'provider:create_course' %}">
+                <i class="fa fa-fw fa-graduation-cap"></i>
+              <span class="nav-link-text">Create New Course</span>
+            </a>
+          </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Upload Sessions">
           <a class="nav-link" href="{% url 'provider:upload_video' %}">
             <i class="fa fa-fw fa-file-video-o"></i>
@@ -77,7 +91,7 @@
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Profile">
           <a class="nav-link" 
           href="{% if user.is_staff %}
-                  {% url 'profiles:show_self' %}
+                  {% url 'student:my_profile' %}
                 {% else %}
                   {% url 'student:my_profile' %}
                 {% endif %}">
