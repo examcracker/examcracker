@@ -3,5 +3,5 @@ from . import views
 
 app_name = 'course'
 urlpatterns = [
-     path('coursePage', views.courseDetails.as_view(), name="coursePage"),
+     path('coursePage/<int:id>', views.courseDetails.as_view(), name="coursePage"),
 ]

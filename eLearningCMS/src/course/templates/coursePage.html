@@ -34,9 +34,9 @@ courses ( all courses ,course model)
                     </div>
                     <div class="col">
                         <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="#" class="btn btn-primary">Go somewhere</a>
+                            <h5 class="card-title">{{ course_overview.Name }}</h5>
+                            <p class="card-text">{{course_overview.Description}}</p>
+                            <a href="#" class="btn btn-primary">Join</a>
                             <hr>
                             <!-- Turquoise -->
                             <div class="progress">
@@ -64,54 +64,56 @@ courses ( all courses ,course model)
             <div class="card-body">
                     <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="overview">
-                    <h5 class="card-title">Card title</h5>
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                    <h5 class="card-title">{{ course_overview.Name }}</h5>
+                    <hr>
+                    <p>{{course_overview.Description}}</p>
+                    <hr>
+                    <table>
+                        <tr>
+                            <td>Subject: </td>
+                            <td align="right">{{ course_overview.Subject }}</td>
+                        </tr>
+                        <tr>
+                            <td>Exam: </td>
+                            <td align="right">{{ course_overview.Exam }}</td>
+                        </tr>
+                        <tr>
+                            <td>Cost (INR): </td>
+                            <td align="right">{{ course_overview.Cost }}</td>
+                        </tr>
+                        <tr>
+                            <td>Duration (months):  </td>
+                            <td align="right">{{ course_overview.Duration }}</td>
+                        </tr>
+      
+                      </table>
+                      <p class="card-text"><small class="text-muted">Published date: {{ course_overview.Published }}</small></p>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="content">
                         <div class="container">
-                                <div id="accordion">
-                           
+                            <div id="accordion">
+                                {% for item in course_detail %}
+                                {% for key, value in item.items %}
                                  <div class="card">
                                    <div class="card-header">
-                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menuone">Menu 1</a>
+                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ key }}">{{ key }}</a>
                                    </div>
-                                   <div id="menuone" class="collapse show">
+                                   <div id="{{ key }}" class="collapse">
                                      <div class="card-body">
-                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
+                                        <div class="list-group">
+                                            {% for session in value %}
+                                                <a href="#" class="list-group-item">{{ session.name }}</a>
+                                            {% endfor %}
+                                        </div>
                                      </div>
                                    </div>
                                  </div>
-                           
-                           <br>
-                           
-                                 <div class="card">
-                                   <div class="card-header">
-                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menutwo">Menu 2</a>
-                                   </div>
-                                   <div id="menutwo" class="collapse">
-                                     <div class="card-body">
-                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
-                                     </div>
-                                   </div>
-                                 </div>
-                           
-                           <br>
-                           
-                                 <div class="card">
-                                   <div class="card-header">
-                             <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#menuthree">Menu 3</a>
-                                   </div>
-                                   <div id="menuthree" class="collapse">
-                                     <div class="card-body">
-                           Taj Mahal is built on the banks of river Yamuna and is surrounded by a beautiful garden. Mughal Emperor Shah Jahan constructed it for the commemoration of his wife Mumtaz Mahal. The construction was started in 1631 and in 1643, the construction of main building was completed. The construction of the whole complex was completed in 1653. Mumtaz Mahal is buried in Taj Mahal.
-                                     </div>
-                                   </div>
-                                 </div>
-                           
-                           
-                              </div>
-                           </div>
+                                {% endfor %}
+                                {% endfor %}
+                                 
+                                <br>
+                            </div>
+                        </div>
 
                 </div>
             </div>

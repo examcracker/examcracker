@@ -27,7 +27,7 @@
               </a>
             {% endif %}
             <div class="card-body">
-                <h4 class="card-title"><a href="{% url 'course:coursePage' %}">{{ currentCourse.name }}</a></h4>
+                <h4 class="card-title"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h4>
                 <table>
                   {% if currentCourse.provider__user__name %}
                   <tr>
