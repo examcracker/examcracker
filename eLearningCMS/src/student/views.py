@@ -78,12 +78,13 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
         courseid = request.POST.get('course')
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
 
-        if "join" in request.POST:
-            enrolledCourseObj = course.models.EnrolledCourse()
-            enrolledCourseObj.student = studentObj
-            enrolledCourseObj.course = courseObj
-            enrolledCourseObj.save()
+        cart = payments.models.Cart()
+        cart.student = studentObj
+        cart.course = courseObj
 
+        if "join" in request.POST:
+            cart.checkout = True
+            cart.save()
             query_dictionary = QueryDict('', mutable=True)
             query_dictionary.update({'id': courseid})
             url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
@@ -91,9 +92,6 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
             return redirect(url)
 
         if "add" in request.POST:
-            cart = payments.models.Cart()
-            cart.student = studentObj
-            cart.course = courseObj
             cart.save()
             url = "payments:my_cart"
             return redirect(url)

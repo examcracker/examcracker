@@ -13,16 +13,36 @@ from . import models
 import course
 import student
 
+def getStudent(request):
+    return student.models.Student.objects.filter(user_id=request.user.id)[0]
+
 @csrf_exempt
 def payment_done(request):
+    studentObj = getStudent(request)
+    cartObjs = models.Cart.objects.filter(student_id=studentObj.id).filter(checkout=True)
+
+    for obj in cartObjs:
+        enrolledCourseObj = course.models.EnrolledCourse()
+        enrolledCourseObj.student = studentObj
+        enrolledCourseObj.course = course.models.Course.objects.filter(id=obj.course_id)[0]
+        enrolledCourseObj.save()
+        obj.delete()
+
     return render(request, 'payment/done.html')
 
 @csrf_exempt
 def payment_canceled(request):
+    studentObj = getStudent(request)
+    cartObjs = models.Cart.objects.filter(student_id=studentObj.id).filter(checkout=True)
+
+    for obj in cartObjs:
+        obj.checkout = False;
+        obj.save()
+
     return render(request, 'payment/canceled.html')
 
 def payment_process(request):
-    studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+    studentObj = getStudent(request)
     host = request.get_host()
     courses = urllib.parse.unquote(request.GET['id'])
     courselist = str.split(courses, " ")
@@ -38,25 +58,19 @@ def payment_process(request):
         totalCost = totalCost + courseObj.cost
 
         cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=courseObj.id)
-        cartObj.delete()
-
-        enrolledCourseObj = course.models.EnrolledCourse()
-        enrolledCourseObj.course = courseObj
-        enrolledCourseObj.student = studentObj
-        enrolledCourseObj.save()
 
     paypal_dict = {
         'business': settings.PAYPAL_RECEIVER_EMAIL ,
         'amount': totalCost,
         'item_name': "Courses Enrolled",
         'invoice': "Invoice for " + str(request.user.name),
-        'currency_code': 'INR',
+        'currency_code': 'USD',
         'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
         'return_url': 'http://{}{}'.format(host, reverse('payments:done')),
         'cancel_return': 'http://{}{}'.format(host, reverse('payments:canceled')),
     }
     form = PayPalPaymentsForm(initial=paypal_dict)
-    return render(request, 'payment/process.html', {'form': form, 'cost' : totalCost })
+    return render(request, 'payment/process.html', {'form': form})
 
 class Cart(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_cart.html'
@@ -69,12 +83,12 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
         selectedCourses = request.POST.getlist('courses[]')
         if len(selectedCourses) == 0:
             return redirect("payments:my_cart")
 
         if "delete" in request.POST:
-            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             for course in selectedCourses:
                 cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=course)[0]
                 cartObj.delete()
@@ -82,6 +96,9 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
         else:
             coursesStr = ''
             for course in selectedCourses:
+                cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=course)[0]
+                cartObj.checkout = True
+                cartObj.save()
                 coursesStr = coursesStr + " " + course
 
             query_dictionary = QueryDict('', mutable=True)
