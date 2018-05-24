@@ -15,6 +15,7 @@ from course import algos
 import provider
 import re
 import profiles
+import payments
 
 User = get_user_model()
 
@@ -77,16 +78,25 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
         courseid = request.POST.get('course')
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
 
-        enrolledCourseObj = course.models.EnrolledCourse()
-        enrolledCourseObj.student = studentObj
-        enrolledCourseObj.course = courseObj
-        enrolledCourseObj.save()
+        if "join" in request.POST:
+            enrolledCourseObj = course.models.EnrolledCourse()
+            enrolledCourseObj.student = studentObj
+            enrolledCourseObj.course = courseObj
+            enrolledCourseObj.save()
 
-        query_dictionary = QueryDict('', mutable=True)
-        query_dictionary.update({'id': courseid})
-        url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+            query_dictionary = QueryDict('', mutable=True)
+            query_dictionary.update({'id': courseid})
+            url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
                                                 querystring=query_dictionary.urlencode())
-        return redirect(url)
+            return redirect(url)
+
+        if "add" in request.POST:
+            cart = payments.models.Cart()
+            cart.student = studentObj
+            cart.course = courseObj
+            cart.save()
+            url = "payments:my_cart"
+            return redirect(url)
 
 class showProgress(LoginRequiredMixin, generic.TemplateView):
     template_name = 'progress.html'

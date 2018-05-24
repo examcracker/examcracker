@@ -1,7 +1,108 @@
 
+<!--
+@ToDo items:
+1. Create New course dropdown should collapse on nav collapse, expand on nav-expand
+2. dropdown to mark links active whose page is currently open.
+3. Disable create content until course description gets filled.
+
+
+-->
 {% extends "__user_base.html" %}
 {% load staticfiles %}
 {% block active %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+	<li class="breadcrumb-item active">
+			{% if editCourse %}
+			Edit Course Description
+			{%  else %}
+			Create Course Description
+		{% endif %}
+	</li>
+</ol>
+<div class="container">
+		<div class="row my-2">
+				<div class="col-lg-8 order-lg-2">
+						<ul class="nav nav-tabs">
+								<li class="nav-item">
+										<a href="" data-target="#courseDescription" data-toggle="tab" class="nav-link active">Add Course Description</a>
+								</li>
+								<li class="nav-item">
+										<a href="" data-target="#addContent" data-toggle="tab" class="nav-link">Add Content</a>
+								</li>
+								<li class="nav-item">
+										<a href="" data-target="#publishCourse" data-toggle="tab" class="nav-link">Publish Course</a>
+								</li>
+						</ul>
+						<div class="tab-content py-4">
+								<div class="tab-pane active" id="courseDescription">
+									<form method="post" enctype="multipart/form-data"> {% csrf_token %}
+										<div class="form-row">
+		  								<div class="col-md-4 mb-3">
+												<label for="cName">Course Name</label>
+												<input type="text" class="form-control" value= {% if editCourse %} "{{ editCourse.name }}" {% else %} "" {% endif %}
+													name="courseName" id="cName" placeholder="Course Name" required>
+											</div>
+		  <div class="col-md-4 mb-3">
+			<label for="cExam">Select Exam</label>
+			<select class="form-control" name="courseExam" id="cExam">
+			{% for x,y in allExams %}
+				<option value="{{ x }}"{% if editCourse.exam == x %} selected{% endif %}>{{x}}</option>
+			{% endfor %}
+     	</select>
+		  </div>
+		  <div class="col-md-4 mb-3">
+			<label for="cDuration">Course Duration</label>
+			<div class="input-group">
+			  <div class="input-group-prepend">
+				<span class="input-group-text" id="inputGroupPrepend3">#</span>
+				</div>
+				<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 0 {% endif %}
+				name="courseDuration" id="cDuration" placeholder="Duration Months" aria-describedby="cDuration" required>
+			</div>
+		  </div>
+		</div>
+		<div class="form-row">
+		  <div class="col-md-6 mb-3">
+			<label for="cDescription">Description</label>
+			<input type="text" class="form-control" value= {% if editCourse %} "{{editCourse.description}}" {% else %} "" {% endif %} 
+			name="courseDescription" id="cDescription" placeholder="Fill Course Description">
+		</div>
+		  <div class="col-md-3 mb-3">
+			<label for="cCost">Cost</label>
+			<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 0 {% endif %} 
+			name="courseCost" id="cCost" placeholder="Enter Cost" required>
+		</div>
+		</div>
+		<div class="form-group">
+		  <div class="form-check">
+			<input class="form-check-input is-invalid" type="checkbox" value="" id="invalidCheck3" required>
+			<label class="form-check-label" for="invalidCheck3">
+			  Agree to terms and conditions
+			</label>
+			<div class="invalid-feedback">
+			  You must agree before submitting.
+			</div>
+		  </div>
+		</div>
+		<input type="hidden" value= {% if editCourse.id %} "{{editCourse.id}}" {% endif %} name="courseId" />
+		<button class="btn btn-primary" type="submit">Save</button>
+		<button class="btn btn-primary" type="reset">Reset</button>
+		<button class="btn disabled" type="submit">Proceed to Next</button>
+		</form>
+								</div>
+								<div class="tab-pane active" id="addContent">
+								</div>
+								<div class="tab-pane active" id="publishCourse">
+									</div>
+		</div>
+		</div>
+		</div>
+		</div>
+
+<!--
 <form action="" method="post" enctype="multipart/form-data">
 	{% csrf_token %}
 	{{ form.as_p }}
@@ -11,4 +112,5 @@
 		</div>
 	</div>
 </form>
-{% endblock active %}
+-->
+{% endblock %}

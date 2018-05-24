@@ -48,20 +48,43 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             sessionObj.save()
         return redirect("provider:provider_home")
 
-class createCourse(LoginRequiredMixin, CreateView):
+class createCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = 'create_course.html'
-    model = course.models.Course
-    fields = ['name', 'exam', 'cost', 'duration', 'published']
+    http_method_names = ['get', 'post']
 
-    def post(self, request):
-        courseForm = forms.courseCreateForm(request.POST)
-        if courseForm.is_valid():
-            courseObj = courseForm.save(commit=False)
-            courseObj.provider = getProvider(request)
-            courseObj.save()
-        courseForm.save()
-        return redirect("provider:provider_home")
+    def get(self, request, *args, **kwargs):
+        providerObj = getProvider(request)
+        courseId = request.POST.get("courseId",'')
+        courseObj = course.models.Course()
+        kwargs["allExams"] = course.models.EXAM_CHOICES
+        if courseId != '':
+          courseObj = course.models.Course.objects.filter(id=courseId)[0]
+          kwargs["editCourse"] = courseObj
+        return super().get(request, *args, **kwargs)
 
+    def post(self, request,*args, **kwargs):
+        cId = request.POST.get('courseId','')
+        kwargs["allExams"] = course.models.EXAM_CHOICES
+        courseObj = course.models.Course()
+        kwargs["courseId"] = cId
+        if cId != '':
+          courseObj = course.models.Course.objects.filter(id=cId)[0]
+          kwargs["editCourse"] = courseObj
+        courseName = request.POST.get('courseName','')
+        # This means , this is Edit course flow.
+        if courseName == '':
+            return super().get(request, *args, **kwargs)
+        # no need to validate, validation already done in html form
+        courseObj.name = courseName
+        courseObj.description=request.POST.get('courseDescription','')
+        courseObj.exam=request.POST.get("courseExam",'')
+        courseObj.provider=getProvider(request)
+        courseObj.cost=request.POST.get("courseCost",'')
+        courseObj.duration=request.POST.get("courseDuration",'')
+        courseObj.save()
+        kwargs["editCourse"] = courseObj
+        return super().get(request, *args, **kwargs)
+        
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
     template_name = "view_videos.html"
     http_method_names = ['get']
