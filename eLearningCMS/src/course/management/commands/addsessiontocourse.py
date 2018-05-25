@@ -16,6 +16,9 @@ class Command(BaseCommand):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
         chapterObj = models.CourseChapter.objects.filter(id=chapterid)[0]
         courseObj = models.Course.objects.filter(id=chapterObj.course_id)[0]
+        courseObj.sessions = courseObj.sessions + 1
+        courseObj.save()
+
         coursepatternObj = models.CoursePattern()
         coursepatternObj.chapter = chapterObj
         coursepatternObj.session = sessionObj

@@ -10,6 +10,7 @@ from . import models
 import course
 from course import algos
 import provider
+import student
 import re
 import profiles
 from collections import defaultdict
@@ -78,10 +79,20 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 return super().get(request, courseid, sessionid, *args, **kwargs)
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            isEnrolled = len(course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)) > 0
-            if isEnrolled == False:
+            enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
+            if len(enrolledCourse) == 0:
                 kwargs["not_enrolled"] = True
                 return super().get(request, courseid, sessionid, *args, **kwargs)
+
+            enrolledCourseObj = enrolledCourse[0]
+            alreadyViewed = False
+            for s in enrolledCourseObj.sessions:
+                if s == sessionid:
+                    alreadViewed = True
+                    break
+            if alreadyViewed == False:
+                enrolledCourseObj.sessions.append(sessionid)
+                enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         if request.user.is_staff:

@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 import student
 import provider
 
@@ -28,11 +29,13 @@ class Course(models.Model):
     duration = models.IntegerField(default=6)
     subjects = models.CharField(max_length=100)
     published = models.BooleanField(default=False)
+    sessions = models.IntegerField(default=0)
 
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     enrolled = models.DateTimeField(auto_now_add=True)
+    sessions = ArrayField(models.IntegerField(), default=list, blank=True)
 
 class CourseChapter(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
