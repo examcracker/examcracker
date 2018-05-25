@@ -1,0 +1,56 @@
+<!-- This file has following objects with it 
+exams ( from course model)
+courses ( all courses ,course model)
+-->
+{% extends "__ecBase.html" %}
+
+<html>
+    {% load staticfiles %}
+    {% load crispy_forms_tags %}
+    {% load thumbnail %}
+
+    <head>
+        <link href="{% static 'course/base.css' %}" rel="stylesheet">
+    </head>
+
+    <body>
+
+    {% block ImageSlider %}
+    {% endblock ImageSlider %}
+
+    {% block jumbotronBlock %}
+    {% endblock jumbotronBlock %}
+
+    {% block container %}
+
+
+    <div class="container">
+
+        <div class="card bg-dark text-white">
+            <div class="course-header">
+                <div class="row">
+                    <div class="col">
+                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.png' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
+                    </div>
+                    <div class="col">
+                        <div class="card-body">
+						    {% if wrong_content %}
+                             <h5>The content does not exist</h5>
+							{% endif %}
+							{% if not_enrolled or not_published %}
+                             <h5>You are not authorized to view this content</h5>
+							{% endif %}
+							{% if wrong_provider %}
+                             <h5>You do not own the content</h5>
+							{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {%  endblock container %}
+
+    </body>
+</html>

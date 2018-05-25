@@ -59,3 +59,36 @@ class courseDetails(generic.TemplateView):
         kwargs["course_detail"] = courseDetailMap
 
         return super().get(request, id, *args, **kwargs)
+
+class playSession(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+    template_name = 'playSession.html'
+
+    def get(self, request, courseid, sessionid, *args, **kwargs):
+        coursePattern = course.models.CoursePattern.objects.filter(course_id=courseid).filter(session_id=sessionid)
+        # check whether the session is in that course
+        if len(coursePattern) == 0:
+            kwargs["wrong_content"] = True
+            return super().get(request, courseid, sessionid, *args, **kwargs)
+
+        # if user is student, allow only if enrolled for the course and session is published
+        if request.user.is_staff == False:
+            if coursePattern[0].published == False:
+                kwargs["not_published"] = True
+                return super().get(request, courseid, sessionid, *args, **kwargs)
+
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            isEnrolled = len(course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)) > 0
+            if isEnrolled == False:
+                kwargs["not_enrolled"] = True
+                return super().get(request, courseid, sessionid, *args, **kwargs)
+
+        # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
+        if request.user.is_staff:
+            providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+            courseObj = course.models.Course.objects.filter(id=courseid)[0]
+            if courseObj.provider_id != providerObj.id:
+                kwargs["wrong_provider"] = True
+                return super().get(request, courseid, sessionid, *args, **kwargs)
+
+        return super().get(request, courseid, sessionid, *args, **kwargs)
