@@ -25,6 +25,23 @@ class courseDetails(generic.TemplateView):
         courseid = id
 
         courseOverviewMap = {}
+        courseOverviewMap["id"] = courseid
+        courseOverviewMap["myCourse"] = False
+
+        if request.user.is_authenticated:
+            if request.user.is_staff == False:
+                courseOverviewMap["progress"] = "30%"
+                studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+                enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
+                if len(enrolledCourse) > 0:
+                    courseOverviewMap["myCourse"] = True
+
+            elif request.user.is_staff:
+                providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+                courseObj = course.models.Course.objects.filter(id=courseid)[0]
+                if courseObj.provider_id == providerObj.id:
+                    courseOverviewMap["myCourse"] = True
+
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         
         courseOverviewMap["Name"] = courseObj.name
@@ -41,18 +58,28 @@ class courseDetails(generic.TemplateView):
         chapter = course.models.CourseChapter.objects.filter(course_id=courseid)
 
         if len(chapter) > 0:
+            courseIdNameMap = {}
             for item in chapter:
+                courseIdNameMap[item.id] = item.chapter
+            
+            patterns = course.models.CoursePattern.objects.filter(course_id=courseid).order_by('sequence')
+
+            for pattern in patterns:
+                # Skipping unpublished items
+                if not pattern.published:
+                    continue
+
                 chapterDetailMap = {}
-                chapterDetailMap[item.chapter] = []
-                patterns = course.models.CoursePattern.objects.filter(chapter_id=item.id)
-                for pattern in patterns:
-                    session= provider.models.Session.objects.filter(id=pattern.session_id)
-                    for sess in session:
-                        sessionDetails= {}
-                        sessionDetails["name"] = sess.name 
-                        sessionDetails["video"] = sess.video 
-                
-                        chapterDetailMap[item.chapter].append(sessionDetails)
+                chapterName = courseIdNameMap[pattern.chapter_id]
+                chapterDetailMap[chapterName] = []
+                session= provider.models.Session.objects.filter(id=pattern.session_id)
+                for sess in session:
+                    sessionDetails= {}
+                    sessionDetails["name"] = sess.name 
+                    sessionDetails["video"] = sess.video 
+                    sessionDetails["id"] = sess.id 
+            
+                    chapterDetailMap[chapterName].append(sessionDetails)
 
                 courseDetailMap.append(chapterDetailMap) 
 
