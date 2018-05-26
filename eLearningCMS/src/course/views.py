@@ -25,6 +25,23 @@ class courseDetails(generic.TemplateView):
         courseid = id
 
         courseOverviewMap = {}
+        courseOverviewMap["id"] = courseid
+        courseOverviewMap["myCourse"] = False
+
+        if request.user.is_authenticated:
+            if request.user.is_staff == False:
+                courseOverviewMap["progress"] = "30%"
+                studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+                enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
+                if len(enrolledCourse) > 0:
+                    courseOverviewMap["myCourse"] = True
+
+            elif request.user.is_staff:
+                providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+                courseObj = course.models.Course.objects.filter(id=courseid)[0]
+                if courseObj.provider_id == providerObj.id:
+                    courseOverviewMap["myCourse"] = True
+
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
         
         courseOverviewMap["Name"] = courseObj.name
@@ -38,22 +55,33 @@ class courseDetails(generic.TemplateView):
         kwargs["course_overview"] = courseOverviewMap
 
         courseDetailMap = []
-        chapter = course.models.CourseChapter.objects.filter(course_id=courseid)
+        chapters = course.models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
 
-        if len(chapter) > 0:
-            for item in chapter:
-                chapterDetailMap = {}
-                chapterDetailMap[item.name] = []
+        if len(chapters) > 0:
+            courseIdNameMap = {}
+            for item in chapters:
+                courseIdNameMap[item.id] = item.name
+            
                 sessions = item.sessions
+                publishedStatus = item.published
+
+                chapterDetailMap = {}
+                chapterName = item.name
+                chapterDetailMap[chapterName] = []
 
                 for sess in sessions:
+                    pos = sessions.index(sess)
+                    # Skipping unpublished items
+                    if not publishedStatus[pos]:
+                        continue
                     sessionDetails = {}
-                    sessiobObj = provider.models.Session.objects.filter(id=sess)[0]
-                    sessionDetails["name"] = sessiobObj.name
-                    sessionDetails["video"] = sessiobObj.video
-                    chapterDetailMap[item.name].append(sessionDetails)
+                    sessionObj = provider.models.Session.objects.filter(id=sess)[0]
+                    sessionDetails["name"] = sessionObj.name 
+                    sessionDetails["video"] = sessionObj.video 
+                    sessionDetails["id"] = sessionObj.id
+                    chapterDetailMap[chapterName].append(sessionDetails)
 
-            courseDetailMap.append(chapterDetailMap)
+                courseDetailMap.append(chapterDetailMap)
 
         kwargs["course_detail"] = courseDetailMap
         return super().get(request, id, *args, **kwargs)

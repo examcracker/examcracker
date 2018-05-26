@@ -36,12 +36,16 @@ courses ( all courses ,course model)
                         <div class="card-body">
                             <h5 class="card-title">{{ course_overview.Name }}</h5>
                             <p class="card-text">{{course_overview.Description}}</p>
-                            <a href="#" class="btn btn-primary">Join</a>
+                            {% if not course_overview.myCourse %}
+                                <a href="#" class="btn btn-primary">Join</a>
+                            {% endif %}
                             <hr>
                             <!-- Turquoise -->
+                            {% if course_overview.myCourse and not user.is_staff %}
                             <div class="progress">
-                                <div class="progress-bar bg-info" style="width:30%">30%</div>
+                                <div class="progress-bar bg-info" style="width: {{ course_overview.progress }} ">{{ course_overview.progress }}</div>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -102,7 +106,17 @@ courses ( all courses ,course model)
                                      <div class="card-body">
                                         <div class="list-group">
                                             {% for session in value %}
-                                                <a href="#" class="list-group-item">{{ session.name }}</a>
+                                            {% if course_overview.myCourse %}
+                                                <a href="{% url 'course:playSession' course_overview.id session.id %}" class="list-group-item">
+                                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
+                                                    {{ session.name }}
+                                                </a>
+                                            {% else %}
+                                                <div class="list-group-item">
+                                                    <i class="fa fa-lock fa-fw" style="padding-right:10px"></i>
+                                                    {{ session.name }}
+                                                </div>
+                                            {% endif %}
                                             {% endfor %}
                                         </div>
                                      </div>
