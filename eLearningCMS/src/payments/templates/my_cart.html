@@ -14,7 +14,7 @@
 	  <form method="post" action="">
         {% for course in courses %}
 		  <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-		  <label for="option"><a href="{% url 'provider:course_detail' course.id %}">{{ course.name }}</a></label><br>
+		  <label for="option"><a href="{% url 'course:coursePage' course.id %}">{{ course.name }}</a></label><br>
 		{% endfor %}
 		{% csrf_token %}
 		<div class="form-group">

@@ -43,63 +43,57 @@ class courseDetails(generic.TemplateView):
         if len(chapter) > 0:
             for item in chapter:
                 chapterDetailMap = {}
-                chapterDetailMap[item.chapter] = []
-                patterns = course.models.CoursePattern.objects.filter(chapter_id=item.id)
-                for pattern in patterns:
-                    session= provider.models.Session.objects.filter(id=pattern.session_id)
-                    for sess in session:
-                        sessionDetails= {}
-                        sessionDetails["name"] = sess.name 
-                        sessionDetails["video"] = sess.video 
-                
-                        chapterDetailMap[item.chapter].append(sessionDetails)
+                chapterDetailMap[item.name] = []
+                sessions = item.sessions
 
-                courseDetailMap.append(chapterDetailMap) 
+                for sess in sessions:
+                    sessionDetails = {}
+                    sessiobObj = provider.models.Session.objects.filter(id=sess)[0]
+                    sessionDetails["name"] = sessiobObj.name
+                    sessionDetails["video"] = sessiobObj.video
+                    chapterDetailMap[item.name].append(sessionDetails)
 
+            courseDetailMap.append(chapterDetailMap)
 
         kwargs["course_detail"] = courseDetailMap
-
         return super().get(request, id, *args, **kwargs)
 
 class playSession(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
     template_name = 'playSession.html'
 
-    def get(self, request, courseid, sessionid, *args, **kwargs):
-        coursePattern = course.models.CoursePattern.objects.filter(course_id=courseid).filter(session_id=sessionid)
+    def get(self, request, chapterid, sessionid, *args, **kwargs):
+        courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
+
         # check whether the session is in that course
-        if len(coursePattern) == 0:
+        if sessionid not in courseChapterObj.sessions:
             kwargs["wrong_content"] = True
-            return super().get(request, courseid, sessionid, *args, **kwargs)
+            return super().get(request, chapterid, sessionid, *args, **kwargs)
 
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
-            if coursePattern[0].published == False:
+            index = courseChapterObj.sessions.index(sessionid)
+            if courseChapterObj.published[index] == False:
                 kwargs["not_published"] = True
-                return super().get(request, courseid, sessionid, *args, **kwargs)
+                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
+            enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 kwargs["not_enrolled"] = True
-                return super().get(request, courseid, sessionid, *args, **kwargs)
+                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             enrolledCourseObj = enrolledCourse[0]
-            alreadyViewed = False
-            for s in enrolledCourseObj.sessions:
-                if s == sessionid:
-                    alreadViewed = True
-                    break
-            if alreadyViewed == False:
+            if sessionid not in enrolledCourseObj.sessions:
                 enrolledCourseObj.sessions.append(sessionid)
                 enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         if request.user.is_staff:
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
-            courseObj = course.models.Course.objects.filter(id=courseid)[0]
+            courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             if courseObj.provider_id != providerObj.id:
                 kwargs["wrong_provider"] = True
-                return super().get(request, courseid, sessionid, *args, **kwargs)
+                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
-        return super().get(request, courseid, sessionid, *args, **kwargs)
+        return super().get(request, chapterid, sessionid, *args, **kwargs)

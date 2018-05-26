@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.contrib import auth
+import django.db.models
 from course import models
 import provider
 
@@ -17,4 +18,10 @@ class Command(BaseCommand):
         chapterObj = models.CourseChapter()
         chapterObj.course = courseObj
         chapterObj.name = name
+
+        maxsequence = models.CourseChapter.objects.filter(course_id=courseid).aggregate(django.db.models.Max('sequence'))['sequence__max']
+        if maxsequence is None:
+            chapterObj.sequence = 1
+        else:
+            chapterObj.sequence = maxsequence + 1
         chapterObj.save()

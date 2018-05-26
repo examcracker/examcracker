@@ -15,21 +15,10 @@ class Command(BaseCommand):
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
         chapterObj = models.CourseChapter.objects.filter(id=chapterid)[0]
+        chapterObj.sessions.append(sessionid)
+        chapterObj.published.append(True)
+        chapterObj.save()
+
         courseObj = models.Course.objects.filter(id=chapterObj.course_id)[0]
         courseObj.sessions = courseObj.sessions + 1
         courseObj.save()
-
-        coursepatternObj = models.CoursePattern()
-        coursepatternObj.chapter = chapterObj
-        coursepatternObj.session = sessionObj
-        coursepatternObj.course = courseObj
-        coursepatternObj.published = True
-
-        sessions = models.CoursePattern.objects.filter(course_id=courseObj.id)
-        maxseq = 0
-        for s in sessions:
-            if s.sequence > maxseq:
-                maxseq = s.sequence
-
-        coursepatternObj.sequence = maxseq + 1
-        coursepatternObj.save()

@@ -38,15 +38,8 @@ class EnrolledCourse(models.Model):
     sessions = ArrayField(models.IntegerField(), default=list, blank=True)
 
 class CourseChapter(models.Model):
+    name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    chapter = models.CharField(max_length=50)
-
-class CoursePattern(models.Model):
-    session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    sequence = models.IntegerField()
-    chapter = models.ForeignKey(CourseChapter, on_delete=models.CASCADE)
-    published = models.BooleanField(default=False)
-
-
-
+    sequence = models.IntegerField(default=0)
+    sessions = ArrayField(models.IntegerField(), default=list, blank=True)
+    published = ArrayField(models.BooleanField(), default=list, blank=True)
