@@ -476,3 +476,42 @@ footer.sticky-footer {
     width: calc(100% - 55px);
   }
 }
+
+
+#myTab.nav.nav-tabs {
+  float: left;
+  display: block;
+  margin-right: 20px;
+  border-bottom:0;
+  border-right: 1px solid #ddd;
+  padding-right: 15px;
+}
+#myTab.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  border-top-left-radius: .25rem;
+  border-top-right-radius: .25rem;
+  background: #ccc;
+}
+
+#myTab.nav-tabs .nav-link.active {
+  color: #495057;
+ border-color: transparent !important;
+}
+#myTab.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  border-top-left-radius: 0rem!important;
+  border-top-right-radius: 0rem!important;
+}
+#myTab .tab-content>.active {
+  display: block;
+ min-height: 165px;
+}
+#myTab.nav.nav-tabs {
+  float: left;
+  display: block;
+  margin-right: 20px;
+  border-bottom: 0;
+  border-right: 1px solid transparent;
+  padding-right: 15px;
+}
+

@@ -16,7 +16,32 @@ import profiles
 from collections import defaultdict
 
 # Create your views here.
-
+def getCourseDetails(courseid,onlyPublished):
+    courseDetailMap = []
+    chapters = course.models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
+    if len(chapters) > 0:
+        courseIdNameMap = {}
+        for item in chapters:
+            courseIdNameMap[item.id] = item.name
+            sessions = item.sessions
+            publishedStatus = item.published
+            chapterDetailMap = {}
+            chapterName = item.name
+            chapterDetailMap[chapterName] = []
+            for sess in sessions:
+                pos = sessions.index(sess)
+                # Skipping unpublished items
+                if not publishedStatus[pos] and onlyPublished==1 :
+                    continue
+                sessionDetails = {}
+                sessionObj = provider.models.Session.objects.filter(id=sess)[0]
+                sessionDetails["name"] = sessionObj.name 
+                sessionDetails["video"] = sessionObj.video 
+                sessionDetails["id"] = sessionObj.id
+                chapterDetailMap[chapterName].append(sessionDetails)
+            courseDetailMap.append(chapterDetailMap)
+    return courseDetailMap
+    
 class courseDetails(generic.TemplateView):
     template_name = 'coursePage.html'
     http_method_names = ['get']

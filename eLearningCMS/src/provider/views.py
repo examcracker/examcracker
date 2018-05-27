@@ -60,9 +60,67 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if courseId != '':
           courseObj = course.models.Course.objects.filter(id=courseId)[0]
           kwargs["editCourse"] = courseObj
+          kwargs["course_detail"] = course.views.getCourseDetails(courseId,1)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
+        isCourseContent = request.POST.get('isCourseContent','')
+        providerObj = getProvider(request)
+        # check if course content flow
+        if isCourseContent != '':
+            #return super().get(request, *args, **kwargs)
+            # auto writing chapter names
+            courseId = request.POST.get("course_id",'')
+            if courseId == '':
+                return super().get(request, *args, **kwargs)
+                
+            courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            kwargs["editCourse"] = courseObj
+
+            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            if 'cd[]' not in request.POST:
+                return super().get(request, *args, **kwargs)
+
+            addedChapters = request.POST.getlist('cd[]')
+            courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            if len(addedChapters) > 0:
+                lcids = request.POST.getlist("lcids")
+                cpPrefix = 'Chapter '              
+                i = 0
+                while i < len(addedChapters):
+                    # save chapter first
+                    chapterObj = course.models.CourseChapter()
+                    chapterObj.name = cpPrefix + str(i+1)
+                    chapterObj.course = courseObj
+                    chapterObj.sequence = i+1
+
+                    # first get and save files into provider_session db
+                    sessionsIdArr = []
+                    publishedArr = []
+
+                    if lcids[i] in request.FILES:
+                        filesUploaded = request.FILES.getlist(lcids[i])
+                        for file in filesUploaded:
+                            sessionObj = models.Session()
+                            sessionObj.name = file
+                            sessionObj.provider = providerObj
+                            sessionObj.video = file
+                            sessionObj.save()
+                            sessionsIdArr.append(sessionObj.id)
+                            publishedArr.append(True)
+                    i = i+1
+                    chapterObj.sessions=sessionsIdArr
+                    chapterObj.published=publishedArr
+                    chapterObj.save()
+                chaptersObj = course.models.CourseChapter.objects.filter(course_id=courseId)
+                kwargs["course_detail"] = course.views.getCourseDetails(courseId,0)
+                kwargs["allExams"] = course.models.EXAM_CHOICES
+                kwargs["courseId"] = courseId
+                return super().get(request, *args, **kwargs)
+        
+        # try to segregate the procs for course description creation and 
+        # course content creation
         cId = request.POST.get('courseId','')
         kwargs["allExams"] = course.models.EXAM_CHOICES
         courseObj = course.models.Course()
@@ -70,6 +128,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if cId != '':
           courseObj = course.models.Course.objects.filter(id=cId)[0]
           kwargs["editCourse"] = courseObj
+          kwargs["course_detail"] = course.views.getCourseDetails(cId,0)
         courseName = request.POST.get('courseName','')
         # This means , this is Edit course flow.
         if courseName == '':

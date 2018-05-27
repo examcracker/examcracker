@@ -1,0 +1,121 @@
+<!--
+use bootstrap cards for chapters
+use tables for videos inside sections
+
+1. Add chapter button +++ Description for chapter 
+2. Add lecture button   +++ Description for lecture
+3. Make both draggable.
+4. checkbox to set lectures as published.
+5. flow as follows:
+
+a. Click on add chapter. it gets added with description box. Make description box required field
+b. Click on add lecture button. browse file and upload. 
+c. All chapters on left and videos on right.  That means row of 2 colums will be der give it id
+
+All information should be saved in local javascript variables.
+javascript variables should contain whole data of page.
+
+When we click save , then send javascript information to our views.py and save data to db.
+overwrite whole data?
+
+
+ use color coding of card : Blue for draft , green for published
+similarly for lectures
+-->
+
+{% load staticfiles %}
+<div class="container">
+    <h5>My Course Structure</h5>
+    <form method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
+        <div class="card bg-light text-dark">
+            <div class="course-header">
+            </div>
+            <div class="card-body">
+                <div class="container">
+                    <div id="accordianChapters">
+                    {% for item in course_detail %}
+                    {% for key, value in item.items %}
+                    <div class="card" draggable="true" id="cr{{forloop.parentloop.counter}}">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{key}}</a>
+                            <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
+                        </div>
+                        <div id="c{{forloop.parentloop.counter}}" class="collapse">
+                            <div class="card-body" id="cp{{forloop.parentloop.counter}}">
+                                <input type="hidden" value="cp{{forloop.parentloop.counter}}lfs" name="lcids" />
+                                <div class="row">
+                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD{{forloop.parentloop.counter}}" placeholder="Enter Chapter Description" value = "{{key}}" ></div>
+                                    <div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div>
+                                </div>
+                                {% for session in value %}
+                                <!-- lectures here -->
+                                <div class="row" id="lr{{forloop.counter}}">
+                                    <table>
+                                        <tr>
+                                            <td>Lecture {{forloop.counter}}</td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <div class="custom-file">
+                                                        <input type="file" name ="{{forloop.parentloop..parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <label class="custom-file-label" >Choose Lecture </label>
+                                                    </div>
+                                                    <div class="input-group-append">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                <br>
+            </div>
+        </div>
+    </div>
+    </div>
+      <input type="hidden" value="true" name="isCourseContent" />
+      <input type="hidden" value="{{editCourse.id}}" name="course_id" />
+      <button type="submit"  class="btn btn-info btn-lg float-right" id="saveAllChanges">Save changes</button>
+      <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg" id="btnGen">Add New Chapter</button>
+    </form>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script>
+    function addChapter(elmnt) {
+        var id = document.getElementById("accordianChapters").children.length;
+        var myChapter = $('<div class="card" draggable="true" id="cr'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="cp'+id+'"><input type="hidden" value="cp'+id+'lfs" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD'+id+'" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
+        myChapter.appendTo('#accordianChapters');
+    }
+    function deleteChapter(elmnt) {
+        var el = elmnt;
+         while (el.className != 'card') {
+            // Increment the loop to the parent node
+            el = el.parentNode;
+        }
+        var cardId = el.id;
+        var cardBody = el.querySelector('.card-body');
+        var lcount = cardBody.children.length;
+        if (lcount > 2) {
+            alert('Cannot delete chapter. It has lectures');
+        }
+        else {
+            document.getElementById("accordianChapters").removeChild(el);
+        }
+    }
+
+    function addLecture(elmnt) {
+         var el = elmnt;
+         while (el.className != 'card-body') {
+            // Increment the loop to the parent node
+            el = el.parentNode;
+        }
+         var id = el.children.length-1;
+         var cname = el.id;
+         var lecture = $('<div class="row" id="lr'+id+'><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="'+cname+'lfs" id="myfile" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div><div class="input-group-append"></div></td></tr></table></div>');
+         lecture.appendTo(el);
+    }
+  </script>
