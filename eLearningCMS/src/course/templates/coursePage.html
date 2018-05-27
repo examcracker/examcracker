@@ -103,17 +103,17 @@ courses ( all courses ,course model)
                         <div class="container">
                             <div id="accordion">
                                 {% for item in course_detail %}
-                                {% for key, value in item.items %}
+                                {% for chapId, value in item.items %}
                                  <div class="card">
                                    <div class="card-header">
-                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ key }}">{{ key }}</a>
+                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ value.name }}">{{ value.name }}</a>
                                    </div>
-                                   <div id="{{ key }}" class="collapse">
+                                   <div id="{{ value.name }}" class="collapse">
                                      <div class="card-body">
                                         <div class="list-group">
-                                            {% for session in value %}
+                                            {% for session in value.sessions %}
                                             {% if course_overview.myCourse %}
-                                                <a href="{% url 'course:playSession' course_overview.id session.id %}" class="list-group-item">
+                                                <a href="{% url 'course:playSession' chapId session.id %}" class="list-group-item">
                                                     <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
                                                     {{ session.name }}
                                                 </a>

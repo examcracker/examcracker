@@ -10,6 +10,41 @@ from django.db.models import Count
 from django.contrib.auth import get_user_model
 import provider
 
+# get course content
+def getCourseDetails(courseid, onlyPublished = 1):
+    courseDetailMap = []
+    chapters = models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
+
+    if len(chapters) > 0:
+        courseIdNameMap = {}
+
+        for item in chapters:
+            courseIdNameMap[item.id] = item.name
+            sessions = item.sessions
+            publishedStatus = item.published
+
+            chapterDetailMap = {}
+
+            chapterId = item.id
+            chapterDetailMap[chapterId] = {}
+            chapterDetailMap[chapterId]["name"] = item.name
+            chapterDetailMap[chapterId]["sessions"] = []
+
+            for sess in sessions:
+                pos = sessions.index(sess)
+                # Skipping unpublished items
+                if not publishedStatus[pos] and onlyPublished == 1 :
+                    continue
+                sessionDetails = {}
+                sessionObj = provider.models.Session.objects.filter(id=sess)[0]
+                sessionDetails["name"] = sessionObj.name
+                sessionDetails["video"] = sessionObj.video
+                sessionDetails["id"] = sessionObj.id
+                chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
+
+            courseDetailMap.append(chapterDetailMap)
+    return courseDetailMap
+
 # returns the 'count' courses which have maximum students
 def mostEnrolledCourses(count):
     return models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse GROUP BY course_id ORDER BY COUNT(course_id) DESC LIMIT ' + str(count) + ')')
