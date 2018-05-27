@@ -56,10 +56,8 @@ similarly for lectures
                                             <td>
                                                 <div class="input-group">
                                                     <div class="custom-file">
-                                                        <input type="file" name ="{{forloop.parentloop..parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="file" name ="{{forloop.parentloop.parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
                                                         <label class="custom-file-label" >Choose Lecture </label>
-                                                    </div>
-                                                    <div class="input-group-append">
                                                     </div>
                                                 </div>
                                             </td>
@@ -115,7 +113,7 @@ similarly for lectures
         }
          var id = el.children.length-1;
          var cname = el.id;
-         var lecture = $('<div class="row" id="lr'+id+'><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="'+cname+'lfs" id="myfile" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div><div class="input-group-append"></div></td></tr></table></div>');
+         var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="'+cname+'lfs" id="myfile" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
          lecture.appendTo(el);
     }
   </script>
