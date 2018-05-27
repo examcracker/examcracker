@@ -26,6 +26,12 @@ courses ( all courses ,course model)
 
     <div class="container">
 
+        {% if not_published %}
+            <div class="alert alert-danger" role="alert" style="height:80%">
+                <h4>Not authorized!</h4>
+                <p> You are not authorized to view this content. </p>
+            </div>
+        {% else %}
         <div class="card bg-dark text-white">
             <div class="course-header">
                 <div class="row">
@@ -134,6 +140,8 @@ courses ( all courses ,course model)
         </div>
         </div>
 
+        {% endif %}
+        
     </div>
 
     {%  endblock container %}

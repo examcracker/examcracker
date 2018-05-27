@@ -23,6 +23,11 @@ class courseDetails(generic.TemplateView):
 
     def get(self, request, id, *args, **kwargs):
         courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+
+        if courseObj.published == False:
+            kwargs["not_published"] = True
+            return super().get(request, id, *args, **kwargs)
 
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
@@ -42,7 +47,6 @@ class courseDetails(generic.TemplateView):
                 if courseObj.provider_id == providerObj.id:
                     courseOverviewMap["myCourse"] = True
 
-        courseObj = course.models.Course.objects.filter(id=courseid)[0]
         
         courseOverviewMap["Name"] = courseObj.name
         courseOverviewMap["Description"] = courseObj.description
