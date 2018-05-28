@@ -9,5 +9,43 @@
     </li>
     <li class="breadcrumb-item active">Progress</li>
   </ol>
-    
+  <div>
+     <script type="text/javascript" src="{% static 'progress/js/charts/loader.js' %}"></script>
+      <script type="text/javascript">
+       google.charts.load("current", {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+          var data = google.visualization.arrayToDataTable({{ progress|safe }});
+
+          var options = {
+            title: 'Topic wise details',
+            pieHole: 0.6,
+            height:500
+          };
+
+          var chart = new google.visualization.PieChart(document.getElementById('chartContainer'));
+          chart.draw(data, options);
+      }
+    </script>
+  <div class="container">
+      <div class="row">
+        <div class="col-lg-9">
+              <div class="row">
+                  <div class="col-lg-9">
+                      <div class="progress">
+                          <div class="progress-bar bg-info" style="width:30%">30%</div>
+                      </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-9">
+                      <div id="chartContainer"></div>
+                    </div>
+              </div>
+        </div>
+        <div class="col-sm-3">
+        </div>
+      </div>
+  </div>
+</div>
 {% endblock active %}
