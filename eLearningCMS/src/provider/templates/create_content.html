@@ -44,7 +44,10 @@ similarly for lectures
                             <div class="card-body" id="{{forloop.parentloop.counter}}">
                                 <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
                                 <div class="row">
-                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" ></div>
+                                    <div class="col-auto">
+                                        <input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" >
+                                        <input type="hidden" class="form-control" name="cpids[]" value = "{{chapid}}" >
+                                    </div>
                                     <div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div>
                                 </div>
                                 {% for session in value.sessions %}
@@ -56,7 +59,8 @@ similarly for lectures
                                             <td>
                                                 <div class="input-group">
                                                     <div class="custom-file">
-                                                        <input type="file" name ="lc[forloop.parentloop.parent.counter][]" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="file" name ="lc[{{forloop.parentloop.parentloop.counter}}][]" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="hidden" name ="lc[{{chapid}}][]" value="{{session.id}}">
                                                         <label class="custom-file-label" >Choose Lecture </label>
                                                     </div>
                                                 </div>
