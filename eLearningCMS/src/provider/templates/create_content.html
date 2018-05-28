@@ -56,7 +56,7 @@ similarly for lectures
                                             <td>
                                                 <div class="input-group">
                                                     <div class="custom-file">
-                                                        <input type="file" name ="lc[{{forloop.counter}}][]" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="file" name ="{{forloop.parentloop.parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
                                                         <label class="custom-file-label" >Choose Lecture </label>
                                                     </div>
                                                 </div>
