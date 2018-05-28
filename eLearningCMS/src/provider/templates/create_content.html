@@ -35,28 +35,28 @@ similarly for lectures
                     <div id="accordianChapters">
                     {% for item in course_detail %}
                     {% for chapid, value in item.items %}
-                    <div class="card" draggable="true" id="cr{{forloop.parentloop.counter}}">
+                    <div class="card" draggable="true" >
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{value.name}}</a>
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
-                            <div class="card-body" id="cp{{forloop.parentloop.counter}}">
-                                <input type="hidden" value="cp{{forloop.parentloop.counter}}lfs" name="lcids" />
+                            <div class="card-body" id="{{forloop.parentloop.counter}}">
+                                <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
                                 <div class="row">
-                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD{{forloop.parentloop.counter}}" placeholder="Enter Chapter Description" value = "{{value.name}}" ></div>
+                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" ></div>
                                     <div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div>
                                 </div>
-                                {% for session in value %}
+                                {% for session in value.sessions %}
                                 <!-- lectures here -->
-                                <div class="row" id="lr{{forloop.counter}}">
+                                <div class="row">
                                     <table>
                                         <tr>
                                             <td>Lecture {{forloop.counter}}</td>
                                             <td>
                                                 <div class="input-group">
                                                     <div class="custom-file">
-                                                        <input type="file" name ="{{forloop.parentloop.parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="file" name ="lc[forloop.parentloop.parent.counter][]" id="myfile" class="custom-file-input" value="{{session.name}}">
                                                         <label class="custom-file-label" >Choose Lecture </label>
                                                     </div>
                                                 </div>
@@ -90,7 +90,7 @@ similarly for lectures
             chapCnt=currentChapCnt;
         }
         var id = chapCnt;
-        var myChapter = $('<div class="card" draggable="true" id="cr'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="cp'+id+'"><input type="hidden" value="cp'+id+'lfs" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD'+id+'" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
+        var myChapter = $('<div class="card" draggable="true"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
         chapCnt = chapCnt+1;
     }
@@ -100,7 +100,6 @@ similarly for lectures
             // Increment the loop to the parent node
             el = el.parentNode;
         }
-        var cardId = el.id;
         var cardBody = el.querySelector('.card-body');
         var lcount = cardBody.children.length;
         if (lcount > 2) {
@@ -119,7 +118,7 @@ similarly for lectures
         }
          var id = el.children.length-1;
          var cname = el.id;
-         var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="'+cname+'lfs" id="myfile" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
+         var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
          lecture.appendTo(el);
     }
   </script>

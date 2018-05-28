@@ -100,9 +100,9 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     # first get and save files into provider_session db
                     sessionsIdArr = []
                     publishedArr = []
-
-                    if lcids[i] in request.FILES:
-                        filesUploaded = request.FILES.getlist(lcids[i])
+                    lcVar = 'lc['+lcids[i]+'][]'
+                    if lcVar in request.FILES:
+                        filesUploaded = request.FILES.getlist(lcVar)
                         for file in filesUploaded:
                             sessionObj = models.Session()
                             sessionObj.name = file
