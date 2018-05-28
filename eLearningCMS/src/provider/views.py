@@ -60,7 +60,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if courseId != '':
           courseObj = course.models.Course.objects.filter(id=courseId)[0]
           kwargs["editCourse"] = courseObj
-          kwargs["course_detail"] = course.views.getCourseDetails(courseId,1)
+          kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 1)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
