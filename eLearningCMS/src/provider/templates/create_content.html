@@ -83,10 +83,16 @@ similarly for lectures
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script>
+    var chapCnt = 1;
     function addChapter(elmnt) {
-        var id = document.getElementById("accordianChapters").children.length;
+        var currentChapCnt = document.getElementById("accordianChapters").children.length;
+        if (currentChapCnt > chapCnt) {
+            chapCnt=currentChapCnt;
+        }
+        var id = chapCnt;
         var myChapter = $('<div class="card" draggable="true" id="cr'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="cp'+id+'"><input type="hidden" value="cp'+id+'lfs" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD'+id+'" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
+        chapCnt = chapCnt+1;
     }
     function deleteChapter(elmnt) {
         var el = elmnt;
