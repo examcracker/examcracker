@@ -2,8 +2,12 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.forms import forms
+from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
+from pymediainfo import MediaInfo
+import os
+
 
 class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -17,3 +21,11 @@ class Session(models.Model):
     uploaded = models.DateTimeField(auto_now_add=True)
     video = models.FileField(upload_to=user_directory_path)
     tags = models.CharField(max_length=100)
+    duration = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        super(Session, self).save(*args, **kwargs)
+        media_info = MediaInfo.parse(os.path.join(settings.MEDIA_ROOT, self.video.name))
+        self.duration = media_info.tracks[0].duration
+        return super(Session, self).save(*args, **kwargs)
+
