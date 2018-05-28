@@ -76,7 +76,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                 
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
-            kwargs["course_detail"] = course.views.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             kwargs["allExams"] = course.models.EXAM_CHOICES
             kwargs["courseId"] = courseId
             course.models.CourseChapter.objects.filter(course_id=courseId).delete()
@@ -115,7 +115,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     chapterObj.sessions=sessionsIdArr
                     chapterObj.published=publishedArr
                     chapterObj.save()
-            kwargs["course_detail"] = course.views.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
         
         # try to segregate the procs for course description creation and 
@@ -127,7 +127,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if cId != '':
           courseObj = course.models.Course.objects.filter(id=cId)[0]
           kwargs["editCourse"] = courseObj
-          kwargs["course_detail"] = course.views.getCourseDetails(cId,0)
+          kwargs["course_detail"] = course.algos.getCourseDetails(cId,0)
         courseName = request.POST.get('courseName','')
         # This means , this is Edit course flow.
         if courseName == '':

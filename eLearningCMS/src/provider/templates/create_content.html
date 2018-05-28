@@ -34,17 +34,17 @@ similarly for lectures
                 <div class="container">
                     <div id="accordianChapters">
                     {% for item in course_detail %}
-                    {% for key, value in item.items %}
+                    {% for chapid, value in item.items %}
                     <div class="card" draggable="true" id="cr{{forloop.parentloop.counter}}">
                         <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{key}}</a>
+                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{value.name}}</a>
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
                             <div class="card-body" id="cp{{forloop.parentloop.counter}}">
                                 <input type="hidden" value="cp{{forloop.parentloop.counter}}lfs" name="lcids" />
                                 <div class="row">
-                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD{{forloop.parentloop.counter}}" placeholder="Enter Chapter Description" value = "{{key}}" ></div>
+                                    <div class="col-auto"><input type="text" class="form-control" name="cd[]" id="CD{{forloop.parentloop.counter}}" placeholder="Enter Chapter Description" value = "{{value.name}}" ></div>
                                     <div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div>
                                 </div>
                                 {% for session in value %}
@@ -56,7 +56,7 @@ similarly for lectures
                                             <td>
                                                 <div class="input-group">
                                                     <div class="custom-file">
-                                                        <input type="file" name ="{{forloop.parentloop.parentloop.counter}}lfs" id="myfile" class="custom-file-input" value="{{session.name}}">
+                                                        <input type="file" name ="lc[{{forloop.counter}}][]" id="myfile" class="custom-file-input" value="{{session.name}}">
                                                         <label class="custom-file-label" >Choose Lecture </label>
                                                     </div>
                                                 </div>
