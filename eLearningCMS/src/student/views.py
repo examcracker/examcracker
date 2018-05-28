@@ -96,9 +96,6 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
             url = "payments:my_cart"
             return redirect(url)
 
-class showProgress(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'progress.html'
-
 class joinCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'join_courses.html'
     http_method_names = ['get', 'post']
@@ -125,7 +122,6 @@ class joinCourses(LoginRequiredMixin, generic.TemplateView):
 class myCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_courses.html'
     http_method_names = ['get']
-
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
@@ -196,3 +192,16 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
         examList = course.algos.getExams()
         providerList = User.objects.filter(is_staff=1)
         return render(request, self.template_name, {"courses" : courseList, "exams" : examList, "providers" : providerList, "search" : searchtext})
+
+class showProgress(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'progress.html'
+    http_method_names = ['get']
+    def get(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
+        myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
+        kwargs["progress"] = [['Task', 'Hours'],
+            ['Topic 1',     11],
+             ['Topic 2',     7],
+             ['Topic 3',     4]]
+
+        return super().get(request, *args, **kwargs)
