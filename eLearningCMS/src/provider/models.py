@@ -5,7 +5,9 @@ from django.forms import forms
 from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
-from pymediainfo import MediaInfo
+import subprocess
+import ffmpy
+import json
 import os
 
 
@@ -25,7 +27,10 @@ class Session(models.Model):
 
     def save(self, *args, **kwargs):
         super(Session, self).save(*args, **kwargs)
-        media_info = MediaInfo.parse(os.path.join(settings.MEDIA_ROOT, self.video.name))
-        self.duration = media_info.tracks[0].duration
+        response = ffmpy.FFprobe(inputs={os.path.join(settings.MEDIA_ROOT, self.video.name): None},
+                        global_options=['-v', 'error', '-show_entries', 'format=Duration', '-print_format', 'json'])
+        out = response.run(stdout=subprocess.PIPE)
+        decoded = json.loads(out[0].decode('utf-8'))
+        self.duration = int(float(decoded['format']['duration']))
         return super(Session, self).save(*args, **kwargs)
 
