@@ -107,7 +107,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                             sessionObj = models.Session()
                             sessionObj.name = file
                             sessionObj.provider = providerObj
-                            sessionObj.video = file
                             sessionObj.save()
                             sessionsIdArr.append(sessionObj.id)
                             publishedArr.append(True)
