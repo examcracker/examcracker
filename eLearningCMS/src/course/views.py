@@ -3,9 +3,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
+from django.urls import reverse
 from collections import OrderedDict
 from operator import itemgetter
 from django.contrib.auth import get_user_model
+from django.http import QueryDict
 from . import models
 import course
 from course import algos
@@ -13,13 +15,14 @@ import provider
 import student
 import re
 import profiles
+import payments
 from collections import defaultdict
 
 # Create your views here.
 
 class courseDetails(generic.TemplateView):
     template_name = 'coursePage.html'
-    http_method_names = ['get']
+    http_method_names = ['get', 'post']
 
     def get(self, request, id, *args, **kwargs):
         courseid = id
@@ -40,6 +43,9 @@ class courseDetails(generic.TemplateView):
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True
+                addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
+                if len(addedCourse) > 0:
+                    courseOverviewMap["addedCourse"] = True
 
             elif request.user.is_staff:
                 providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
@@ -59,6 +65,27 @@ class courseDetails(generic.TemplateView):
         courseDetailMap = algos.getCourseDetails(id)
         kwargs["course_detail"] = courseDetailMap
         return super().get(request, id, *args, **kwargs)
+
+    def post(self, request, id, *args, **kwargs):
+        courseid = id
+        studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+        cart = payments.models.Cart()
+        cart.student = studentObj
+        cart.course = courseObj
+
+        if "join" in request.POST:
+            cart.checkout = True
+            cart.save()
+            query_dictionary = QueryDict('', mutable=True)
+            query_dictionary.update({'id': courseid})
+            url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+                                                querystring=query_dictionary.urlencode())
+            return redirect(url)
+        elif "cart" in request.POST:
+            cart.save()
+            url = "payments:my_cart"
+            return redirect(url)
 
 class playSession(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']

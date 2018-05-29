@@ -43,7 +43,16 @@ courses ( all courses ,course model)
                             <h5 class="card-title">{{ course_overview.Name }}</h5>
                             <p class="card-text">{{course_overview.Description}}</p>
                             {% if not course_overview.myCourse %}
-                                <a href="#" class="btn btn-primary">Join</a>
+							  <form method="post" action="" enctype="multipart/form-data">
+							    {% csrf_token %}
+                                <input type="submit" name="join" class="btn btn-primary" value="Join"></input>
+								<br>
+								<br>
+								<br>
+								{% if not course_overview.addedCourse %}
+								 <input type="submit" name="cart" class="btn btn-primary" value="Add to Cart"></input>
+								{% endif %}
+							  </form>
                             {% endif %}
                             <hr>
                             <!-- Turquoise -->
