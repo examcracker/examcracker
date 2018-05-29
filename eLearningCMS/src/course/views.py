@@ -32,17 +32,32 @@ class courseDetails(generic.TemplateView):
             kwargs["not_published"] = True
             return super().get(request, id, *args, **kwargs)
 
+        courseDetailMap = algos.getCourseDetails(id)
+        kwargs["course_detail"] = courseDetailMap
+
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
-                courseOverviewMap["progress"] = "30%"
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True
+
+                    # calculate duration completed
+                    durationCompleted = 0
+                    totalDuration = 0
+                    enrolledCourseObj = enrolledCourse[0]
+                    for s in enrolledCourseObj.sessions:
+                        sessionObj = provider.models.Session.objects.filter(id=s)[0]
+                        durationCompleted = durationCompleted + sessionObj.duration
+                    for chapDetail in courseDetailMap:
+                        for chapId in chapDetail:
+                            totalDuration = totalDuration + chapDetail[chapId]["duration"]
+                    courseOverviewMap["progress"] = str(durationCompleted*100/totalDuration) + '%'
+
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
                     courseOverviewMap["addedCourse"] = True
@@ -62,8 +77,6 @@ class courseDetails(generic.TemplateView):
         courseOverviewMap["Published"] = courseObj.created
 
         kwargs["course_overview"] = courseOverviewMap
-        courseDetailMap = algos.getCourseDetails(id)
-        kwargs["course_detail"] = courseDetailMap
         return super().get(request, id, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):

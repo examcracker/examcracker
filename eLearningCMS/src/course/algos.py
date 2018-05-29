@@ -29,6 +29,7 @@ def getCourseDetails(courseid, onlyPublished = 1):
             chapterDetailMap[chapterId] = {}
             chapterDetailMap[chapterId]["name"] = item.name
             chapterDetailMap[chapterId]["sessions"] = []
+            chapterDetailMap[chapterId]["duration"] = 0
 
             for sess in sessions:
                 pos = sessions.index(sess)
@@ -41,6 +42,7 @@ def getCourseDetails(courseid, onlyPublished = 1):
                 sessionDetails["video"] = sessionObj.video
                 sessionDetails["id"] = sessionObj.id
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
+                chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
 
             courseDetailMap.append(chapterDetailMap)
     return courseDetailMap
