@@ -4,9 +4,12 @@ from django.views import generic
 from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
 from . import models
+from django.http import JsonResponse
+
 from . import forms
 import course
 import datetime
+import pdb
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -36,17 +39,28 @@ class uploadVideo(LoginRequiredMixin, CreateView):
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     template_name = "upload_video_multiple.html"
     http_method_names = ['get', 'post']
+    
+    def get(self, request, *args, **kwargs):
+        #pdb.set_trace()
+        providerObj = getProvider(request)
+        video_list = models.Session.objects.filter(provider_id=providerObj.id)
+        return render(self.request, self.template_name, {'videos': video_list})
 
     def post(self, request):
         providerObj = getProvider(request)
-        filesUploaded = request.FILES.getlist('videos')
-        for file in filesUploaded:
-            sessionObj = models.Session()
-            sessionObj.name = file
-            sessionObj.provider = providerObj
-            sessionObj.video = file
+        #pdb.set_trace()
+        videoForm = forms.uploadFilesForm(self.request.POST,self.request.FILES)
+        if videoForm.is_valid():
+            sessionObj = videoForm.save(commit=False)
+            sessionObj.provider = getProvider(request)
+            sessionObj.name = sessionObj.video.name
             sessionObj.save()
-        return redirect("provider:provider_home")
+            videoForm.save()
+            data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name,'videUrl': sessionObj.video.url}
+            return JsonResponse(data)
+        else:
+            data = {'is_valid': False}
+            return JsonResponse(data)
 
 class createCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = 'create_course.html'
@@ -58,59 +72,53 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         if courseId != '':
-          courseObj = course.models.Course.objects.filter(id=courseId)[0]
-          kwargs["editCourse"] = courseObj
-          kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 1)
+            courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            kwargs["editCourse"] = courseObj
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 1)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
         isCourseContent = request.POST.get('isCourseContent','')
+        courseId = request.POST.get('courseId','')
+        courseObj = course.models.Course()
+        if courseId != '':
+            kwargs["courseId"] = courseId
+            courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            kwargs["editCourse"] = courseObj
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+
+        kwargs["allExams"] = course.models.EXAM_CHOICES
         providerObj = getProvider(request)
+
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
             # auto writing chapter names
-            courseId = request.POST.get("course_id",'')
-            if courseId == '':
+            #pdb.set_trace()
+            cdel = course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
-                
-            courseObj = course.models.Course.objects.filter(id=courseId)[0]
-            kwargs["editCourse"] = courseObj
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
-            kwargs["allExams"] = course.models.EXAM_CHOICES
-            kwargs["courseId"] = courseId
-            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
-            if 'cd[]' not in request.POST:
-                return super().get(request, *args, **kwargs)
-
-            addedChapters = request.POST.getlist('cd[]')
-            courseObj = course.models.Course.objects.filter(id=courseId)[0]
-            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
-            if len(addedChapters) > 0:
-                lcids = request.POST.getlist("lcids")
+            #addedChapters = request.POST.getlist('cd[]')
+            lcids = request.POST.getlist('lcids')
+            if len(lcids) > 0:
                 cpPrefix = 'Chapter '              
                 i = 0
-                while i < len(addedChapters):
-                    # save chapter first
+                while i < len(lcids):
+                    i=i+1
                     chapterObj = course.models.CourseChapter()
-                    chapterObj.name = cpPrefix + str(i+1)
+                    chapterObj.name = cpPrefix + str(i)
                     chapterObj.course = courseObj
-                    chapterObj.sequence = i+1
-
+                    chapterObj.sequence = i
                     # first get and save files into provider_session db
                     sessionsIdArr = []
                     publishedArr = []
-                    lcVar = 'lc['+lcids[i]+'][]'
-                    if lcVar in request.FILES:
-                        filesUploaded = request.FILES.getlist(lcVar)
-                        for file in filesUploaded:
-                            sessionObj = models.Session()
-                            sessionObj.name = file
-                            sessionObj.provider = providerObj
-                            sessionObj.save()
-                            sessionsIdArr.append(sessionObj.id)
+                    # get session ids here
+                    lcVar = 'lec['+str(i)+'][]'
+                    if lcVar in request.POST:
+                        filesUploaded = request.POST.getlist(lcVar)
+                        for sessionIds in filesUploaded:
+                            sessionsIdArr.append(sessionIds)
                             publishedArr.append(True)
-                    i = i+1
                     chapterObj.sessions=sessionsIdArr
                     chapterObj.published=publishedArr
                     chapterObj.save()
@@ -119,18 +127,11 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         
         # try to segregate the procs for course description creation and 
         # course content creation
-        cId = request.POST.get('courseId','')
-        kwargs["allExams"] = course.models.EXAM_CHOICES
-        courseObj = course.models.Course()
-        kwargs["courseId"] = cId
-        if cId != '':
-          courseObj = course.models.Course.objects.filter(id=cId)[0]
-          kwargs["editCourse"] = courseObj
-          kwargs["course_detail"] = course.algos.getCourseDetails(cId,0)
         courseName = request.POST.get('courseName','')
-        # This means , this is Edit course flow.
+        # check if Edit course flow.
         if courseName == '':
             return super().get(request, *args, **kwargs)
+
         # no need to validate, validation already done in html form
         courseObj.name = courseName
         courseObj.description=request.POST.get('courseDescription','')

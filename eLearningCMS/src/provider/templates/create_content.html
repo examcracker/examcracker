@@ -42,6 +42,7 @@ similarly for lectures
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
                             <div class="card-body" id="{{forloop.parentloop.counter}}">
+                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}" data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'/>
                                 <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
                                 <div class="row">
                                     <div class="col-auto">
@@ -58,11 +59,11 @@ similarly for lectures
                                             <td>Lecture {{forloop.counter}}</td>
                                             <td>
                                                 <div class="input-group">
-                                                    <div class="custom-file">
-                                                        <input type="file" name ="lc[{{forloop.parentloop.parentloop.counter}}][]" id="myfile" class="custom-file-input" value="{{session.name}}">
-                                                        <input type="hidden" name ="lc[{{chapid}}][]" value="{{session.id}}">
-                                                        <label class="custom-file-label" >Choose Lecture </label>
-                                                    </div>
+                                                            <a href="{% url 'course:playSession' chapid session.id %}" class="list-group-item">
+                                                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
+                                                                    {{ session.name }}
+                                                                </a>
+                                                        <input type="hidden" name ="lec[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.id}}">
                                                 </div>
                                             </td>
                                         </tr>
@@ -80,12 +81,30 @@ similarly for lectures
     </div>
     </div>
       <input type="hidden" value="true" name="isCourseContent" />
-      <input type="hidden" value="{{editCourse.id}}" name="course_id" />
+      <input type="hidden" value="{{editCourse.id}}" name="courseId" />
       <button type="submit"  class="btn btn-info btn-lg float-right" id="saveAllChanges">Save changes</button>
       <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg" id="btnGen">Add New Chapter</button>
     </form>
+    <div class="modal fade" id="modal-progress" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Uploading...</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="{% static 'fileUploader/js/jquery-3.1.1.min.js' %}"></script>
+<script src="{% static 'fileUploader/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
+<script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
+<script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
+
 <script>
     var chapCnt = 1;
     function addChapter(elmnt) {
@@ -94,8 +113,10 @@ similarly for lectures
             chapCnt=currentChapCnt;
         }
         var id = chapCnt;
+        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" data-form-data='{\"csrfmiddlewaretoken\": \"{{ csrf_token }}\"}'/>");
         var myChapter = $('<div class="card" draggable="true"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
+        fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
     }
     function deleteChapter(elmnt) {
@@ -106,11 +127,12 @@ similarly for lectures
         }
         var cardBody = el.querySelector('.card-body');
         var lcount = cardBody.children.length;
-        if (lcount > 2) {
+        if (lcount > 3) {
             alert('Cannot delete chapter. It has lectures');
         }
         else {
             document.getElementById("accordianChapters").removeChild(el);
+            chapCnt = chapCnt-1;
         }
     }
 
@@ -120,9 +142,33 @@ similarly for lectures
             // Increment the loop to the parent node
             el = el.parentNode;
         }
-         var id = el.children.length-1;
+         var id = el.children.length-2;
          var cname = el.id;
-         var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
-         lecture.appendTo(el);
+         $("#fileupload"+cname).click();
+         $("#fileupload"+cname).fileupload({
+            dataType: 'json',
+            sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
+            start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
+                $("#modal-progress").modal("show");
+            },
+            stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
+                $("#modal-progress").modal("hide");
+            },
+            progressall: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                var strProgress = progress + "%";
+                $(".progress-bar").css({"width": strProgress});
+                $(".progress-bar").text(strProgress);
+            },
+            done: function (e, data) {
+                if (data.result.is_valid) {
+                    var lecture = $('<input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><div class="row"><table><tr><td>Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
+                    //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
+                    lecture.appendTo(el);
+                    id = id+1;
+                }
+            }
+    });
+
     }
   </script>

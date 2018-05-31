@@ -21,6 +21,11 @@ class uploadVideoForm(forms.ModelForm):
         model = models.Session
         fields = ['name', 'video']
 
+class uploadFilesForm(forms.ModelForm):
+    class Meta:
+        model = models.Session
+        fields = ['video',]
+
 class courseCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
