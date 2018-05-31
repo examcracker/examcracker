@@ -56,7 +56,7 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             sessionObj.name = sessionObj.video.name
             sessionObj.save()
             videoForm.save()
-            data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name,'videUrl': sessionObj.video.url}
+            data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name}
             return JsonResponse(data)
         else:
             data = {'is_valid': False}
