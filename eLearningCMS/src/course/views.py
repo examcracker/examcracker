@@ -17,6 +17,7 @@ import re
 import profiles
 import payments
 from collections import defaultdict
+from django.http import Http404
 
 # Create your views here.
 
@@ -30,6 +31,7 @@ class courseDetails(generic.TemplateView):
 
         if courseObj.published == False:
             kwargs["not_published"] = True
+            raise Http404()
             return super().get(request, id, *args, **kwargs)
 
         courseDetailMap = algos.getCourseDetails(id)
@@ -110,6 +112,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         # check whether the session is in that course
         if sessionid not in courseChapterObj.sessions:
             kwargs["wrong_content"] = True
+            raise Http404()
             return super().get(request, chapterid, sessionid, *args, **kwargs)
 
         # if user is student, allow only if enrolled for the course and session is published
@@ -117,12 +120,14 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             index = courseChapterObj.sessions.index(sessionid)
             if courseChapterObj.published[index] == False:
                 kwargs["not_published"] = True
+                raise Http404()
                 return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 kwargs["not_enrolled"] = True
+                raise Http404()
                 return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             enrolledCourseObj = enrolledCourse[0]
@@ -136,6 +141,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             if courseObj.provider_id != providerObj.id:
                 kwargs["wrong_provider"] = True
+                raise Http404()
                 return super().get(request, chapterid, sessionid, *args, **kwargs)
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
