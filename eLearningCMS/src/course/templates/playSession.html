@@ -1,56 +1,128 @@
-<!-- This file has following objects with it 
-exams ( from course model)
-courses ( all courses ,course model)
--->
-{% extends "__ecBase.html" %}
+
 
 <html>
-    {% load staticfiles %}
+	{% load staticfiles %}
     {% load crispy_forms_tags %}
     {% load thumbnail %}
 
     <head>
-        <link href="{% static 'course/base.css' %}" rel="stylesheet">
+	    <script>
+		var keys = {
+		"b326f895b6a24cc5a4dc70995728059c":"f9b91a0725e0171910dade03481b0463",
+		"b326f895b6a24cc5a4dc70995728059c":"f9b91a0725e0171910dade03481b0463",
+		}
+
+		var audioFragments = ["{{MEDIA_URL}}/media/audio/audio_frag_en.mp4",];
+
+		var videoFragments = ["{{MEDIA_URL}}/media/video/video_frag_en.mp4",];
+		</script>
+
+        <script type="text/javascript" src="{% static 'eme/eme.js' %}"></script>
+        <script>
+		function MSELoadTrack(fragments, type, mediaSource, name) {
+			return new Promise(function(resolve, reject) {
+			var sourceBuffer;
+			var curFragment = 0;
+
+			function addNextFragment() {if (mediaSource.readyState == "closed") {return;}
+			if (curFragment >= fragments.length) {resolve();return;}
+
+			var fragmentFile = fragments[curFragment++];
+
+			var req = new XMLHttpRequest();
+			req.open("GET", fragmentFile);
+			req.responseType = "arraybuffer";
+
+			req.addEventListener("load", function() {sourceBuffer.appendBuffer(new Uint8Array(req.response));});
+
+			req.addEventListener("error", function(){reject();});
+			req.addEventListener("abort", function(){reject();});
+			req.send(null);
+		}
+
+		sourceBuffer = mediaSource.addSourceBuffer(type);
+		sourceBuffer.addEventListener("updateend", addNextFragment);
+		addNextFragment();
+		});
+		}
+
+		</script>
     </head>
 
     <body>
 
-    {% block ImageSlider %}
-    {% endblock ImageSlider %}
-
-    {% block jumbotronBlock %}
-    {% endblock jumbotronBlock %}
-
-    {% block container %}
-
-
-    <div class="container">
-
-        <div class="card bg-dark text-white">
-            <div class="course-header">
-                <div class="row">
-                    <div class="col">
-                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.png' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
-                    </div>
-                    <div class="col">
-                        <div class="card-body">
-						    {% if wrong_content %}
-                             <h5>The content does not exist</h5>
-							{% endif %}
-							{% if not_enrolled or not_published %}
-                             <h5>You are not authorized to view this content</h5>
-							{% endif %}
-							{% if wrong_provider %}
-                             <h5>You do not own the content</h5>
-							{% endif %}
-                        </div>
-                    </div>
-                </div>
+	{% if wrong_content %}
+            <div class="alert alert-danger" role="alert" style="height:80%">
+                <h4>Invalid Content</h4>
+                <p> This content does not exist </p>
             </div>
-        </div>
-    </div>
+    {% elif not_published or not_enrolled or wrong_provider %}
+			<div class="alert alert-danger" role="alert" style="height:80%">
+                <h4>Not Authorized</h4>
+                <p> You are not authorized to view this content </p>
+            </div>
+	{% else %}
+			<video id="v" controls preload="auto" width="80%" height="80%"></video>
+			<div id="log"></div>
+	{% endif %}
 
-    {%  endblock container %}
+	<script>
+      const KEYSYSTEM_TYPE = "org.w3.clearkey";
 
+      function Load() {
+        if (!navigator.requestMediaKeySystemAccess) {
+          return;
+        }
+
+        var video = document.getElementById("v");
+
+        [ "canplay", "canplaythrough", "encrypted", "ended", "error", "loadeddata",
+          "loadedmetadata", "loadstart", "pause", "play", "playing", "progress",
+          "stalled", "suspend", "waiting",
+        ].forEach(function (e) {
+          v.addEventListener(e, function(event) {
+          }, false);
+        });
+
+        var options = [];
+        const audioContentType = 'audio/mp4; codecs="mp4a.40.2"'; // AAC-LC
+        const videoContentType = 'video/mp4; codecs="avc1.64001F"'; // High profile level 3.1
+
+        if (typeof(MediaKeySystemAccess.prototype.getConfiguration) == "undefined") {
+          options = [
+            {
+              initDataType: "cenc",
+              videoType: videoContentType,
+              audioType: audioContentType,
+            }
+          ];
+        } else {
+          options = [
+            {
+              initDataTypes: ["cenc"],
+              videoCapabilities: [{contentType: videoContentType}],
+              audioCapabilities: [{contentType: audioContentType}],
+            }
+          ];
+        }
+
+        SetupEME(video, KEYSYSTEM_TYPE, "video", keys, options);
+
+        var ms = new MediaSource();
+        video.src = URL.createObjectURL(ms);
+
+        var SourceOpen = function () {
+          ms.removeEventListener("sourceopen", SourceOpen);
+          Promise.all([MSELoadTrack(videoFragments, videoContentType, ms, "video")])
+            .then(function(){ms.endOfStream();});
+        }
+
+        ms.addEventListener("sourceopen", SourceOpen);
+        video.addEventListener("canplay", function(){video.play();});
+      }
+
+      Load();
+
+    </script>
     </body>
 </html>
