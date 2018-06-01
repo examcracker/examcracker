@@ -12,9 +12,9 @@
 		"b326f895b6a24cc5a4dc70995728059c":"f9b91a0725e0171910dade03481b0463",
 		}
 
-		var audioFragments = ["{{MEDIA_URL}}/media/audio/audio_frag_en.mp4",];
+		var audioFragments = ["{{MEDIA_URL}}/{{session_url}}a.mp4",];
 
-		var videoFragments = ["{{MEDIA_URL}}/media/video/video_frag_en.mp4",];
+		var videoFragments = ["{{MEDIA_URL}}{{session_url}}v.mp4",];
 		</script>
 
         <script type="text/javascript" src="{% static 'eme/eme.js' %}"></script>
@@ -51,20 +51,8 @@
 
     <body>
 
-	{% if wrong_content %}
-            <div class="alert alert-danger" role="alert" style="height:80%">
-                <h4>Invalid Content</h4>
-                <p> This content does not exist </p>
-            </div>
-    {% elif not_published or not_enrolled or wrong_provider %}
-			<div class="alert alert-danger" role="alert" style="height:80%">
-                <h4>Not Authorized</h4>
-                <p> You are not authorized to view this content </p>
-            </div>
-	{% else %}
-			<video id="v" controls preload="auto" width="80%" height="80%"></video>
-			<div id="log"></div>
-	{% endif %}
+		<video id="v" controls preload="auto" width="80%" height="80%"></video>
+		<div id="log"></div>
 
 	<script>
       const KEYSYSTEM_TYPE = "org.w3.clearkey";
@@ -113,7 +101,8 @@
 
         var SourceOpen = function () {
           ms.removeEventListener("sourceopen", SourceOpen);
-          Promise.all([MSELoadTrack(videoFragments, videoContentType, ms, "video")])
+          Promise.all([MSELoadTrack(videoFragments, videoContentType, ms, "video"),
+		               MSELoadTrack(audioFragments, audioContentType, ms, "audio")])
             .then(function(){ms.endOfStream();});
         }
 

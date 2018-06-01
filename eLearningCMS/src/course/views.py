@@ -113,7 +113,6 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         if sessionid not in courseChapterObj.sessions:
             kwargs["wrong_content"] = True
             raise Http404()
-            return super().get(request, chapterid, sessionid, *args, **kwargs)
 
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
@@ -121,14 +120,12 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             if courseChapterObj.published[index] == False:
                 kwargs["not_published"] = True
                 raise Http404()
-                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 kwargs["not_enrolled"] = True
                 raise Http404()
-                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
             enrolledCourseObj = enrolledCourse[0]
             if sessionid not in enrolledCourseObj.sessions:
@@ -142,6 +139,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             if courseObj.provider_id != providerObj.id:
                 kwargs["wrong_provider"] = True
                 raise Http404()
-                return super().get(request, chapterid, sessionid, *args, **kwargs)
 
+        sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
+        kwargs["session_url"] = "sessions/" + str(sessionObj.provider_id) + "/" + str(sessionid) + "_"
+        print (kwargs["session_url"])
         return super().get(request, chapterid, sessionid, *args, **kwargs)
