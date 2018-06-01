@@ -39,12 +39,6 @@ class uploadVideo(LoginRequiredMixin, CreateView):
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     template_name = "upload_video_multiple.html"
     http_method_names = ['get', 'post']
-    
-    def get(self, request, *args, **kwargs):
-        #pdb.set_trace()
-        providerObj = getProvider(request)
-        video_list = models.Session.objects.filter(provider_id=providerObj.id)
-        return render(self.request, self.template_name, {'videos': video_list})
 
     def post(self, request):
         providerObj = getProvider(request)
@@ -85,8 +79,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
-
         kwargs["allExams"] = course.models.EXAM_CHOICES
         providerObj = getProvider(request)
 
@@ -96,6 +88,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             # auto writing chapter names
             #pdb.set_trace()
             cdel = course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
             #addedChapters = request.POST.getlist('cd[]')
