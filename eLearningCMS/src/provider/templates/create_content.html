@@ -23,7 +23,15 @@ overwrite whole data?
 similarly for lectures
 -->
 
-{% load staticfiles %}
+{% load staticfiles %}   
+<style>
+    table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    font-size: small;
+    table-layout: fixed;
+}
+</style>
 <div class="container">
     <h5>My Course Structure</h5>
     <form method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
@@ -42,7 +50,7 @@ similarly for lectures
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
                             <div class="card-body" id="{{forloop.parentloop.counter}}">
-                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}" data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'/>
+                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}" data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
                                 <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
                                 <div class="row">
                                     <div class="col-auto">
@@ -54,20 +62,21 @@ similarly for lectures
                                 {% for session in value.sessions %}
                                 <!-- lectures here -->
                                 <div class="row">
+                                    
                                     <table>
                                         <tr>
-                                            <td>Lecture {{forloop.counter}}</td>
+                                            <td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td>
+                                            <td style="font-weight:bold">Lecture {{forloop.counter}}</td>
                                             <td>
-                                                <div class="input-group">
-                                                            <a href="{% url 'course:playSession' chapid session.id %}" class="list-group-item">
-                                                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
-                                                                    {{ session.name }}
-                                                                </a>
-                                                        <input type="hidden" name ="lec[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.id}}">
-                                                </div>
+                                                <a href="{% url 'course:playSession' chapid session.id %}" >
+                                                <i class="fa fa-play fa-fw" ></i>
+                                                {{ session.name }}
+                                                </a>
+                                                <input type="hidden" name ="lec[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.id}}">
                                             </td>
                                         </tr>
                                     </table>
+                                
                                 </div>
                                 {% endfor %}
                             </div>
@@ -113,15 +122,15 @@ similarly for lectures
             chapCnt=currentChapCnt;
         }
         var id = chapCnt;
-        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" data-form-data='{\"csrfmiddlewaretoken\": \"{{ csrf_token }}\"}'/>");
-        var myChapter = $('<div class="card" draggable="true"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'"></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
+        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" data-form-data='{\"csrfmiddlewaretoken\": \"{{ csrf_token }}\"}'>");
+        var myChapter = $('<div class="card" draggable="true"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
     }
-    function deleteChapter(elmnt) {
+     function deleteChapter(elmnt) {
         var el = elmnt;
-         while (el.className != 'card') {
+        while (el.className != 'card') {
             // Increment the loop to the parent node
             el = el.parentNode;
         }
@@ -132,8 +141,21 @@ similarly for lectures
         }
         else {
             document.getElementById("accordianChapters").removeChild(el);
-            chapCnt = chapCnt-1;
+            //chapCnt = chapCnt-1;
         }
+    }
+    function deleteLecture(elmnt) {
+        var l_elem = elmnt;
+         while (l_elem.className != 'row') {
+            // Increment the loop to the parent node
+            l_elem = l_elem.parentNode;
+        }
+        var c_elem = l_elem;
+        while (c_elem.className != 'card-body') {
+            // Increment the loop to the parent node
+            c_elem = c_elem.parentNode;
+        }
+        c_elem.removeChild(l_elem);
     }
 
     function addLecture(elmnt) {
@@ -145,7 +167,7 @@ similarly for lectures
          var id = el.children.length-2;
          var cname = el.id;
          $("#fileupload"+cname).click();
-         $("#fileupload"+cname).fileupload({
+         var kunal = $("#fileupload"+cname).fileupload({
             dataType: 'json',
             sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
             start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
@@ -162,7 +184,7 @@ similarly for lectures
             },
             done: function (e, data) {
                 if (data.result.is_valid) {
-                    var lecture = $('<input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><div class="row"><table><tr><td>Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
+                    var lecture = $('<div class="row"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
                     //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
                     lecture.appendTo(el);
                     id = id+1;
