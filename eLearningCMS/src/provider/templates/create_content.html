@@ -43,7 +43,7 @@ similarly for lectures
                     <div id="accordianChapters">
                     {% for item in course_detail %}
                     {% for chapid, value in item.items %}
-                    <div class="card" draggable="true" >
+                    <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{forloop.parentloop.counter}}">
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{value.name}}</a>
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
@@ -115,6 +115,26 @@ similarly for lectures
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
 
 <script>
+    var droptarget;
+function drag(event)
+  {
+    droptarget = event.target.id;
+  }
+  function allowDrop(event)
+  {
+    event.preventDefault();
+  }
+  function drop(event) {
+    event.preventDefault();  
+    var drop_target = event.currentTarget;
+    var drag_target_id = droptarget;
+    var drag_target = document.getElementById(drag_target_id);
+    var tmp = document.createElement('span');
+    tmp.className='hide';
+    drop_target.before(tmp);
+    drag_target.before(drop_target);
+    tmp.replaceWith(drag_target);
+}
     var chapCnt = 1;
     function addChapter(elmnt) {
         var currentChapCnt = document.getElementById("accordianChapters").children.length;
@@ -123,7 +143,7 @@ similarly for lectures
         }
         var id = chapCnt;
         var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" data-form-data='{\"csrfmiddlewaretoken\": \"{{ csrf_token }}\"}'>");
-        var myChapter = $('<div class="card" draggable="true"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
+        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
