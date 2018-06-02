@@ -16,6 +16,7 @@ import provider
 import re
 import profiles
 import payments
+from math import ceil
 
 User = get_user_model()
 
@@ -198,10 +199,53 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
-        kwargs["progress"] = [['Task', 'Hours'],
-            ['Topic 1',     11],
-             ['Topic 2',     7],
-             ['Topic 3',     4]]
+        courseDictMap = {}
+        courseDictArray = []
+        courseDictMap["myCourse"] = False
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        if len(enrolledCourseObj) > 0:
+            courseDictMap["myCourse"] = True
+        for enrolledCourse in enrolledCourseObj:
+            courseDict = {}
+            courseid = enrolledCourse.course_id
+            durationCompleted = 0
+            totalDuration = 0
+            for s in enrolledCourse.sessions:
+                sessionObj = provider.models.Session.objects.filter(id=s)[0]
+                durationCompleted = durationCompleted + sessionObj.duration
+
+            courseObj = course.models.Course.objects.filter(id=courseid)[0]
+            courseDict['name'] = courseObj.name
+            courseDict['duration'] = courseObj.duration
+            courseChaptersObj=[]
+            courseChapters = course.models.CourseChapter.objects.filter(course_id=courseid)
+            sessions_list = [v for v in enrolledCourse.sessions]
+            chaptersArray = []
+            chaptersArray.append(['Topics', 'topics distribution per chapter'])
+            for courseChapter in courseChapters:
+                chapter = {}
+                chapter['name']=courseChapter.name
+                durationCourseTotal = 0
+                durationChapterCompleted = 0
+                for s in courseChapter.sessions:
+                    sessionObj = provider.models.Session.objects.filter(id=s)[0]
+                    durationChapterTotal = durationCourseTotal + sessionObj.duration
+                    totalDuration = totalDuration + durationChapterTotal
+                    if(s in sessions_list):
+                        durationChapterCompleted= durationChapterCompleted + sessionObj.duration
+                chapter['duration'] = durationChapterTotal
+                chapter['session_count']= len(courseChapter.sessions)
+                chapter['progress']=durationChapterCompleted*100/durationChapterTotal
+                courseChaptersObj.append(chapter)
+                chapterArray = []
+                chapterArray.append(chapter['name'])
+                chapterArray.append(chapter['duration'])
+                chaptersArray.append(chapterArray)
+            courseDict['chapters'] = courseChaptersObj
+            courseDict['progress'] = ceil(durationCompleted*100/totalDuration)
+            courseDict['chaptersArray'] = chaptersArray
+            courseDictArray.append(courseDict)
+        courseDictMap["courses"] = courseDictArray
+        kwargs["course_overview"] = courseDictMap
 
         return super().get(request, *args, **kwargs)
