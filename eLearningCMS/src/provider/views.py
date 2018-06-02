@@ -119,12 +119,13 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
 
-        kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+        
         # try to segregate the procs for course description creation and 
         # course content creation
         courseName = request.POST.get('courseName','')
         # check if Edit course flow.
         if courseName == '':
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
@@ -136,6 +137,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj.duration=request.POST.get("courseDuration",'')
         courseObj.save()
         kwargs["editCourse"] = courseObj
+        kwargs["isCourseContent"] = 'true'
         return super().get(request, *args, **kwargs)
         
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
