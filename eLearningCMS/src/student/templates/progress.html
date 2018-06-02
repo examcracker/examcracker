@@ -11,48 +11,6 @@
   </ol>
   <script type="text/javascript" src="{% static 'progress/js/charts/loader.js' %}"></script>
   {% if course_overview.myCourse and not user.is_staff %}
-  {% for course in course_overview.courses %}
-  <div>
-     <h2 style= "margin-left: 40px;">{{ course.name|safe }}</h2>
-     <br/>
-      <script type="text/javascript">
-       google.charts.load("current", {packages:["corechart"]});
-        google.charts.setOnLoadCallback(drawChart);
-        function drawChart() {
-            var chaptersArray = {{ course.chaptersArray|safe }}
-            var data = google.visualization.arrayToDataTable(chaptersArray);
-            var options = {
-              title:  'Chapter wise distribution',
-              pieHole: 0.4,
-              height:300,
-              is3D: true
-            };
-          var chart = new google.visualization.PieChart(document.getElementById('chartContainer{{ forloop.counter }}'));
-          chart.draw(data, options);
-      }
-    </script>
-  <div class="container">
-      <div class="row">
-        <div class="col-lg-9">
-              <div class="row">
-                  <div class="col-lg-9">
-                      <div class="progress">
-                              <div class="progress-bar bg-info" style="width: {{ course.progress }}% ">{{ course_overview.progress }}</div>
-                      </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-9">
-                      <div id="chartContainer{{ forloop.counter }}"></div>
-                    </div>
-              </div>
-        </div>
-        <div class="col-sm-3">
-        </div>
-      </div>
-  </div>
-</div>
-<hr>
-{% endfor %}
-{% endif %}
+  {% include "piechart.html" with datatoload=course_overview %}
+  {% endif %}
 {% endblock active %}

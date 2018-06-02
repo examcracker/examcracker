@@ -243,9 +243,9 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
                 chaptersArray.append(chapterArray)
             courseDict['chapters'] = courseChaptersObj
             courseDict['progress'] = ceil(durationCompleted*100/totalDuration)
-            courseDict['chaptersArray'] = chaptersArray
+            courseDict['piechartArray'] = chaptersArray
             courseDictArray.append(courseDict)
-        courseDictMap["courses"] = courseDictArray
+        courseDictMap["outertemplateArray"] = courseDictArray
         kwargs["course_overview"] = courseDictMap
 
         return super().get(request, *args, **kwargs)

@@ -1,0 +1,43 @@
+{% for obj in datatoload.outertemplateArray %}
+  <div>
+     <h2 style= "margin-left: 40px;">{{ obj.name|safe }}</h2>
+     <br/>
+      <script type="text/javascript">
+       google.charts.load("current", {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var chaptersArray = {{ obj.piechartArray|safe }}
+            var data = google.visualization.arrayToDataTable(chaptersArray);
+            var options = {
+              title:  'Chapter wise distribution',
+              pieHole: 0.4,
+              height:300,
+              is3D: true
+            };
+          var chart = new google.visualization.PieChart(document.getElementById('chartContainer{{ forloop.counter }}'));
+          chart.draw(data, options);
+      }
+    </script>
+  <div class="container">
+      <div class="row">
+        <div class="col-lg-9">
+              <div class="row">
+                  <div class="col-lg-9">
+                      <div class="progress">
+                              <div class="progress-bar bg-info" style="width: {{ obj.progress }}% ">{{ obj.progress }}%</div>
+                      </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-9">
+                      <div id="chartContainer{{ forloop.counter }}"></div>
+                    </div>
+              </div>
+        </div>
+        <div class="col-sm-3">
+        </div>
+      </div>
+  </div>
+</div>
+<hr>
+{% endfor %}

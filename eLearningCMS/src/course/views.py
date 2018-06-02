@@ -18,6 +18,7 @@ import profiles
 import payments
 from collections import defaultdict
 from django.http import Http404
+from math import ceil
 
 # Create your views here.
 
@@ -58,7 +59,7 @@ class courseDetails(generic.TemplateView):
                     for chapDetail in courseDetailMap:
                         for chapId in chapDetail:
                             totalDuration = totalDuration + chapDetail[chapId]["duration"]
-                    courseOverviewMap["progress"] = str(durationCompleted*100/totalDuration) + '%'
+                    courseOverviewMap["progress"] = str(ceil(durationCompleted*100/totalDuration)) + '%'
 
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
