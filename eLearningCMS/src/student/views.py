@@ -29,7 +29,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         category = "ALL Courses"
-        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course ORDER BY created')
+        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True ORDER BY created')
         kwargs["allCourses"] = allCourses
         kwargs["category"] = category
         return super().get(request, *args, **kwargs)
@@ -70,7 +70,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
+        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
         kwargs["remaining_courses"] = notJoinedCourses
         return super().get(request, *args, **kwargs)
 
@@ -103,7 +103,7 @@ class joinCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
+        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
         kwargs["remaining_courses"] = notJoinedCourses
         return super().get(request, *args, **kwargs)
 
@@ -222,27 +222,37 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
             sessions_list = [v for v in enrolledCourse.sessions]
             chaptersArray = []
             chaptersArray.append(['Topics', 'topics distribution per chapter'])
+
             for courseChapter in courseChapters:
                 chapter = {}
-                chapter['name']=courseChapter.name
-                durationCourseTotal = 0
+                chapter['name'] = courseChapter.name
                 durationChapterCompleted = 0
+                durationChapterTotal = 0
+
                 for s in courseChapter.sessions:
                     sessionObj = provider.models.Session.objects.filter(id=s)[0]
-                    durationChapterTotal = durationCourseTotal + sessionObj.duration
-                    totalDuration = totalDuration + durationChapterTotal
+                    durationChapterTotal = durationChapterTotal + sessionObj.duration
                     if(s in sessions_list):
-                        durationChapterCompleted= durationChapterCompleted + sessionObj.duration
+                        durationChapterCompleted = durationChapterCompleted + sessionObj.duration
+
+                totalDuration = totalDuration + durationChapterTotal
+
                 chapter['duration'] = durationChapterTotal
-                chapter['session_count']= len(courseChapter.sessions)
-                chapter['progress']=durationChapterCompleted*100/durationChapterTotal
+                chapter['session_count'] = len(courseChapter.sessions)
+                if durationChapterTotal > 0:
+                    chapter['progress'] = durationChapterCompleted*100/durationChapterTotal
+                else:
+                    chapter['progress'] = 0
                 courseChaptersObj.append(chapter)
                 chapterArray = []
                 chapterArray.append(chapter['name'])
                 chapterArray.append(chapter['duration'])
                 chaptersArray.append(chapterArray)
             courseDict['chapters'] = courseChaptersObj
-            courseDict['progress'] = ceil(durationCompleted*100/totalDuration)
+            if totalDuration > 0:
+                courseDict['progress'] = ceil(durationCompleted*100/totalDuration)
+            else:
+                courseDict['progress'] = 0
             courseDict['piechartArray'] = chaptersArray
             courseDictArray.append(courseDict)
         courseDictMap["outertemplateArray"] = courseDictArray
