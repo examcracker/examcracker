@@ -87,7 +87,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
             # auto writing chapter names
-            pdb.set_trace()
+            #pdb.set_trace()
             course.models.CourseChapter.objects.filter(course_id=courseId).delete()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             if 'lcids' not in request.POST:
