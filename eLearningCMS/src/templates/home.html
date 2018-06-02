@@ -11,21 +11,21 @@ courses ( all courses ,course model)
 <div class="container-fluid">
         <p class="text-left mb-3"> Courses By Exams
         <button class="btn float-right">See all</button> </p>
-        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" provider_id=providerId %}
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses divId="Exams" category="" provider_id=providerId %}
 </div>
 <hr>
 
 <div class="container-fluid">
         <p class="text-left mb-3"> Popular Courses
         <button class="btn float-right">See all</button> </p>
-        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" provider_id=providerId %}
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses divId="Popular" category="" provider_id=providerId %}
 </div>
 <hr>
 
 <div class="container-fluid">
         <p class="text-left mb-3"> Instructors with us
         <button class="btn float-right">See all</button> </p>
-        {% include "__baseCourseNavigator.html" with allCourses=allCourses category="" provider_id=providerId %}
+        {% include "__baseCourseNavigator.html" with allCourses=allCourses divId="Instructors" category="" provider_id=providerId %}
 </div>
 <hr>
 {%  endblock container %}

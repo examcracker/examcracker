@@ -1,33 +1,54 @@
-<html>
+{% load staticfiles %}
 
-        {% load staticfiles %}
-        <head>
-            <link href="{% static 'base/css/cardslider.css' %}" rel="stylesheet">
-        </head>
-
-<body>
+    <style>
+            @media (min-width: 600px) {
+                /* show 4 items */
+                #{{ divId }} .carousel-inner .active,
+                #{{ divId }} .carousel-inner .active + .carousel-item,
+                #{{ divId }} .carousel-inner .active + .carousel-item + .carousel-item,
+                #{{ divId }} .carousel-inner .active + .carousel-item + .carousel-item + .carousel-item{
+                  display: block;
+                }
+              
+                #{{ divId }} .carousel-inner
+                  .carousel-item.active:not(.carousel-item-right):not(.carousel-item-left),
+                #{{ divId }} .carousel-inner
+                  .carousel-item.active:not(.carousel-item-right):not(.carousel-item-left)
+                  + .carousel-item,
+                  #{{ divId }} .carousel-inner
+                  .carousel-item.active:not(.carousel-item-right):not(.carousel-item-left)
+                  + .carousel-item
+                  + .carousel-item,
+                  #{{ divId }} .carousel-inner
+                  .carousel-item.active:not(.carousel-item-right):not(.carousel-item-left)
+                  + .carousel-item
+                  + .carousel-item
+                  + .carousel-item {
+                  transition: none;
+                }
+    </style>
 
     <div class="container">
         <h1 class="text-center mb-3">{{ category }}</h1>
-        <div id="myCarousel" class="carousel slide">
-            <div class="carousel-inner row w-100 mx-auto">
+        <div id="{{ divId }}" class="carousel slide">
+            <div class="carousel-inner row w-100 h-75">
                 {% for currentCourse in allCourses %}
                     {% if forloop.first %}
-                        <div class="carousel-item col-md-4 active">
+                        <div class="carousel-item col-md-3 active">
                     {% else %}
-                        <div class="carousel-item col-md-4">
+                        <div class="carousel-item col-md-3">
                     {% endif %}
                         <div class="card">
                             {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                                 <a href="{% url 'course:coursePage' currentCourse.id %}">
                             {% endif %}
-                                    <img class="card-img-top img-fluid" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
+                                    <img class="card-img-top" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
                             {% if user.is_staff %}
                                 </a> 
                             {% endif %}
                             <div class="card-body">
-                                <h4 class="card-title"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h4>
-                                <table>
+                                <h5 class="text-center"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h5>
+                                <table class="table-condensed">
                                 {% if currentCourse.provider__user__name %}
                                 <tr>
                                     <td>Provider: </td>
@@ -48,36 +69,33 @@
                                     </tr>
 
                                 </table>
-
-                                <p class="card-text"><small class="text-muted">Published: {{ currentCourse.created }}</small></p>
                                 
+                                {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                                 <p align='center'>
-                                <table width='100%'>
+                                <table class="table-condensed">
                                     <tr>
                                     <td>
-
-                            {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                             <form method="post" action="{% url 'provider:create_course' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="courseId" value="{{ currentCourse.id }}">
                                 <input type=submit value="Edit" style="width:100%;">
-                            {% endif %}
                                     </form>
                                     </td>
                                     </tr>
                                 </table>
                                 </p>
+                            {% endif %}
                                 
                             </div>
                         </div>
                     </div>
                 {% endfor %}
 
-                <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+                <a class="carousel-control-prev" href="#{{ divId }}" role="button" data-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="sr-only">Previous</span>
                   </a>
-                  <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+                  <a class="carousel-control-next" href="#{{ divId }}" role="button" data-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="sr-only">Next</span>
                   </a>
@@ -85,13 +103,12 @@
             </div>
     </div>
 
-  </body>
 
   <script>
-    $("#myCarousel").on("slide.bs.carousel", function(e) {
+    $("#{{ divId }}").on("slide.bs.carousel", function(e) {
         var $e = $(e.relatedTarget);
         var idx = $e.index();
-        var itemsPerSlide = 3;
+        var itemsPerSlide = 4;
         var totalItems = $(".carousel-item").length;
       
         if (idx >= totalItems - (itemsPerSlide - 1)) {
@@ -112,5 +129,3 @@
       });
       
   </script>
-
-  </html>
