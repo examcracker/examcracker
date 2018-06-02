@@ -68,7 +68,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 1)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
@@ -79,6 +79,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         providerObj = getProvider(request)
 
@@ -86,8 +87,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
             # auto writing chapter names
-            #pdb.set_trace()
-            cdel = course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            pdb.set_trace()
+            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
@@ -117,7 +118,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     chapterObj.save()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
-        
+
+        kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         # try to segregate the procs for course description creation and 
         # course content creation
         courseName = request.POST.get('courseName','')
