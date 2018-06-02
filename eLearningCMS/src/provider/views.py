@@ -107,7 +107,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     sessionsIdArr = []
                     publishedArr = []
                     # get session ids here
-                    lcVar = 'lec['+str(i)+'][]'
+                    lcVar = 'lec['+str(lcids[i-1])+'][]'
                     if lcVar in request.POST:
                         filesUploaded = request.POST.getlist(lcVar)
                         for sessionIds in filesUploaded:
