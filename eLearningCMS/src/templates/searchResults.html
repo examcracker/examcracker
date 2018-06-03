@@ -55,8 +55,7 @@
 {% if searchResult.count >= 0 %}
 <div class="container-fluid">
   <p class="text-left mb-3"> Courses from  '{{searchText}}'
-    <button class="btn float-right">See all</button> </p>
-      {% include "__baseCourseNavigator.html" with allCourses=searchResult divId="search" category="" provider_id=providerId %}
+      {% include "__baseCourseTiles.html" with allCourses=searchResult divId="search" category="" provider_id=providerId %}
 </div>
 <hr>
 {% endif %}

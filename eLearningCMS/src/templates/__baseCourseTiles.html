@@ -1,0 +1,60 @@
+{% load staticfiles %}
+
+    <div class="container mt-4">
+        <h1 class="text-center mb-3">{{ category }}</h1>
+        <div class="row">
+            <div class="card-deck">
+                {% for currentCourse in allCourses%}
+                <div class="card mb-4" id ="courseCard"style="min-width: 14rem; max-width: 16rem;">
+                    {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+                        <a href="{% url 'course:coursePage' currentCourse.id %}">
+                    {% endif %}
+                            <img class="card-img-top" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
+                    {% if user.is_staff %}
+                        </a> 
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="text-center"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h5>
+                        <table>
+                        {% if currentCourse.provider__user__name %}
+                        <tr>
+                            <td>Provider: </td>
+                            <td align="right">{{ currentCourse.provider__user__name }}</td>
+                        </tr>
+                        {% endif %}
+                            <tr>
+                                <td>Exam: </td>
+                                <td align="right">{{ currentCourse.exam }}</td>
+                            </tr>
+                            <tr>
+                                <td>Cost (INR): </td>
+                                <td align="right">{{ currentCourse.cost }}</td>
+                            </tr>
+                            <tr>
+                                <td>Duration (months):  </td>
+                                <td align="right">{{ currentCourse.duration }}</td>
+                            </tr>
+
+                        </table>
+                        
+                        {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+                        <p align='center'>
+                        <table>
+                            <tr>
+                            <td>
+                    <form method="post" action="{% url 'provider:create_course' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="courseId" value="{{ currentCourse.id }}">
+                        <input type=submit value="Edit" style="width:100%;float: right;">
+                            </form>
+                            </td>
+                            </tr>
+                        </table>
+                        </p>
+                    {% endif %}
+                        
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
