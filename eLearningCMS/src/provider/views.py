@@ -65,6 +65,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseId = request.POST.get("courseId",'')
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
+        kwargs["allSubjects"] = course.models.ExamDict
+
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
@@ -72,6 +74,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
+        #return super().get(request, *args, **kwargs)
         isCourseContent = request.POST.get('isCourseContent','')
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
@@ -81,6 +84,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["editCourse"] = courseObj
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
+        kwargs["allSubjects"] = course.models.ExamDict
+
         providerObj = getProvider(request)
 
         # check if course content flow
@@ -135,6 +140,9 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj.provider=getProvider(request)
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
+        subj = request.POST.get("courseSubject")
+        subj = subj.split(':')[1]
+        courseObj.subjects = subj
         courseObj.save()
         kwargs["editCourse"] = courseObj
         kwargs["isCourseContent"] = 'true'

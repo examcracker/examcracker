@@ -2,10 +2,62 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+
 import student
 import provider
 
 # Create your models here.
+
+# All exams dictionary
+IITJEE = ['Physics', 'Chemistry', 'Maths']
+CAT = ['Quant','LR','Verbal Ability']
+PMT = ['Physics','Chemistry','Biology']
+IAS = [
+    'Geography',
+    'History',
+    'Public Admin',
+    'Phylosophy',
+    'Socialogy',
+    'Language',
+    'Commerce',
+    'Physics',
+    'Chemistry',
+    'Mathematics',
+    'Anthropology',
+    'Economics',
+    'GS 1',
+    'GS 2',
+    'Gs 3',
+    'GS 4',
+    'CSAT',
+    'Botony',
+    'Geology',
+    'Agriculture',
+    'Law'
+]
+
+GATE = [
+    'Computer Science',
+    'Electrical',
+    'Electronics',
+    'Civil',
+    'Mechanical',
+    'Polymer science',
+    'Environmental'
+]
+GRE = ['Verbal','Quant','LR']
+TOEFL = ['Verbal']
+
+ExamDict = {'IIT-JEE': IITJEE, 
+    'AIEEE': IITJEE,
+    'CAT': CAT,
+    'AIIMS':PMT,
+    'PMT':PMT,
+    'IAS':IAS,
+    'GATE':GATE,
+    'GRE':GRE,
+    'TOEFL':TOEFL
+    }
 
 EXAM_CHOICES = (
     ('IIT-JEE','IIT-JEE'),
