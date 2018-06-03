@@ -50,30 +50,51 @@
 											</div>
 										<div class="col-md-4 mb-3">
 											<label for="cExam">Select Exam</label>
-											<select class="form-control" name="courseExam" id="cExam">
+											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
+												<option>Select Exam</option>
 											{% for x,y in allExams %}
 												<option value="{{ x }}"{% if editCourse.exam == x %} selected{% endif %}>{{x}}</option>
 											{% endfor %}
 											</select>
 										</div>
 										<div class="col-md-4 mb-3">
-												<label for="cDuration">Course Duration</label>
-												<div class="input-group">
-													<div class="input-group-prepend">
-													<span class="input-group-text" id="inputGroupPrepend3">#</span>
-													</div>
-													<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 0 {% endif %}
-													name="courseDuration" id="cDuration" placeholder="Duration Months" aria-describedby="cDuration" required>
-											</div>
+											<label for="cSubject">Select Subject</label>
+											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" required>
+												<option>Select Subject</option>
+											{% for examKey,subjectVals in allSubjects.items  %}
+												{% for subj in subjectVals %}
+													{% if subj == editCourse.subjects %}
+													<option value="{{ examKey }}:{{subj}}" selected>{{subj}}</option>
+													{% endif %}
+													{% if examKey != editCourse.exam %}
+													<option value="{{ examKey }}:{{subj}}" hidden>{{subj}} </option>
+													{% else %}
+													<option value="{{ examKey }}:{{subj}}">{{subj}}</option>
+													{% endif%}
+												{% endfor %}
+											{% endfor %}
+											</select>
 										</div>
 								</div>
 								<div class="form-row">
-									<div class="col-md-6 mb-3">
+									<div class="col-md-12 mb-3">
 										<label for="cDescription">Description</label>
 										<input type="text" class="form-control" value= {% if editCourse %} "{{editCourse.description}}" {% else %} "" {% endif %} 
 										name="courseDescription" id="cDescription" placeholder="Fill Course Description">
 									</div>
-									<div class="col-md-3 mb-3">
+								</div>
+								<div class="form-row">
+										<div class="col-md-6 mb-3">
+									<label for="cDuration">Course Duration</label>
+									<div class="input-group">
+										<div class="input-group-prepend">
+										<span class="input-group-text" id="inputGroupPrepend3">#</span>
+										</div>
+										<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 0 {% endif %}
+										name="courseDuration" id="cDuration" placeholder="Duration Months" aria-describedby="cDuration" required>
+									</div>
+									</div>
+									<div class="col-md-6 mb-3">
 										<label for="cCost">Cost</label>
 										<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 0 {% endif %} 
 										name="courseCost" id="cCost" placeholder="Enter Cost" required>
@@ -104,4 +125,26 @@
 				</div>
 		</div>
 </div>
+<script>
+$("select[name=courseExam]").change(
+    function() {
+		var val = $(this).find("option:selected").val();
+		var x = document.getElementById("cSubject");
+		var set = 0;
+		for(i=0;i<x.options.length;i++)
+		{
+			var optionVal = x.options[i].value.split(":")[0];
+			if (optionVal != val) {
+				console.log(x.options[i].value)
+				x.options[i].hidden=true;
+			}
+			else {
+				x.options[i].hidden=false;
+				set = i;
+			}
+		}
+		$("select[id=cSubject]").val(x.options[set].value);
+    });
+</script>
+
 {% endblock %}
