@@ -3,6 +3,7 @@
 {% load staticfiles %}
 
 {% block active %}
+<link href="{% static 'base/css/cardslider.css' %}" rel="stylesheet">
   <!-- Breadcrumbs-->
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
@@ -10,5 +11,5 @@
     </li>
     <li class="breadcrumb-item active">My Courses</li>
 	</ol>
-	{% include "__baseCourseNavigator.html" with allCourses=courses divId = "MyCourses" category="My Courses" provider_id=providerId %}    
+	{% include "__baseCourseNavigator.html" with allCourses=courses divId="ProviderMyCourses" category="My Courses" provider_id=providerId %}    
 {% endblock active %}

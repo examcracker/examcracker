@@ -78,7 +78,7 @@
                             <form method="post" action="{% url 'provider:create_course' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="courseId" value="{{ currentCourse.id }}">
-                                <input type=submit value="Edit" style="width:100%;">
+                                <input type=submit value="Edit" style="width:100%;float: right;">
                                     </form>
                                     </td>
                                     </tr>

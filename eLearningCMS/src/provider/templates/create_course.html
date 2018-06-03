@@ -27,11 +27,12 @@
 				<div class="col-lg-8 order-lg-2">
 						<ul class="nav nav-tabs">
 								<li class="nav-item">
-										<a href="" data-target="#courseDescription" data-toggle="tab" class="nav-link active">Add Course Description</a>
+										<a href="" data-target="#courseDescription" data-toggle="tab" 
+										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Add Course Description</a>
 								</li>
 								<li class="nav-item">
 										<a href="" data-target="#addContent" data-toggle="tab" 
-										class= {% if editCourse %} "nav-link" {% else %} "nav-link disabled" {% endif %}>Add Content</a>
+										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Add Content</a>
 								</li>
 								<li class="nav-item" >
 										<a href="" data-target="#publishCourse" data-toggle="tab" 
@@ -80,7 +81,7 @@
 								</div>
 								<div class="form-group">
 									<div class="form-check">
-										<input class="form-check-input is-invalid" type="checkbox" value="" id="invalidCheck3" required>
+										<input class="form-check-input is-invalid" type="checkbox" value="" id="invalidCheck3" required {% if editCourse %} checked {% endif %}>
 										<label class="form-check-label" for="invalidCheck3">
 											Agree to terms and conditions
 										</label>
@@ -90,9 +91,8 @@
 									</div>
 								</div>
 									<input type="hidden" value= {% if editCourse.id %} "{{editCourse.id}}" {% endif %} name="courseId" />
-									<button class="btn btn-primary" type="submit">Save</button>
 									<button class="btn btn-primary" type="reset">Reset</button>
-									<button id="toContent" class="btn btn-secondary" type="button" {% if not editCourse %} disabled {% endif %}>Proceed to Next</button>
+									<button id="toContent" class="btn btn-primary" type="submit">Proceed to Next</button>
 									</form>
 								</div>
 								<div {% if isCourseContent  %} class="tab-pane active" {% else %} class="tab-pane" {% endif %} id="addContent">
@@ -104,21 +104,4 @@
 				</div>
 		</div>
 </div>
-<script>
- $('#toContent').click(function(){
-	//$('.nav-tabs a[href="#addContent"]').trigger.click()
-	$('.nav-tabs li:eq(1) a').tab('show')
-});
-</script>
-<!--
-<form action="" method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-	{{ form.as_p }}
-	<div class="form-group">
-		<div class="col-sm-offset-2 col-sm-10">
-			<button type="submit" class="btn btn-success">Submit</button>
-		</div>
-	</div>
-</form>
--->
 {% endblock %}

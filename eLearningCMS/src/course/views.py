@@ -18,6 +18,7 @@ import profiles
 import payments
 from collections import defaultdict
 from django.http import Http404
+from math import ceil
 
 # Create your views here.
 
@@ -58,7 +59,10 @@ class courseDetails(generic.TemplateView):
                     for chapDetail in courseDetailMap:
                         for chapId in chapDetail:
                             totalDuration = totalDuration + chapDetail[chapId]["duration"]
-                    courseOverviewMap["progress"] = str(durationCompleted*100/totalDuration) + '%'
+                    if totalDuration > 0:
+                        courseOverviewMap["progress"] = str(ceil(durationCompleted*100/totalDuration)) + '%'
+                    else:
+                        courseOverviewMap["progress"] = "0%"
 
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
@@ -142,5 +146,4 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
         kwargs["session_url"] = "sessions/" + str(sessionObj.provider_id) + "/" + str(sessionid) + "_"
-        print (kwargs["session_url"])
         return super().get(request, chapterid, sessionid, *args, **kwargs)

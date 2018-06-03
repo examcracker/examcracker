@@ -61,7 +61,7 @@ similarly for lectures
                                 </div>
                                 {% for session in value.sessions %}
                                 <!-- lectures here -->
-                                <div class="row">
+                                <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
                                     
                                     <table>
                                         <tr>
@@ -129,11 +129,13 @@ function drag(event)
     var drop_target = event.currentTarget;
     var drag_target_id = droptarget;
     var drag_target = document.getElementById(drag_target_id);
-    var tmp = document.createElement('span');
-    tmp.className='hide';
-    drop_target.before(tmp);
-    drag_target.before(drop_target);
-    tmp.replaceWith(drag_target);
+    swapNodes(drop_target,drag_target);
+}
+function swapNodes(a, b) {
+    var aparent= a.parentNode;
+    var asibling= a.nextSibling===b? a : a.nextSibling;
+    b.parentNode.insertBefore(a, b);
+    aparent.insertBefore(b, asibling);
 }
     var chapCnt = 1;
     function addChapter(elmnt) {
@@ -204,7 +206,7 @@ function drag(event)
             },
             done: function (e, data) {
                 if (data.result.is_valid) {
-                    var lecture = $('<div class="row"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
+                    var lecture = $('<div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
                     //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
                     lecture.appendTo(el);
                     id = id+1;

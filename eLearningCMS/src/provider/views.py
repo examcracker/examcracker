@@ -68,7 +68,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 1)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
@@ -79,6 +79,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         providerObj = getProvider(request)
 
@@ -87,7 +88,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             #return super().get(request, *args, **kwargs)
             # auto writing chapter names
             #pdb.set_trace()
-            cdel = course.models.CourseChapter.objects.filter(course_id=courseId).delete()
+            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
@@ -106,7 +107,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     sessionsIdArr = []
                     publishedArr = []
                     # get session ids here
-                    lcVar = 'lec['+str(i)+'][]'
+                    lcVar = 'lec['+str(lcids[i-1])+'][]'
                     if lcVar in request.POST:
                         filesUploaded = request.POST.getlist(lcVar)
                         for sessionIds in filesUploaded:
@@ -117,12 +118,14 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     chapterObj.save()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
+
         
         # try to segregate the procs for course description creation and 
         # course content creation
         courseName = request.POST.get('courseName','')
         # check if Edit course flow.
         if courseName == '':
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
@@ -134,6 +137,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj.duration=request.POST.get("courseDuration",'')
         courseObj.save()
         kwargs["editCourse"] = courseObj
+        kwargs["isCourseContent"] = 'true'
         return super().get(request, *args, **kwargs)
         
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
