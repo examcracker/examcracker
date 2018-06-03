@@ -9,12 +9,17 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from django.urls import reverse_lazy
 from pathlib import Path
+import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / "directory"
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
 MEDIA_ROOT = str(BASE_DIR / 'media')
 MEDIA_URL = "/media/"
+BINARY_ROOT = str(BASE_DIR / 'bin' / sys.platform)
+
+os.environ["PATH"] = os.environ["PATH"] + ";" + BINARY_ROOT
 
 # Use Django templates using the new Django 1.8 TEMPLATES settings
 TEMPLATES = [
@@ -78,12 +83,16 @@ INSTALLED_APPS = (
     'crispy_forms',
     'easy_thumbnails',
 
+    # applications
     'profiles',
     'accounts',
     'provider',
     'student',
     'course',
     'payments',
+    'transcoder',
+
+    # django packages
     'snowpenguin.django.recaptcha2',
     'paypal.standard.ipn',
 )

@@ -5,6 +5,7 @@ from django.forms import forms
 from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
+from transcoder import tasks
 import subprocess
 import ffmpy
 import json
@@ -32,5 +33,6 @@ class Session(models.Model):
         out = response.run(stdout=subprocess.PIPE)
         decoded = json.loads(out[0].decode('utf-8'))
         self.duration = int(float(decoded['format']['duration']))
+        tasks.convert_to_mp4(self.id, self.video.name)
         return super(Session, self).save(*args, **kwargs)
 
