@@ -26,7 +26,7 @@
   background-color: rgba(51, 51, 51, 0.85);
   border-color: rgba(51, 51, 51, 0.85);
  }
- .card-img-top{
+ #courseCard .card-img-top{
    margin-top:0px;
    max-height: 120px;
  }

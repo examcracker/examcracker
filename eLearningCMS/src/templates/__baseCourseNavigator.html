@@ -38,7 +38,7 @@
                     {% else %}
                         <div class="carousel-item col-md-3">
                     {% endif %}
-                        <div class="card">
+                        <div class="card" id ="courseCard">
                             {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                                 <a href="{% url 'course:coursePage' currentCourse.id %}">
                             {% endif %}
