@@ -50,17 +50,25 @@
 											</div>
 										<div class="col-md-4 mb-3">
 											<label for="cExam">Select Exam</label>
-											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
+											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" {% if editCourse and editCourse.exam != ""  %} readonly {% endif %} required>
+												{% if editCourse and editCourse.exam != "" %}
+												<option value="{{ editCourse.exam }}"selected>{{editCourse.exam}}</option>
+												{% else %}
 												<option value="">Select Exam</option>
-											{% for x,y in allExams %}
+												{% for x,y in allExams %}
 												<option value="{{ x }}"{% if editCourse.exam == x %} selected{% endif %}>{{x}}</option>
 											{% endfor %}
+											{% endif %}
 											</select>
 										</div>
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Select Subject</label>
-											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" required>
+											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required>
+												{% if editCourse and editCourse.subjects != "" %}
+												<option value="{{ editCourse.exam }}:{{ editCourse.subjects }}"selected>{{editCourse.subjects}}</option>
+												{% else %}
 												<option value="">Select Subject</option>
+												
 											{% for examKey,subjectVals in allSubjects.items  %}
 												{% for subj in subjectVals %}
 													{% if subj == editCourse.subjects %}
@@ -73,6 +81,7 @@
 													{% endif%}
 												{% endfor %}
 											{% endfor %}
+											{% endif %}
 											</select>
 										</div>
 								</div>
@@ -130,6 +139,7 @@ $("select[name=courseExam]").change(
 		var val = $(this).find("option:selected").val();
 		var x = document.getElementById("cSubject");
 		var set = 0;
+		if (!$("select[id=cSubject]").attr("readonly")) {
 		for(i=0;i<x.options.length;i++)
 		{
 			var optionVal = x.options[i].value.split(":")[0];
@@ -142,7 +152,9 @@ $("select[name=courseExam]").change(
 				set = i;
 			}
 		}
-		$("select[id=cSubject]").val(x.options[set].value);
+		
+			$("select[id=cSubject]").val(x.options[set].value);
+		}
     });
 </script>
 
