@@ -33,6 +33,6 @@ class Session(models.Model):
         out = response.run(stdout=subprocess.PIPE)
         decoded = json.loads(out[0].decode('utf-8'))
         self.duration = int(float(decoded['format']['duration']))
-        tasks.convert_to_mp4(self.id, self.video.name)
+        tasks.processSession(self.id, self.video.name)
         return super(Session, self).save(*args, **kwargs)
 
