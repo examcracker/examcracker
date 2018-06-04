@@ -51,7 +51,7 @@
 										<div class="col-md-4 mb-3">
 											<label for="cExam">Select Exam</label>
 											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
-												<option>Select Exam</option>
+												<option value="">Select Exam</option>
 											{% for x,y in allExams %}
 												<option value="{{ x }}"{% if editCourse.exam == x %} selected{% endif %}>{{x}}</option>
 											{% endfor %}
@@ -60,7 +60,7 @@
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Select Subject</label>
 											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" required>
-												<option>Select Subject</option>
+												<option value="">Select Subject</option>
 											{% for examKey,subjectVals in allSubjects.items  %}
 												{% for subj in subjectVals %}
 													{% if subj == editCourse.subjects %}
@@ -79,8 +79,7 @@
 								<div class="form-row">
 									<div class="col-md-12 mb-3">
 										<label for="cDescription">Description</label>
-										<input type="text" class="form-control" value= {% if editCourse %} "{{editCourse.description}}" {% else %} "" {% endif %} 
-										name="courseDescription" id="cDescription" placeholder="Fill Course Description">
+										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Fill Course Description" rows="3">{% if editCourse %}{{editCourse.description}}{% endif %}</textarea>
 									</div>
 								</div>
 								<div class="form-row">
