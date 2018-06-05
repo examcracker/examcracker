@@ -21,28 +21,12 @@ def getProvider(request):
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'provider_home.html'
 
-'''
-class uploadVideo(LoginRequiredMixin, CreateView):
-    template_name = 'upload_video.html'
-    model = models.Session
-    fields = ['name', 'video']
-
-    def post(self, request):
-        videoForm = forms.uploadVideoForm(request.POST, request.FILES)
-        if videoForm.is_valid():
-            sessionObj = videoForm.save(commit=False)
-            sessionObj.provider = getProvider(request)
-            sessionObj.save()
-        videoForm.save()
-        return redirect("provider:provider_home")
-'''
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
-    template_name = "upload_video_multiple.html"
+    template_name = "create_course.html"
     http_method_names = ['get', 'post']
 
     def post(self, request):
         providerObj = getProvider(request)
-        #pdb.set_trace()
         videoForm = forms.uploadFilesForm(self.request.POST,self.request.FILES)
         if videoForm.is_valid():
             sessionObj = videoForm.save(commit=False)
@@ -56,6 +40,33 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             data = {'is_valid': False}
             return JsonResponse(data)
 
+class publishCourse(LoginRequiredMixin, generic.TemplateView):
+    template_name = "create_course.html"
+    http_method_names = ['get', 'post']
+
+    def post(self, request):
+        providerObj = getProvider(request)
+        courseId = self.request.POST.get('courseId','')
+        courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
+        if courseId != '':
+            courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            for chapter in courseChapterObj:
+                lectureCnt = len(chapter.sessions)
+                i = 0
+                publishedArr = []
+                while i < len(chapter.sessions):
+                    publishedArr.append(True)
+                    i=i+1
+                chapter.published = publishedArr
+                chapter.save()
+            data = {'is_valid': True, 'courseId': courseId}
+            courseObj.published=True
+            courseObj.save()
+            return render(request, self.template_name, {"editCourse" : courseObj, "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
+        else:
+            data = {'is_valid': False}
+            return render(request, self.template_name)
+
 class createCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = 'create_course.html'
     http_method_names = ['get', 'post']
@@ -66,7 +77,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-
+        #pdb.set_trace()
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
@@ -85,9 +96,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-
         providerObj = getProvider(request)
-
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
@@ -97,7 +106,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
-            #addedChapters = request.POST.getlist('cd[]')
             lcids = request.POST.getlist('lcids')
             if len(lcids) > 0:
                 cpPrefix = 'Chapter '              
@@ -113,11 +121,17 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     publishedArr = []
                     # get session ids here
                     lcVar = 'lec['+str(lcids[i-1])+'][]'
+                    lecPubVar = 'lecPub['+str(lcids[i-1])+'][]'
+                    
                     if lcVar in request.POST:
                         filesUploaded = request.POST.getlist(lcVar)
-                        for sessionIds in filesUploaded:
-                            sessionsIdArr.append(sessionIds)
-                            publishedArr.append(True)
+                        filePublishedArr = request.POST.getlist(lecPubVar)
+                        j=0
+                        #pdb.set_trace()
+                        while j<len(filesUploaded):
+                            sessionsIdArr.append(filesUploaded[j])
+                            publishedArr.append(filePublishedArr[j])
+                            j=j+1
                     chapterObj.sessions=sessionsIdArr
                     chapterObj.published=publishedArr
                     chapterObj.save()

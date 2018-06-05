@@ -8,4 +8,5 @@ urlpatterns = [
      path('createCourse', views.createCourse.as_view(), name="create_course"),
      path('viewCourse', views.viewCourses.as_view(), name="view_courses"),
      path('viewVideo', views.viewSessions.as_view(), name="view_videos"),
+     path('publishCourse', views.publishCourse.as_view(), name="publish_course"),
 ]

@@ -10,18 +10,28 @@
 {% extends "__user_base.html" %}
 {% load staticfiles %}
 {% block active %}
+<nav id="courseNavBar" class="navbar">
+<div class="mr-lg-auto">
 <ol class="breadcrumb">
     <li class="breadcrumb-item">
       <a href="#">Dashboard</a>
     </li>
 	<li class="breadcrumb-item active">
 			{% if editCourse %}
-			Edit Course Description
+			Edit Course 
 			{%  else %}
-			Create Course Description
+			Create New Course 
 		{% endif %}
 	</li>
+	<!--<button class="btn btn-sm btn-success float-right" style="position:absolute;right:10rem;">Preview Course</button>-->
 </ol>
+</div>
+<form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse" 
+onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
+	<input type="hidden" name="courseId" value="{{editCourse.id}}" />
+	<button class="btn btn-lg btn-success float-right" {% if not editCourse %} disabled {% endif %} type="submit">Publish Course</button>
+</form>
+</nav>
 <div class="container">
 		<div class="row my-2">
 				<div class="col-lg-8 order-lg-2">
@@ -34,14 +44,10 @@
 										<a href="" data-target="#addContent" data-toggle="tab" 
 										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Add Content</a>
 								</li>
-								<li class="nav-item" >
-										<a href="" data-target="#publishCourse" data-toggle="tab" 
-										class={% if editCourse %} "nav-link" {% else %} "nav-link disabled" {% endif %}>Publish Course</a>
-								</li>
 						</ul>
 						<div class="tab-content py-4">
 								<div {% if isCourseContent %} class="tab-pane" {% else %} class="tab-pane active" {% endif %} id="courseDescription">
-									<form action="" method="post" enctype="multipart/form-data"> {% csrf_token %}
+									<form action="{% url 'provider:create_course' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
 										<div class="form-row">
 		  								<div class="col-md-4 mb-3">
 												<label for="cName">Course Name</label>
@@ -126,8 +132,6 @@
 								</div>
 								<div {% if isCourseContent  %} class="tab-pane active" {% else %} class="tab-pane" {% endif %} id="addContent">
 									{% include "create_content.html" %}		
-								</div>
-								<div class="tab-pane" id="publishCourse">
 								</div>
 						</div>
 				</div>

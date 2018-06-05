@@ -34,7 +34,8 @@ similarly for lectures
 </style>
 <div class="container">
     <h5>My Course Structure</h5>
-    <form method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
+   
+    <form action="{% url 'provider:create_course' %}" method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
         <div class="card bg-light text-dark">
             <div class="course-header">
             </div>
@@ -65,13 +66,16 @@ similarly for lectures
                                     
                                     <table>
                                         <tr>
+                                            {% if not session.published %}
                                             <td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td>
+                                            {% endif %}
                                             <td style="font-weight:bold">Lecture {{forloop.counter}}</td>
                                             <td>
                                                 <a href="{% url 'course:playSession' chapid session.id %}" >
                                                 <i class="fa fa-play fa-fw" ></i>
                                                 {{ session.name }}
                                                 </a>
+                                                <input type="hidden" name ="lecPub[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.published}}">
                                                 <input type="hidden" name ="lec[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.id}}">
                                             </td>
                                         </tr>
@@ -206,7 +210,7 @@ function swapNodes(a, b) {
             },
             done: function (e, data) {
                 if (data.result.is_valid) {
-                    var lecture = $('<div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
+                    var lecture = $('<div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'"><input type="hidden" name ="lecPub['+cname+'][]" value="False"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Lecture '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
                     //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
                     lecture.appendTo(el);
                     id = id+1;
