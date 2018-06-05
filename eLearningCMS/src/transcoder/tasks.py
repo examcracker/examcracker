@@ -5,6 +5,8 @@ import ffmpy
 import time
 import subprocess
 import multiprocessing
+import sys
+import signal
 
 class mp4Converter():
     def __init__(self, sessionid, sessionpath):
@@ -45,6 +47,7 @@ class processQueue(threading.Thread):
         self.event = threading.Event()
         self.clearevent = threading.Event()
         self.runningtasks = 0
+        self.running = True
 
     def signal(self, sessionid):
         self.lock.acquire()
@@ -57,11 +60,11 @@ class processQueue(threading.Thread):
         converter = mp4Converter(sessionid, sessionpath)
         fragmenter = mp4Fragmenter(converter)
         self.lock.acquire()
-        '''
+
         self.taskdict[sessionid] = {}
         self.taskdict[sessionid]['converter'] = converter
         self.taskdict[sessionid]['fragmenter'] = fragmenter
-        '''
+
         self.lock.release()
         self.event.set()
 
@@ -71,8 +74,11 @@ class processQueue(threading.Thread):
         runnintThread.start()
 
     def processTask(self):
-        while True:
+        while self.running:
             self.event.wait()
+            if self.running == False:
+                break
+
             self.lock.acquire()
 
             while self.runningtasks < self.queuesize:
@@ -88,8 +94,15 @@ class processQueue(threading.Thread):
             self.event.clear()
 
 taskQueue = processQueue()
-#processThread = threading.Thread(target=process)
-#processThread.start()
+processThread = threading.Thread(target=process)
+processThread.start()
+
+def signal_handler(signal, frame):
+    taskQueue.running = False
+    taskQueue.event.set()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 def processSession(sessionid, sessionpath):
     taskQueue.addTask(sessionid, sessionpath)
