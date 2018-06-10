@@ -1,0 +1,85 @@
+
+{% load staticfiles %}
+
+<div class="container">
+    <form action="{% url 'provider:create_from_courses' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
+        <div class="form-row">
+            <label for="cExam" class="col-sm-4 mb-3 col-form-label">Select Exam</label>
+                <div class="col-sm-8">
+                    <select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
+                    <option value="">Select Exam</option>
+                    {% for key,value in allCoursesByMe.items %}
+                    <option value="{{key}}">{{key}}</option>
+                    {% endfor %}
+                    </select>
+                </div>
+        </div>
+        <div class="form-row">
+                <label for="cSubjectMultiple" class="col-sm-4 mb-3 col-form-label">Select Courses</label>
+                    <div class="col-sm-8">
+                        <select class="form-control" name="courseSubject" id="cSubjectMultiple" data-live-search="true" required multiple>
+                            <option value="">Select courses</option>                        
+                            {% for examKey,value in allCoursesByMe.items  %}
+                            {% for course in value %}
+                            <option value="{{examKey}}:{{course.name}}:{{course.id}}" hidden>{{course.name}}</option>
+                            {% endfor %}
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary" type="button" onclick="addSelectedCourses(this)" >Add Selected</button>
+                    </div>                   
+            </div>
+            <br>
+            
+                <div class="form-row" id="selectedCourses">
+                    <label id="labelSelecytedCourses" for="coursesTable" class="col-sm-4 col-form-label" style="display: none;">Courses Selected</label>
+            </div>
+            <div class="form-row">
+                <div class="offset-4 col-8 mb-5">
+                <button class="btn btn-primary" type="submit" id="createAndSubmit" disabled>Create Course from Selections</button>
+                </div> 
+                </div>   
+ </form>
+</div>
+<script src="{% static 'provider/js/createCourseContent.js' %}"></script>
+<script>
+    function deleteCourse(elmnt) {
+  var parent = document.getElementById("selectedCourses");
+  var l_elem = elmnt;
+   while (l_elem.className != 'row') {
+      // Increment the loop to the parent node
+      l_elem = l_elem.parentNode;
+  }
+  l_elem = l_elem.parentNode;
+  parent.removeChild(l_elem);
+  var childCnt = parent.children.length;
+  if(childCnt < 2) {
+    document.getElementById("labelSelecytedCourses").style.display="none";
+  }
+}
+
+function addSelectedCourses(elem){
+  var selObj = document.getElementById("cSubjectMultiple");
+  var selectedArray = new Array();
+  var i;
+  var count = 0;
+  for (i=0; i<selObj.options.length; i++) { 
+      if (selObj.options[i].selected) {
+          selectedArray[count] = selObj.options[i].value;
+          count++; 
+      }    
+  }
+  var cParent = document.getElementById("selectedCourses");
+  for(i=0;i<count;i++) {
+      var cid = selectedArray[i].split(":")[2]
+      var cName = selectedArray[i].split(":")[1]
+      var cExam = selectedArray[i].split(":")[0]
+      var courseIdInDiv = cid+cName+cExam
+      var cChild = $('<div class="offset-sm-4 col-sm-8" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="'+courseIdInDiv+'"><div class="row" ><input type="hidden" name ="courseIDS[]" value="'+cid+'"><table><tr><td><button type="button" class="btn" onclick="deleteCourse(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Courses '+cExam+'</td><td>'+cName+'</td></tr></table></div></div>');
+      cChild.appendTo(cParent);
+  }
+  document.getElementById("labelSelecytedCourses").style.display="block";
+  document.getElementById("createAndSubmit").disabled=false;
+}
+</script>
+
+

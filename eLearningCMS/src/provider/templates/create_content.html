@@ -117,30 +117,10 @@ similarly for lectures
 <script src="{% static 'fileUploader/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
+<script src="{% static 'provider/js/createCourseContent.js' %}"></script>
 
 <script>
-    var droptarget;
-function drag(event)
-  {
-    droptarget = event.target.id;
-  }
-  function allowDrop(event)
-  {
-    event.preventDefault();
-  }
-  function drop(event) {
-    event.preventDefault();  
-    var drop_target = event.currentTarget;
-    var drag_target_id = droptarget;
-    var drag_target = document.getElementById(drag_target_id);
-    swapNodes(drop_target,drag_target);
-}
-function swapNodes(a, b) {
-    var aparent= a.parentNode;
-    var asibling= a.nextSibling===b? a : a.nextSibling;
-    b.parentNode.insertBefore(a, b);
-    aparent.insertBefore(b, asibling);
-}
+    
     var chapCnt = 1;
     function addChapter(elmnt) {
         var currentChapCnt = document.getElementById("accordianChapters").children.length;
@@ -190,10 +170,11 @@ function swapNodes(a, b) {
             // Increment the loop to the parent node
             el = el.parentNode;
         }
+        
          var id = el.children.length-2;
          var cname = el.id;
          $("#fileupload"+cname).click();
-         var kunal = $("#fileupload"+cname).fileupload({
+         $("#fileupload"+cname).fileupload({
             dataType: 'json',
             sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
             start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */

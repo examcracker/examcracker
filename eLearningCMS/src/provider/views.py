@@ -11,6 +11,9 @@ import course
 import datetime
 import pdb
 
+import json
+# http://gsl.mit.edu/media/programs/india-summer-2012/materials/json_django.pdf
+
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
     if providerObj.exists():
@@ -24,10 +27,11 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
     http_method_names = ['get', 'post']
-
+    
     def post(self, request):
         providerObj = getProvider(request)
         videoForm = forms.uploadFilesForm(self.request.POST,self.request.FILES)
+
         if videoForm.is_valid():
             sessionObj = videoForm.save(commit=False)
             sessionObj.provider = getProvider(request)
@@ -39,6 +43,60 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
         else:
             data = {'is_valid': False}
             return JsonResponse(data)
+
+class createFromCourses(LoginRequiredMixin, generic.TemplateView):
+    template_name = "create_course.html"
+    http_method_names = ['get', 'post']
+
+    def post(self, request):
+        providerObj = getProvider(request)
+        #return super().get(request)
+        #pdb.set_trace()
+        courseObjNew = course.models.Course()        
+        courseObjNew.provider=providerObj
+        if 'courseIDS[]' not in self.request.POST:
+            return render(request, self.template_name)
+        cIDS = self.request.POST.getlist('courseIDS[]')
+        #return super().get(request)
+        courseObj = course.models.Course.objects.filter(id=cIDS[0])[0]
+        courseObjNew.name = courseObj.name
+        courseObjNew.description = courseObj.description
+        courseObjNew.cost = courseObj.cost
+        courseObjNew.duration = courseObj.duration
+        courseObjNew.exam = courseObj.exam
+        courseObjNew.subjects = courseObj.subjects
+        i=1
+        while(i<len(cIDS)):
+            cid = cIDS[i]
+            courseObj = course.models.Course.objects.filter(id=cid)[0]
+            courseObjNew.name = courseObjNew.name + " and " + courseObj.name
+            courseObjNew.description = courseObjNew.description + " and " + courseObj.description
+            courseObjNew.cost = courseObjNew.cost + courseObj.cost
+            courseObjNew.duration = courseObjNew.duration + courseObj.duration
+            courseObjNew.exam = courseObj.exam
+            if courseObj.subjects not in courseObjNew.subjects :
+                courseObjNew.subjects = courseObjNew.subjects + ";" + courseObj.subjects
+            i=i+1
+        courseObjNew.save()
+        # add sessions from all courses into new course
+        newCid = courseObjNew.id
+        i=0
+        chCnt = 1
+        while (i<len(cIDS)) :
+            cid = cIDS[i]
+            courseChapterObj = course.models.CourseChapter.objects.filter(course_id=cid).order_by('sequence')
+            for chapter in courseChapterObj:
+                courseChapterNewObj = course.models.CourseChapter()
+                courseChapterNewObj.course_id = newCid
+                courseChapterNewObj.name = 'Chapter '+str(chCnt)
+                courseChapterNewObj.sequence = chCnt
+                for session in chapter.sessions:
+                    courseChapterNewObj.sessions.append(session)
+                    courseChapterNewObj.published.append(False)
+                courseChapterNewObj.save()
+                chCnt = chCnt+1
+            i=i+1
+        return render(request, self.template_name, {"editCourse" : courseObjNew,"editCourseSubjects" :courseObj.subjects.split(';'), "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(newCid,0)})
 
 class publishCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
@@ -62,7 +120,7 @@ class publishCourse(LoginRequiredMixin, generic.TemplateView):
             data = {'is_valid': True, 'courseId': courseId}
             courseObj.published=True
             courseObj.save()
-            return render(request, self.template_name, {"editCourse" : courseObj, "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
+            return render(request, self.template_name, {"editCourse" : courseObj, "editCourseSubjects" :courseObj.subjects.split(';'),  "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
         else:
             data = {'is_valid': False}
             return render(request, self.template_name)
@@ -77,10 +135,14 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
+        allProviderCourses = course.algos.getAllCoursesbyExamsFromProvider(providerObj.id)
+        kwargs["allCoursesByMe"] = allProviderCourses
+        kwargs["allCoursesCount"] = course.models.Course.objects.filter(provider_id=providerObj.id).count()
         #pdb.set_trace()
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
+            kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         return super().get(request, *args, **kwargs)
 
@@ -93,10 +155,12 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
+            kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
         providerObj = getProvider(request)
+
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
@@ -154,12 +218,20 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj.provider=getProvider(request)
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
-        subj = request.POST.get("courseSubject")
-        subj = subj.split(':')[1]
+        subjects = request.POST.getlist("courseSubject")
+        #pdb.set_trace()
+        subj = subjects[0].split(':')[1]
         courseObj.subjects = subj
+        i=1
+        while(i<len(subjects)):
+            subj = subjects[i].split(':')[1]
+            courseObj.subjects = courseObj.subjects+";"+subj
+            i=i+1
         courseObj.save()
         kwargs["editCourse"] = courseObj
+        kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
         kwargs["isCourseContent"] = 'true'
+
         return super().get(request, *args, **kwargs)
         
 class viewSessions(LoginRequiredMixin, generic.TemplateView):

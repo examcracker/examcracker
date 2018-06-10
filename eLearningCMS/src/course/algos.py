@@ -8,7 +8,23 @@ from operator import itemgetter
 from django.db.models import Q
 from django.db.models import Count
 from django.contrib.auth import get_user_model
+from collections import defaultdict
 import provider
+import pdb
+
+#get all courses for the provider
+def getAllCoursesbyExamsFromProvider(pId):
+    courseByExams = defaultdict(list)
+    courseObj = models.Course.objects.filter(provider_id=pId)
+    
+    for course in courseObj:
+        courseDetails = {}
+        courseDetails["name"] = course.name
+        courseDetails["id"]=course.id
+        courseByExams[course.exam].append(courseDetails)
+    #pdb.set_trace()
+    courseByExams.default_factory = None
+    return courseByExams
 
 # get course content
 def getCourseDetails(courseid, onlyPublished = 1):
