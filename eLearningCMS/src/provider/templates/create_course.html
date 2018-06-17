@@ -18,11 +18,12 @@
     </li>
 	<li class="breadcrumb-item active">
 			{% if editCourse %}
-			Edit Course 
+			Edit Course / {{ editCourse.name }}
 			{%  else %}
 			Create New Course 
 		{% endif %}
 	</li>
+
 	<!--<button class="btn btn-sm btn-success float-right" style="position:absolute;right:10rem;">Preview Course</button>-->
 </ol>
 </div>
@@ -36,6 +37,12 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 		<div class="row my-2">
 				<div class="col-lg-8 order-lg-2">
 						<ul class="nav nav-tabs">
+								{% if not editCourse and allCoursesCount > 1 %}
+								<li class="nav-item">
+									<a href="" data-target="#courseFromCourses" data-toggle="tab" 
+									class= "nav-link" >Create Course From Courses</a>
+								</li>
+								{% endif %}
 								<li class="nav-item">
 										<a href="" data-target="#courseDescription" data-toggle="tab" 
 										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Add Course Description</a>
@@ -69,9 +76,15 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 										</div>
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Select Subject</label>
-											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required>
+											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required multiple>
 												{% if editCourse and editCourse.subjects != "" %}
-												<option value="{{ editCourse.exam }}:{{ editCourse.subjects }}"selected>{{editCourse.subjects}}</option>
+													{% if editCourseSubjects %}
+														{% for subj in editCourseSubjects %}
+														<option value="{{ editCourse.exam }}:{{ subj }}"selected>{{subj}}</option>
+														{% endfor %}
+													{% else %}
+													<option value="{{ editCourse.exam }}:{{ editCourse.subjects }}"selected>{{editCourse.subjects}}</option>
+													{% endif %}
 												{% else %}
 												<option value="">Select Subject</option>
 												
@@ -133,33 +146,14 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 								<div {% if isCourseContent  %} class="tab-pane active" {% else %} class="tab-pane" {% endif %} id="addContent">
 									{% include "create_content.html" %}		
 								</div>
+								<div class="tab-pane" id="courseFromCourses">
+										{% include "create_courseFromCourses.html" %}		
+									</div>
 						</div>
 				</div>
 		</div>
 </div>
-<script>
-$("select[name=courseExam]").change(
-    function() {
-		var val = $(this).find("option:selected").val();
-		var x = document.getElementById("cSubject");
-		var set = 0;
-		if (!$("select[id=cSubject]").attr("readonly")) {
-		for(i=0;i<x.options.length;i++)
-		{
-			var optionVal = x.options[i].value.split(":")[0];
-			if (optionVal != val) {
-				console.log(x.options[i].value)
-				x.options[i].hidden=true;
-			}
-			else {
-				x.options[i].hidden=false;
-				set = i;
-			}
-		}
-		
-			$("select[id=cSubject]").val(x.options[set].value);
-		}
-    });
-</script>
+<script src="{% static 'provider/js/createCourseContent.js' %}"></script>
+
 
 {% endblock %}

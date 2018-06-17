@@ -1,28 +1,3 @@
-<!--
-use bootstrap cards for chapters
-use tables for videos inside sections
-
-1. Add chapter button +++ Description for chapter 
-2. Add lecture button   +++ Description for lecture
-3. Make both draggable.
-4. checkbox to set lectures as published.
-5. flow as follows:
-
-a. Click on add chapter. it gets added with description box. Make description box required field
-b. Click on add lecture button. browse file and upload. 
-c. All chapters on left and videos on right.  That means row of 2 colums will be der give it id
-
-All information should be saved in local javascript variables.
-javascript variables should contain whole data of page.
-
-When we click save , then send javascript information to our views.py and save data to db.
-overwrite whole data?
-
-
- use color coding of card : Blue for draft , green for published
-similarly for lectures
--->
-
 {% load staticfiles %}   
 <style>
     table, th, td {
@@ -51,14 +26,14 @@ similarly for lectures
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
                             <div class="card-body" id="{{forloop.parentloop.counter}}">
-                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}" data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
                                 <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
                                 <div class="row">
                                     <div class="col-auto">
                                         <input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" >
                                         <input type="hidden" class="form-control" name="cpids[]" value = "{{chapid}}" >
                                     </div>
-                                    <div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div>
+                                    <div class="col-auto"><button type="button" onclick="addLecture(this,'{{ editCourse.id }}')" class="btn btn-primary float-right">Add Lecture</button></div>
                                 </div>
                                 {% for session in value.sessions %}
                                 <!-- lectures here -->
@@ -94,7 +69,7 @@ similarly for lectures
     </div>
     </div>
       <input type="hidden" value="true" name="isCourseContent" />
-      <input type="hidden" value="{{editCourse.id}}" name="courseId" />
+      <input type="hidden" value="{{editCourse.id}}" name="courseId"/>
       <button type="submit"  class="btn btn-info btn-lg float-right" id="saveAllChanges">Save changes</button>
       <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg" id="btnGen">Add New Chapter</button>
     </form>
@@ -128,8 +103,8 @@ similarly for lectures
             chapCnt=currentChapCnt;
         }
         var id = chapCnt;
-        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" data-form-data='{\"csrfmiddlewaretoken\": \"{{ csrf_token }}\"}'>");
-        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this)" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
+        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
+        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this,'+'{{ editCourse.id }}'+')" class="btn btn-primary float-right">Add Lecture</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
@@ -164,7 +139,7 @@ similarly for lectures
         c_elem.removeChild(l_elem);
     }
 
-    function addLecture(elmnt) {
+    function addLecture(elmnt,courseid) {
          var el = elmnt;
          while (el.className != 'card-body') {
             // Increment the loop to the parent node
@@ -176,6 +151,10 @@ similarly for lectures
          $("#fileupload"+cname).click();
          $("#fileupload"+cname).fileupload({
             dataType: 'json',
+            formData: [
+                    { name: "coid", value: courseid},
+                    { name: "csrfmiddlewaretoken", value: "{{ csrf_token }}"}
+                ],
             sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
             start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
                 $("#modal-progress").modal("show");

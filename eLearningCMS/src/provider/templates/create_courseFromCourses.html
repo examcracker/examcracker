@@ -76,9 +76,10 @@ function addSelectedCourses(elem){
       var courseIdInDiv = cid+cName+cExam
       var cChild = $('<div class="offset-sm-4 col-sm-8" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="'+courseIdInDiv+'"><div class="row" ><input type="hidden" name ="courseIDS[]" value="'+cid+'"><table><tr><td><button type="button" class="btn" onclick="deleteCourse(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Courses '+cExam+'</td><td>'+cName+'</td></tr></table></div></div>');
       cChild.appendTo(cParent);
+      document.getElementById("labelSelecytedCourses").style.display="block";
+      document.getElementById("createAndSubmit").disabled=false;
   }
-  document.getElementById("labelSelecytedCourses").style.display="block";
-  document.getElementById("createAndSubmit").disabled=false;
+
 }
 </script>
 

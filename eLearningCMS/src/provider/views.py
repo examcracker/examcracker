@@ -31,11 +31,18 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     def post(self, request):
         providerObj = getProvider(request)
         videoForm = forms.uploadFilesForm(self.request.POST,self.request.FILES)
-
+        courseid = self.request.POST.get('coid','')
+        subject = ''
+        #pdb.set_trace()
+        if courseid != "":
+            courseObj = course.models.Course.objects.filter(id=int(courseid))[0]
+            subject = courseObj.subjects
         if videoForm.is_valid():
             sessionObj = videoForm.save(commit=False)
             sessionObj.provider = getProvider(request)
             sessionObj.name = sessionObj.video.name
+            if subject != '':
+                sessionObj.tags = subject
             sessionObj.save()
             videoForm.save()
             data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name}
@@ -160,7 +167,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
         providerObj = getProvider(request)
-
+        #allProviderCourses = getAllCoursesbyExamsFromProvider(providerObj.id)
+        #kwargs["allCoursesByMe"] = allProviderCourses
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
