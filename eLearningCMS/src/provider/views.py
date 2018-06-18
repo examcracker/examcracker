@@ -5,7 +5,7 @@ from django.views.generic.edit import CreateView
 from django.shortcuts import redirect
 from . import models
 from django.http import JsonResponse
-
+from django.db.models import Q
 from . import forms
 import course
 import datetime
@@ -20,6 +20,15 @@ def getProvider(request):
       return providerObj[0]
     else:
       return providerObj
+
+def getSessionsBySubjects(providerId,subjects):
+    subjectarr = subjects.split(';')
+    sessionObj = models.Session.objects.filter(provider_id=providerId)
+    q_objects = Q()
+    for sub in subjectarr:
+        q_objects.add(Q(tags__icontains=sub), Q.OR)
+    sessionObj = sessionObj.filter(q_objects)
+    return sessionObj
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'provider_home.html'
@@ -103,7 +112,7 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
                 courseChapterNewObj.save()
                 chCnt = chCnt+1
             i=i+1
-        return render(request, self.template_name, {"editCourse" : courseObjNew,"editCourseSubjects" :courseObj.subjects.split(';'), "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(newCid,0)})
+        return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObjNew,"editCourseSubjects" :courseObj.subjects.split(';'), "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(newCid,0)})
 
 class publishCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
@@ -127,7 +136,7 @@ class publishCourse(LoginRequiredMixin, generic.TemplateView):
             data = {'is_valid': True, 'courseId': courseId}
             courseObj.published=True
             courseObj.save()
-            return render(request, self.template_name, {"editCourse" : courseObj, "editCourseSubjects" :courseObj.subjects.split(';'),  "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
+            return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObj, "editCourseSubjects" :courseObj.subjects.split(';'),  "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
         else:
             data = {'is_valid': False}
             return render(request, self.template_name)
@@ -151,6 +160,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id,courseObj.subjects)
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
@@ -158,15 +168,19 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         isCourseContent = request.POST.get('isCourseContent','')
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
+        providerObj = getProvider(request)
+        #pdb.set_trace()
         if courseId != '':
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
+            kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id,courseObj.subjects)
+            kwargs["editCourse"] = courseObj
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-        providerObj = getProvider(request)
+        
         #allProviderCourses = getAllCoursesbyExamsFromProvider(providerObj.id)
         #kwargs["allCoursesByMe"] = allProviderCourses
         # check if course content flow
@@ -176,6 +190,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             #pdb.set_trace()
             course.models.CourseChapter.objects.filter(course_id=courseId).delete()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            #return super().get(request, *args, **kwargs)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
             lcids = request.POST.getlist('lcids')
