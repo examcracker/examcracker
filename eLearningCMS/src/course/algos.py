@@ -123,9 +123,10 @@ def searchCourseByText(searchText,examText=None,providerText=None):
 def getPublishedCourses():
     return models.Course.objects.filter(published=1)
 
-#returns exam list
+# Returns all exams from our list. Exams list will grow
 def getExams():
-    return models.Course.objects.values('exam').annotate(Count('exam')).order_by('exam')
+    return models.EXAM_CHOICES
+    #return models.Course.objects.values('exam').annotate(Count('exam')).order_by('exam')
 
 def getProviders():
     User = get_user_model()

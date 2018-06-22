@@ -26,8 +26,8 @@
                 <div class="form-group padding">
                     <input list="examList" type="text" name="examText" class="form-control" placeholder="Select Exams Filter" />
                        <datalist id="examList">
-                         {% for exam in exams %}
-                           <option value="{{exam.exam}}"/>
+                         {% for exam,exam1 in exams %}
+                           <option value="{{exam}}"/>
                              {% endfor %}
                           </datalist>
                   </div>
