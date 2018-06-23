@@ -1,17 +1,24 @@
-{% extends "base.html" %}
+{% extends "__ecBase.html" %}
 
 {% load crispy_forms_tags %}
 
-{% block navbar %}
-{% endblock %}
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
 
 {% block container %}
-<div class="container form-box">
-  <div class="text-center">
-    <h2>{% block form_heading %}{% endblock %}</h2>
-  </div>
+<div class="container">
+    <div class="row">
+        <div class="col-6 mx-auto">
+          <div class="text-center">
+            <h2>{% block form_heading %}{% endblock %}</h2>
+          </div>
   {% block form %}
   {% endblock %}
+        </div>
+    </div>
 </div>
 
 {% endblock container %}

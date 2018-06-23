@@ -28,7 +28,7 @@ class LoginForm(AuthenticationForm):
             Field('captcha'),
             Field('remember_me'),
             Submit('sign_in', 'Log in',
-                   css_class="btn btn-lg btn-primary btn-block"),
+                   css_class="btn btn-primary"),
         )
 
 class RegisterForm(authtoolsforms.UserCreationForm):
@@ -45,8 +45,10 @@ class RegisterForm(authtoolsforms.UserCreationForm):
             Field('password1', placeholder="Enter Password"),
             Field('password2', placeholder="Re Enter Password"),
             Field('captcha'),
-            Submit('sign_up', 'Sign up', css_class="btn-warning"),
+            Submit('sign_up', 'Sign up', css_class="btn btn-primary"),
         )
+
+        self.fields['password2'].help_text = None
 
 class SignupForm(RegisterForm):
     def save(self, commit=True):
@@ -82,7 +84,7 @@ class PasswordChangeForm(authforms.PasswordChangeForm):
             Field('new_password1', placeholder="Enter new password"),
             Field('new_password2', placeholder="Enter new password (again)"),
             Field('captcha'),
-            Submit('pass_change', 'Change Password', css_class="btn-warning"),
+            Submit('pass_change', 'Change Password', css_class="btn btn-primary"),
         )
 
 
@@ -95,7 +97,7 @@ class PasswordResetForm(authtoolsforms.FriendlyPasswordResetForm):
         self.helper.layout = Layout(
             Field('email', placeholder="Enter email",
                   autofocus=""),
-            Submit('pass_reset', 'Reset Password', css_class="btn-warning"),
+            Submit('pass_reset', 'Reset Password', css_class="btn btn-primary"),
         )
 
 
@@ -108,5 +110,5 @@ class SetPasswordForm(authforms.SetPasswordForm):
             Field('new_password1', placeholder="Enter new password",
                   autofocus=""),
             Field('new_password2', placeholder="Enter new password (again)"),
-            Submit('pass_change', 'Change Password', css_class="btn-warning"),
+            Submit('pass_change', 'Change Password', css_class="btn btn-primary"),
         )
