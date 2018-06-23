@@ -25,9 +25,9 @@
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
-                            <div class="card-body" id="{{forloop.parentloop.counter}}">
-                                <input id="fileupload{{forloop.parentloop.counter}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
-                                <input type="hidden" value="{{forloop.parentloop.counter}}" name="lcids" />
+                            <div class="card-body" id="{{chapid}}">
+                                <input id="fileupload{{chapid}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
+                                <input type="hidden" value="{{chapid}}" name="lcids" />
                                 <div class="row">
                                     <div class="col-auto">
                                         <input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" >
@@ -51,8 +51,8 @@
                                                 <i class="fa fa-play fa-fw" ></i>
                                                 {{ session.name }}
                                                 </a>
-                                                <input type="hidden" name ="lecPub[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.published}}">
-                                                <input type="hidden" name ="lec[{{forloop.parentloop.parentloop.counter}}][]" value="{{session.id}}">
+                                                <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
+                                                <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
                                             </td>
                                         </tr>
                                     </table>
@@ -125,7 +125,7 @@
 <script src="{% static 'fileUploader/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
-<script src="{% static 'provider/js/createCourseContent.js' %}"></script>
+
 
 <script>
     

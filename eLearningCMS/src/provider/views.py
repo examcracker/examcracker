@@ -170,6 +170,8 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
         providerObj = getProvider(request)
+        kwargs["allExams"] = course.models.EXAM_CHOICES
+        kwargs["allSubjects"] = course.models.ExamDict
         #pdb.set_trace()
         if courseId != '':
             kwargs["courseId"] = courseId
@@ -179,38 +181,37 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
-        kwargs["allExams"] = course.models.EXAM_CHOICES
-        kwargs["allSubjects"] = course.models.ExamDict
-        
+
         #allProviderCourses = getAllCoursesbyExamsFromProvider(providerObj.id)
         #kwargs["allCoursesByMe"] = allProviderCourses
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
-            # auto writing chapter names
-            #pdb.set_trace()
-            course.models.CourseChapter.objects.filter(course_id=courseId).delete()
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             #return super().get(request, *args, **kwargs)
             if 'lcids' not in request.POST:
                 return super().get(request, *args, **kwargs)
             lcids = request.POST.getlist('lcids')
+            #pdb.set_trace()
             if len(lcids) > 0:
                 cpPrefix = 'Chapter '              
                 i = 0
                 while i < len(lcids):
-                    i=i+1
-                    chapterObj = course.models.CourseChapter()
-                    chapterObj.name = cpPrefix + str(i)
-                    chapterObj.course = courseObj
-                    chapterObj.sequence = i
+                    cpid = lcids[i]
+                    chapterObj = course.models.CourseChapter.objects.filter(id=cpid)
+                    if chapterObj.exists():
+                        chapterObj = chapterObj[0]
+                    else:
+                        chapterObj = course.models.CourseChapter()
+                        chapterObj.course = courseObj
+                    chapterObj.name = cpPrefix + str(i+1)
+                    chapterObj.sequence = i+1
                     # first get and save files into provider_session db
                     sessionsIdArr = []
                     publishedArr = []
                     # get session ids here
-                    lcVar = 'lec['+str(lcids[i-1])+'][]'
-                    lecPubVar = 'lecPub['+str(lcids[i-1])+'][]'
-                    
+                    lcVar = 'lec['+str(lcids[i])+'][]'
+                    lecPubVar = 'lecPub['+str(lcids[i])+'][]'
                     if lcVar in request.POST:
                         filesUploaded = request.POST.getlist(lcVar)
                         filePublishedArr = request.POST.getlist(lecPubVar)
@@ -223,10 +224,9 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     chapterObj.sessions=sessionsIdArr
                     chapterObj.published=publishedArr
                     chapterObj.save()
+                    i=i+1
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
-
-        
         # try to segregate the procs for course description creation and 
         # course content creation
         courseName = request.POST.get('courseName','')
@@ -255,7 +255,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         kwargs["editCourse"] = courseObj
         kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
         kwargs["isCourseContent"] = 'true'
-
         return super().get(request, *args, **kwargs)
         
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
