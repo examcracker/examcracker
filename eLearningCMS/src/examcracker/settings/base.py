@@ -66,8 +66,15 @@ SECRET_KEY = env('SECRET_KEY')
 
 ALLOWED_HOSTS = []
 
+# Captcha settings
 RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
 RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
+
+# Email settings
+SMTP_SERVER = 'smtp.gmail.com'
+SMTP_PORT = 587
+SMTP_ADMIN_ID = 'mygyaanhive@gmail.com'
+SMTP_ADMIN_PASSWORD = 'gyaanhive123'
 
 # Application definition
 
