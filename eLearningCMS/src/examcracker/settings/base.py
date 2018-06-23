@@ -71,10 +71,12 @@ RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
 RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
 
 # Email settings
-SMTP_SERVER = 'smtp.gmail.com'
-SMTP_PORT = 587
-SMTP_ADMIN_ID = 'mygyaanhive@gmail.com'
-SMTP_ADMIN_PASSWORD = 'gyaanhive123'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'mygyaanhive@gmail.com'
+EMAIL_HOST_PASSWORD = 'gyaanhive123'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@gmail.com>'
 
 # Application definition
 

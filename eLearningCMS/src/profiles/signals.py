@@ -13,18 +13,18 @@ def sendVerificationMail(email, typeofuser, code):
     link = 'http://{}/{}/verifyEmail/{}'.format('localhost:8000', typeofuser, code)
 
     msg = MIMEMultipart()
-    msg['From'] = settings.SMTP_ADMIN_ID
-    msg['To'] = settings.SMTP_ADMIN_PASSWORD
+    msg['From'] = settings.EMAIL_HOST_USER
+    msg['To'] = email
     msg['Subject'] = 'Welcome to GyaanHive'
     body = 'Verify your email using the link ' + link
     msg.attach(MIMEText(body, 'plain'))
 
-    server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
+    server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
     server.ehlo()
     server.starttls()
     server.ehlo()
-    server.login(settings.SMTP_ADMIN_ID, settings.SMTP_ADMIN_PASSWORD)
-    server.sendmail(settings.SMTP_ADMIN_ID, email, msg.as_string())
+    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+    server.sendmail(settings.EMAIL_HOST_USER, email, msg.as_string())
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

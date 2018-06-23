@@ -31,7 +31,7 @@ MIDDLEWARE += [
 ]
 
 # Show emails to console in DEBUG mode
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # Show thumbnail generation errors
 THUMBNAIL_DEBUG = True
