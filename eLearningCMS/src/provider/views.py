@@ -6,12 +6,12 @@ from django.shortcuts import redirect
 from . import models
 from django.http import JsonResponse
 from django.db.models import Q
+from django.http import Http404
 from . import forms
 import course
 import datetime
 import pdb
 import profiles
-
 import json
 # http://gsl.mit.edu/media/programs/india-summer-2012/materials/json_django.pdf
 
@@ -308,4 +308,21 @@ class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
         userObj.save()
         profileObj.save()
         return redirect("provider:my_profile")
+
+class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+    template_name = "verify_email.html"
+
+    def get(self, request, slug, *args, **kwargs):
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+
+        if str(profileObj.slug) != str(slug):
+            raise Http404()
+
+        if not profileObj.email_verified:
+            profileObj.email_verified = True
+            profileObj.save()
+
+        return super().get(request, *args, **kwargs)
+
 
