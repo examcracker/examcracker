@@ -35,8 +35,8 @@ def run(sessionid, converter, fragmenter):
     converter.run()
     fragmenter.run()
 
-def process():
-    taskQueue.processTask()
+#def process():
+#    taskQueue.processTask()
     
 class processQueue(threading.Thread):
     def __init__(self):
@@ -93,16 +93,16 @@ class processQueue(threading.Thread):
             self.lock.release()
             self.event.clear()
 
-taskQueue = processQueue()
-processThread = threading.Thread(target=process)
-processThread.start()
+#taskQueue = processQueue()
+#processThread = threading.Thread(target=process)
+#processThread.start()
 
 def signal_handler(signal, frame):
-    taskQueue.running = False
-    taskQueue.event.set()
+    #taskQueue.running = False
+    #taskQueue.event.set()
     sys.exit(0)
 
-signal.signal(signal.SIGINT, signal_handler)
+#signal.signal(signal.SIGINT, signal_handler)
 
-def processSession(sessionid, sessionpath):
-    taskQueue.addTask(sessionid, sessionpath)
+#def processSession(sessionid, sessionpath):
+    #taskQueue.addTask(sessionid, sessionpath)
