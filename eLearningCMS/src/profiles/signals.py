@@ -9,8 +9,8 @@ from . import models
 
 logger = logging.getLogger("project")
 
-def sendVerificationMail(email, code):
-    link = 'http://{}{}'.format('localhost:8000', code)
+def sendVerificationMail(email, typeofuser, code):
+    link = 'http://{}/{}/verifyEmail/{}'.format('localhost:8000', typeofuser, code)
 
     msg = MIMEMultipart()
     msg['From'] = settings.SMTP_ADMIN_ID
@@ -34,5 +34,10 @@ def create_profile_handler(sender, instance, created, **kwargs):
     # Create the profile object, only if it is newly created
     profile = models.Profile(user=instance)
     profile.save()
-    sendVerificationMail(instance.email, profile.slug)
+
+    typeofuser = 'student'
+    if instance.is_staff:
+        typeofuser = 'provider'
+
+    sendVerificationMail(instance.email, typeofuser, profile.slug)
     logger.info('New user profile for {} created'.format(instance))

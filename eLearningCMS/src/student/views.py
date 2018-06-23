@@ -8,6 +8,7 @@ from collections import OrderedDict
 from operator import itemgetter
 from django.contrib.auth import get_user_model
 from django.http import QueryDict
+from django.http import Http404
 from . import models
 from . import forms
 import course
@@ -17,6 +18,7 @@ import re
 import profiles
 import payments
 from math import ceil
+import profiles
 
 User = get_user_model()
 
@@ -123,6 +125,7 @@ class joinCourses(LoginRequiredMixin, generic.TemplateView):
 class myCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_courses.html'
     http_method_names = ['get']
+
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
@@ -197,6 +200,7 @@ class searchCourses(LoginRequiredMixin, generic.TemplateView):
 class showProgress(LoginRequiredMixin, generic.TemplateView):
     template_name = 'progress.html'
     http_method_names = ['get']
+
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         courseDictMap = {}
@@ -257,5 +261,21 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
             courseDictArray.append(courseDict)
         courseDictMap["outertemplateArray"] = courseDictArray
         kwargs["course_overview"] = courseDictMap
+
+        return super().get(request, *args, **kwargs)
+
+class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+    template_name = "verify_email.html"
+
+    def get(self, request, slug, *args, **kwargs):
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+
+        if str(profileObj.slug) != str(slug):
+            raise Http404()
+
+        if not profileObj.email_verified:
+            profileObj.email_verified = True
+            profileObj.save()
 
         return super().get(request, *args, **kwargs)

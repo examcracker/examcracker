@@ -11,4 +11,5 @@ urlpatterns = [
      path('viewVideo', views.viewSessions.as_view(), name="view_videos"),
      path('publishCourse', views.publishCourse.as_view(), name="publish_course"),
      path('createFromCourses', views.createFromCourses.as_view(), name="create_from_courses"),
+     path('verifyEmail/<slug:slug>', views.VerifyEmail.as_view(), name='verify_email'),
 ]
