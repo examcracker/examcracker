@@ -76,11 +76,12 @@
 					{% if user.is_superuser %}
 					{% else %}
 						<a class="dropdown-item" href="{% url 'provider:provider_home' %}">My Dashboard</a>
+						<a class="dropdown-item" href="{% url 'provider:my_profile' %}">Profile</a>
 					{% endif %}
 				{% else %}
 					<a class="dropdown-item" href="{% url 'student:student_home' %}">My Dashboard</a>
+					<a class="dropdown-item" href="{% url 'student:my_profile' %}">Profile</a>
 				{% endif %}
-				<a class="dropdown-item" href="{% url 'profiles:show_self' %}">Profile</a>
 				<a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a>
 				</div>
 			</li>

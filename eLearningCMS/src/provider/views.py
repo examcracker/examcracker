@@ -10,6 +10,7 @@ from . import forms
 import course
 import datetime
 import pdb
+import profiles
 
 import json
 # http://gsl.mit.edu/media/programs/india-summer-2012/materials/json_django.pdf
@@ -278,3 +279,34 @@ class viewCourses(LoginRequiredMixin, generic.TemplateView):
         if providerObj:
             kwargs["providerId"] = providerObj.id
         return super().get(request, *args, **kwargs)
+
+class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'my_profile.html'
+    http_method_names = ['get', 'post']
+
+    def get(self, request, *args, **kwargs):
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        kwargs["userDetails"] = profileObj
+        kwargs["authUserDetails"] = request.user
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        userObj = request.user
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        picture = self.request.FILES.get("profile_pic")
+        if picture is not None:
+            profileObj.picture = picture
+
+        profileObj.bio = self.request.POST.get("bio")
+        profileObj.address = self.request.POST.get("address")
+        profileObj.city = self.request.POST.get("city")
+        profileObj.country = self.request.POST.get("country")
+        profileObj.phone = self.request.POST.get("mobile")
+
+        userObj.name = self.request.POST.get("name")
+        userObj.email = self.request.POST.get("email")
+
+        userObj.save()
+        profileObj.save()
+        return redirect("provider:my_profile")
+
