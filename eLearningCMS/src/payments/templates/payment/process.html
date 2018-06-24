@@ -1,6 +1,24 @@
-{% block title %}Pay using PayPal{% endblock %}
+{% extends "__ecBase.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
+
+{% block container %}
 
 {% block content %}
+<div class="text-center">
  <h1>Pay using PayPal</h1>
+</div>
+<div class="text-center">
  {{ form.render }}
+</div>
 {% endblock %}
+
+{% endblock container %}
+
+{% block title %}Pay using PayPal{% endblock %}

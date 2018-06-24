@@ -1,3 +1,21 @@
+{% extends "__ecBase.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
+
+{% block container %}
+
 {% block content %}
- <p>Your payment was cancelled</p>
+<div class="text-center">
+ <h1><font color="red">Your transaction is cancelled</h1>
+</div>
 {% endblock %}
+
+{% endblock container %}
+
+{% block title %}Pay using PayPal{% endblock %}
