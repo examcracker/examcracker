@@ -13,10 +13,14 @@ import provider
 import pdb
 
 #get all courses for the provider
-def getAllCoursesbyExamsFromProvider(pId):
+def getAllChildCoursesbyExamsFromProvider(pId):
     courseByExams = defaultdict(list)
-    courseObj = models.Course.objects.filter(provider_id=pId)
-    
+    examsByProviders= models.Course.objects.filter(provider_id=pId)
+    examsByProviders = examsByProviders.values('exam').annotate(cnt = Count('exam')).filter(cnt__gte=2)
+    if not examsByProviders.exists():
+        return courseByExams
+    courseObj = models.Course.objects.filter(provider_id=pId).filter(exam__in=examsByProviders.values('exam'))
+    courseObj = courseObj.exclude(id__in=models.LinkCourse.objects.all().values('parent'))
     for course in courseObj:
         courseDetails = {}
         courseDetails["name"] = course.name
@@ -25,6 +29,21 @@ def getAllCoursesbyExamsFromProvider(pId):
     #pdb.set_trace()
     courseByExams.default_factory = None
     return courseByExams
+
+def getLinkedCourseDetails(courseid,published):
+    courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
+    #pdb.set_trace()
+    courseDetails = {}
+    # take map of course name to course details
+    if courseObj.exists():
+        childCourses = courseObj[0].child
+        for child in childCourses:
+            childCourseObj = models.Course.objects.filter(id=child)[0]
+            courseDetails[childCourseObj.name] = getCourseDetails(child,0)
+    else:
+        childCourseObj = models.Course.objects.filter(id=courseid)[0]
+        courseDetails[childCourseObj.name] = getCourseDetails(courseid,0)
+    return courseDetails
 
 # get course content
 def getCourseDetails(courseid, onlyPublished = 1):

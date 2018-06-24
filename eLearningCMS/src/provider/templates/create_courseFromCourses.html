@@ -8,7 +8,7 @@
                 <div class="col-sm-8">
                     <select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
                     <option value="">Select Exam</option>
-                    {% for key,value in allCoursesByMe.items %}
+                    {% for key,value in allChildCoursesByMe.items %}
                     <option value="{{key}}">{{key}}</option>
                     {% endfor %}
                     </select>
@@ -19,7 +19,7 @@
                     <div class="col-sm-8">
                         <select class="form-control" name="courseSubject" id="cSubjectMultiple" data-live-search="true" required multiple>
                             <option value="">Select courses</option>                        
-                            {% for examKey,value in allCoursesByMe.items  %}
+                            {% for examKey,value in allChildCoursesByMe.items  %}
                             {% for course in value %}
                             <option value="{{examKey}}:{{course.name}}:{{course.id}}" hidden>{{course.name}}</option>
                             {% endfor %}

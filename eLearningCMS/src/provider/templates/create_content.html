@@ -7,9 +7,11 @@
     table-layout: fixed;
 }
 </style>
+
 <div class="container">
-    <h5>My Course Structure</h5>
-   
+
+{% for courseName,courseDetails in course_detail.items %}
+    <h5>{{courseName}}</h5>
     <form action="{% url 'provider:create_course' %}" method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
         <div class="card bg-light text-dark">
             <div class="course-header">
@@ -17,12 +19,14 @@
             <div class="card-body">
                 <div class="container">
                     <div id="accordianChapters">
-                    {% for item in course_detail %}
+                    {% for item in courseDetails %}
                     {% for chapid, value in item.items %}
                     <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{forloop.parentloop.counter}}">
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{value.name}}</a>
+                            {% ifequal course_detail|length 1 %}
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
+                            {% endifequal %}
                         </div>
                         <div id="c{{forloop.parentloop.counter}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
@@ -33,8 +37,10 @@
                                         <input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "{{value.name}}" >
                                         <input type="hidden" class="form-control" name="cpids[]" value = "{{chapid}}" >
                                     </div>
+                                    {% ifequal course_detail|length 1 %}
                                     <div class="col-auto"><button type="button" onclick="addLecture(this,'{{ editCourse.id }}')" class="btn-sm btn-primary float-right">Add New Lecture</button></div>
                                     <div class="col-auto"><button type="button" onclick="addLectureFromLibrary(this)" class="btn-sm btn-primary float-right">Add Lecture from library</button></div>
+                                    {% endifequal %}
                                 </div>
                                 {% for session in value.sessions %}
                                 <!-- lectures here -->
@@ -43,7 +49,9 @@
                                     <table>
                                         <tr>
                                             {% if not session.published %}
+                                            {% ifequal course_detail|length 1 %}
                                             <td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td>
+                                            {% endifequal %}
                                             {% endif %}
                                             <td style="font-weight:bold">Lecture {{forloop.counter}}</td>
                                             <td>
@@ -71,9 +79,15 @@
     </div>
       <input type="hidden" value="true" name="isCourseContent" />
       <input type="hidden" value="{{editCourse.id}}" name="courseId"/>
+    {% ifequal course_detail|length 1 %}
       <button type="submit"  class="btn btn-info btn-lg float-right" id="saveAllChanges">Save changes</button>
       <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg" id="btnGen">Add New Chapter</button>
+     {% endifequal  %}
     </form>
+    
+<hr class="my-4">
+    
+{% endfor %}
     <div class="modal fade" id="modal-progress" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -121,6 +135,7 @@
     </div>
   </div>
 </div>
+
 <script src="{% static 'fileUploader/js/jquery-3.1.1.min.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
 <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>

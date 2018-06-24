@@ -98,4 +98,4 @@ class CourseChapter(models.Model):
 
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
-    child = models.IntegerField()
+    child = ArrayField(models.IntegerField(), default=list, blank=False)

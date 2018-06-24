@@ -71,11 +71,16 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
         #pdb.set_trace()
         courseObjNew = course.models.Course()        
         courseObjNew.provider=providerObj
+        courseObjNew.save()
+
         if 'courseIDS[]' not in self.request.POST:
             return render(request, self.template_name)
         cIDS = self.request.POST.getlist('courseIDS[]')
         #return super().get(request)
         courseObj = course.models.Course.objects.filter(id=cIDS[0])[0]
+        linkCourse = course.models.LinkCourse()
+        linkCourse.parent = courseObjNew
+        linkCourse.child.append(courseObj.id)
         courseObjNew.name = courseObj.name
         courseObjNew.description = courseObj.description
         courseObjNew.cost = courseObj.cost
@@ -85,6 +90,7 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
         i=1
         while(i<len(cIDS)):
             cid = cIDS[i]
+            linkCourse.child.append(cid)
             courseObj = course.models.Course.objects.filter(id=cid)[0]
             courseObjNew.name = courseObjNew.name + " and " + courseObj.name
             courseObjNew.description = courseObjNew.description + " and " + courseObj.description
@@ -95,9 +101,10 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
                 courseObjNew.subjects = courseObjNew.subjects + ";" + courseObj.subjects
             i=i+1
         courseObjNew.save()
+        linkCourse.save()
         # add sessions from all courses into new course
         newCid = courseObjNew.id
-        i=0
+        '''i=0
         chCnt = 1
         while (i<len(cIDS)) :
             cid = cIDS[i]
@@ -112,8 +119,8 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
                     courseChapterNewObj.published.append(False)
                 courseChapterNewObj.save()
                 chCnt = chCnt+1
-            i=i+1
-        return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObjNew,"editCourseSubjects" :courseObj.subjects.split(';'), "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(newCid,0)})
+            i=i+1'''
+        return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObjNew,"editCourseSubjects" :courseObj.subjects.split(';'), "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getLinkedCourseDetails(newCid,0)})
 
 class publishCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
@@ -125,19 +132,21 @@ class publishCourse(LoginRequiredMixin, generic.TemplateView):
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
-            for chapter in courseChapterObj:
-                lectureCnt = len(chapter.sessions)
-                i = 0
-                publishedArr = []
-                while i < len(chapter.sessions):
-                    publishedArr.append(True)
-                    i=i+1
-                chapter.published = publishedArr
-                chapter.save()
-            data = {'is_valid': True, 'courseId': courseId}
             courseObj.published=True
             courseObj.save()
-            return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObj, "editCourseSubjects" :courseObj.subjects.split(';'),  "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getCourseDetails(courseId,0)})
+            # check if linked course, then return
+            if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
+                for chapter in courseChapterObj:
+                    lectureCnt = len(chapter.sessions)
+                    i = 0
+                    publishedArr = []
+                    while i < len(chapter.sessions):
+                        publishedArr.append(True)
+                        i=i+1
+                    chapter.published = publishedArr
+                    chapter.save()
+                data = {'is_valid': True, 'courseId': courseId}
+            return render(request, self.template_name, {"sessionsBySubjects" : getSessionsBySubjects(providerObj.id,courseObj.subjects),"editCourse" : courseObj, "editCourseSubjects" :courseObj.subjects.split(';'),  "allExams" : course.models.EXAM_CHOICES , "allSubjects" : course.models.ExamDict, "course_detail" : course.algos.getLinkedCourseDetails(courseId,0)})
         else:
             data = {'is_valid': False}
             return render(request, self.template_name)
@@ -152,15 +161,15 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-        allProviderCourses = course.algos.getAllCoursesbyExamsFromProvider(providerObj.id)
-        kwargs["allCoursesByMe"] = allProviderCourses
-        kwargs["allCoursesCount"] = course.models.Course.objects.filter(provider_id=providerObj.id).count()
+        allProviderChildCourses = course.algos.getAllChildCoursesbyExamsFromProvider(providerObj.id)
+        kwargs["allChildCoursesByMe"] = allProviderChildCourses
+        kwargs["allChildCoursesCount"] = len(allProviderChildCourses)
         #pdb.set_trace()
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
             kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id,courseObj.subjects)
         return super().get(request, *args, **kwargs)
 
@@ -180,16 +189,15 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
             kwargs["editCourse"] = courseObj
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
 
         #allProviderCourses = getAllCoursesbyExamsFromProvider(providerObj.id)
         #kwargs["allCoursesByMe"] = allProviderCourses
         # check if course content flow
         if isCourseContent != '':
             #return super().get(request, *args, **kwargs)
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
-            #return super().get(request, *args, **kwargs)
             if 'lcids' not in request.POST:
+                kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
                 return super().get(request, *args, **kwargs)
             lcids = request.POST.getlist('lcids')
             #pdb.set_trace()
@@ -198,7 +206,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                 i = 0
                 while i < len(lcids):
                     cpid = lcids[i]
-                    chapterObj = course.models.CourseChapter.objects.filter(id=cpid)
+                    chapterObj = course.models.CourseChapter.objects.filter(id=cpid,course_id=courseId)
                     if chapterObj.exists():
                         chapterObj = chapterObj[0]
                     else:
@@ -225,14 +233,14 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                     chapterObj.published=publishedArr
                     chapterObj.save()
                     i=i+1
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
         # try to segregate the procs for course description creation and 
         # course content creation
         courseName = request.POST.get('courseName','')
         # check if Edit course flow.
         if courseName == '':
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId,0)
+            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
             return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
