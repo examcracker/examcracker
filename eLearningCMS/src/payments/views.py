@@ -12,6 +12,7 @@ import urllib
 from . import models
 import course
 import student
+import profiles
 
 def getStudent(request):
     return student.models.Student.objects.filter(user_id=request.user.id)[0]
@@ -80,6 +81,9 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
         courses = course.models.Course.objects.raw('SELECT * from course_course WHERE id IN (SELECT course_id from payments_cart WHERE student_id = ' + str(studentObj.id) + ')')
         kwargs["courses"] = courses
+        profileObj = profiles.models.Profile.objects.filter(user_id=studentObj.user_id)[0]
+        if not profileObj.email_verified:
+            kwargs["email_pending"] = True
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

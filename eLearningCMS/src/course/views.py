@@ -44,6 +44,10 @@ class courseDetails(generic.TemplateView):
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
+                profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+                if not profileObj.email_verified:
+                    kwargs["email_pending"] = True
+
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:

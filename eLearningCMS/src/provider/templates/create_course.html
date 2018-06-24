@@ -19,10 +19,17 @@
 	<!--<button class="btn btn-sm btn-success float-right" style="position:absolute;right:10rem;">Preview Course</button>-->
 </ol>
 </div>
+
 <form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse" 
 onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
 	<input type="hidden" name="courseId" value="{{editCourse.id}}" />
+	{% if email_pending %}
+	<div class="text-left">
+        <h4><font color="red">Verify email to Publish</font></h4>
+    </div>
+    {% else %}
 	<button class="btn btn-lg btn-success float-right" {% if not editCourse %} disabled {% endif %} type="submit">Publish Course</button>
+	{% endif %}
 </form>
 </nav>
 <div class="container">

@@ -19,7 +19,13 @@
 		{% csrf_token %}
 		<div class="form-group">
 	  		<div class="col-sm-offset-2 col-sm-10">
-			<button name="checkout" type="submit" class="btn btn-success">Checkout</button>
+			{% if email_pending %}
+			    <div class="text-center">
+                    <h3><font color="red">Verify email to checkout</font></h3>
+                </div>
+			{% else %}
+			    <button name="checkout" type="submit" class="btn btn-success">Checkout</button>
+			{% endif %}
 			<button name="delete" type="submit" class="btn btn-success">Delete from Cart</button>
 			</div>
  		 </div>

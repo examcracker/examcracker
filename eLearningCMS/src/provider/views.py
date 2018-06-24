@@ -13,7 +13,6 @@ import datetime
 import pdb
 import profiles
 import json
-# http://gsl.mit.edu/media/programs/india-summer-2012/materials/json_django.pdf
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -156,32 +155,44 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        if not profileObj.email_verified:
+            kwargs["email_pending"] = True
+
         providerObj = getProvider(request)
-        courseId = request.POST.get("courseId",'')
+        courseId = request.POST.get("courseId", '')
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
         allProviderChildCourses = course.algos.getAllChildCoursesbyExamsFromProvider(providerObj.id)
         kwargs["allChildCoursesByMe"] = allProviderChildCourses
         kwargs["allChildCoursesCount"] = len(allProviderChildCourses)
-        #pdb.set_trace()
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
-            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
-            kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id,courseObj.subjects)
+            kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId, 0)
+            kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id, courseObj.subjects)
+
         return super().get(request, *args, **kwargs)
 
     def post(self, request,*args, **kwargs):
-        #return super().get(request, *args, **kwargs)
+        if not request.user.is_staff:
+            raise Http404()
+
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        if not profileObj.email_verified:
+            kwargs["email_pending"] = True
+
         isCourseContent = request.POST.get('isCourseContent','')
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
         providerObj = getProvider(request)
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-        #pdb.set_trace()
         if courseId != '':
             kwargs["courseId"] = courseId
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
@@ -200,7 +211,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                 kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId,0)
                 return super().get(request, *args, **kwargs)
             lcids = request.POST.getlist('lcids')
-            #pdb.set_trace()
             if len(lcids) > 0:
                 cpPrefix = 'Chapter '              
                 i = 0
@@ -224,7 +234,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
                         filesUploaded = request.POST.getlist(lcVar)
                         filePublishedArr = request.POST.getlist(lecPubVar)
                         j=0
-                        #pdb.set_trace()
                         while j<len(filesUploaded):
                             sessionsIdArr.append(filesUploaded[j])
                             publishedArr.append(filePublishedArr[j])
@@ -251,7 +260,6 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
-        #pdb.set_trace()
         subj = subjects[0].split(':')[1]
         courseObj.subjects = subj
         i=1
