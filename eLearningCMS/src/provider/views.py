@@ -123,7 +123,7 @@ class createFromCourses(LoginRequiredMixin, generic.TemplateView):
 
 class publishCourse(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
-    http_method_names = ['get', 'post']
+    http_method_names = ['post']
 
     def post(self, request):
         providerObj = getProvider(request)
@@ -272,7 +272,23 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
         kwargs["isCourseContent"] = 'true'
         return super().get(request, *args, **kwargs)
-        
+
+class editCourse(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'create_course.html'
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)
+        if len(courseObj) == 0:
+            raise Http404()
+        courseObj = courseObj[0]
+        # use this in template to populate the fields
+        kwargs["edit_course"] = courseObj
+        super().get(request, *args, **kwargs)
+
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
     template_name = "view_videos.html"
     http_method_names = ['get']
