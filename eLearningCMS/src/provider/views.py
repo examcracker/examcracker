@@ -273,7 +273,7 @@ class createCourse(LoginRequiredMixin, generic.TemplateView):
         kwargs["isCourseContent"] = 'true'
         return super().get(request, *args, **kwargs)
 
-class editCourse(LoginRequiredMixin, generic.TemplateView):
+class editCourse(createCourse):
     template_name = 'create_course.html'
     http_method_names = ['get']
 
