@@ -1,0 +1,16 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+  <!-- Breadcrumbs-->
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">My Students</li>
+  </ol>
+  <script type="text/javascript" src="{% static 'progress/js/charts/loader.js' %}"></script>
+  {% if course_overview.myCourse%}
+  {% include "piechart.html" with datatoload=course_overview %}
+  {% endif %}
+{% endblock active %}

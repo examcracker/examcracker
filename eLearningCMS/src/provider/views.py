@@ -352,3 +352,33 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
 
+class myStudents(LoginRequiredMixin, generic.TemplateView):
+    template_name = "my_students.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        providerObj = getProvider(request)
+        #sessionList = models.Session.objects.filter(provider_id=providerObj.id)
+        coursesObj = course.models.Course.objects.filter(provider_id=providerObj.id)
+        courses = []
+        courses.append(['Courses', 'Students per course'])
+        for courseObj in coursesObj:
+            courseStat = []
+            courseStat.append(courseObj.name)
+            studentsPerCourse = len(course.models.EnrolledCourse.objects.filter(course_id=courseObj.id))
+            courseStat.append(studentsPerCourse)
+            courses.append(courseStat)
+        courseDictMap = {}
+        courseDictArray = []
+        courseDictMap["myCourse"] = True
+        courseDict = {}
+        courseDict['name'] = "Students distribution per course"
+        courseDict['chartTitleeee'] = ""
+        courseDict['piechartArray'] = courses
+        courseDict['progressbarShow'] = False
+        courseDictArray.append(courseDict)
+        courseDictMap["outertemplateArray"] = courseDictArray
+        import pdb
+        #pdb.set_trace()
+        kwargs["course_overview"] = courseDictMap
+        return super().get(request, *args, **kwargs)

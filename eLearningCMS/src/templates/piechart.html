@@ -9,7 +9,7 @@
             var chaptersArray = {{ obj.piechartArray|safe }}
             var data = google.visualization.arrayToDataTable(chaptersArray);
             var options = {
-              title:  'Chapter wise distribution',
+              title:  "{{ obj.chartTitle|safe }}",
               pieHole: 0.4,
               height:300,
               is3D: true
@@ -21,13 +21,15 @@
   <div class="container">
       <div class="row">
         <div class="col-lg-9">
-              <div class="row">
+                {% if obj.progressbarShow%}
+                <div class="row">
                   <div class="col-lg-9">
                       <div class="progress">
                               <div class="progress-bar bg-info" style="width: {{ obj.progress }}% ">{{ obj.progress }}%</div>
                       </div>
                     </div>
                 </div>
+                {% endif %}
                 <div class="row">
                     <div class="col-lg-9">
                       <div id="chartContainer{{ forloop.counter }}"></div>

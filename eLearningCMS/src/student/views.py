@@ -220,7 +220,9 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
 
             courseObj = course.models.Course.objects.filter(id=courseid)[0]
             courseDict['name'] = courseObj.name
+            courseDict['chartTitle'] = 'Chapter wise distribution'
             courseDict['duration'] = courseObj.duration
+            courseDict['progressbarShow'] = True
             courseChaptersObj=[]
             courseChapters = course.models.CourseChapter.objects.filter(course_id=courseid)
             sessions_list = [v for v in enrolledCourse.sessions]
