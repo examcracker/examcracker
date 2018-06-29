@@ -10,7 +10,6 @@ from django.http import Http404
 from . import forms
 import course
 import datetime
-import pdb
 import profiles
 import json
 
@@ -42,7 +41,7 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
         videoForm = forms.uploadFilesForm(self.request.POST,self.request.FILES)
         courseid = self.request.POST.get('coid','')
         subject = ''
-        #pdb.set_trace()
+
         if courseid != "":
             courseObj = course.models.Course.objects.filter(id=int(courseid))[0]
             subject = courseObj.subjects
@@ -271,7 +270,6 @@ class editCourse(coursePageGetter):
     http_method_names = ['get','post']
 
     def get(self, request, id, *args, **kwargs):
-        #pdb.set_trace()
         if not request.user.is_staff:
             raise Http404()
         courseid = id
@@ -357,8 +355,10 @@ class myStudents(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
         providerObj = getProvider(request)
-        #sessionList = models.Session.objects.filter(provider_id=providerObj.id)
         coursesObj = course.models.Course.objects.filter(provider_id=providerObj.id)
         courses = []
         courses.append(['Courses', 'Students per course'])
@@ -378,7 +378,5 @@ class myStudents(LoginRequiredMixin, generic.TemplateView):
         courseDict['progressbarShow'] = False
         courseDictArray.append(courseDict)
         courseDictMap["outertemplateArray"] = courseDictArray
-        import pdb
-        #pdb.set_trace()
         kwargs["course_overview"] = courseDictMap
         return super().get(request, *args, **kwargs)

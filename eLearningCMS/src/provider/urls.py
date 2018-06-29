@@ -13,5 +13,5 @@ urlpatterns = [
      path('publishCourse', views.publishCourse.as_view(), name="publish_course"),
      path('createFromCourses', views.createFromCourses.as_view(), name="create_from_courses"),
      path('verifyEmail/<slug:slug>', views.VerifyEmail.as_view(), name="verify_email"),
-	 path('myStudents', views.myStudents.as_view(), name="my_students"),
+     path('myStudents', views.myStudents.as_view(), name="my_students"),
 ]
