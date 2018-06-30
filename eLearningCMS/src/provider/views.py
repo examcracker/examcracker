@@ -93,7 +93,6 @@ class coursePageBase(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
 class createCourse(coursePageBase):
-    template_name = 'create_course.html'
     http_method_names = ['get','post']
 
     def post(self, request,*args, **kwargs):
@@ -171,7 +170,6 @@ class createCourse(coursePageBase):
         return super().get(request, *args, **kwargs)
 
 class createFromCourses(coursePageBase):
-    template_name = "create_course.html"
     http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
@@ -214,7 +212,7 @@ class createFromCourses(coursePageBase):
         return super().get(request, *args, **kwargs)
 
 class publishCourse(coursePageBase):
-    #template_name = "create_course.html"
+
     http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
@@ -239,7 +237,7 @@ class publishCourse(coursePageBase):
         return super().get(request, *args, **kwargs)
 
 class editCourse(coursePageBase):
-    #template_name = 'create_course.html'
+
     http_method_names = ['get']
 
     def get(self, request, id, *args, **kwargs):
