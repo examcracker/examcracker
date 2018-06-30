@@ -10,6 +10,7 @@ from django.http import Http404
 from . import forms
 import course
 import datetime
+#import pdb
 import profiles
 import json
 
@@ -60,11 +61,11 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             return JsonResponse(data)
 
 
-class coursePageGetter(LoginRequiredMixin, generic.TemplateView):
+class coursePageBase(LoginRequiredMixin, generic.TemplateView):
     template_name = 'create_course.html'
-    http_method_names = ['get','post']
+    http_method_names = ['get']
 
-    def get(self, request, *args, **kwargs):
+    def get(self,request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
@@ -79,29 +80,28 @@ class coursePageGetter(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-        allProviderChildCourses = course.algos.getAllChildCoursesbyExamsFromProvider(providerObj.id)
-        kwargs["allChildCoursesByMe"] = allProviderChildCourses
-        kwargs["allChildCoursesCount"] = len(allProviderChildCourses)
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
             kwargs["course_detail"] = course.algos.getLinkedCourseDetails(courseId, 0)
             kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id, courseObj.subjects)
+        else :
+            allProviderChildCourses = course.algos.getAllChildCoursesbyExamsFromProvider(providerObj.id)
+            kwargs["allChildCoursesByMe"] = allProviderChildCourses
+            kwargs["allChildCoursesCount"] = len(allProviderChildCourses)
         return super().get(request, *args, **kwargs)
 
-class createCourse(coursePageGetter):
+class createCourse(coursePageBase):
     template_name = 'create_course.html'
     http_method_names = ['get','post']
 
     def post(self, request,*args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
         if not profileObj.email_verified:
             kwargs["email_pending"] = True
-        
         isCourseContent = request.POST.get('isCourseContent','')
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
@@ -149,15 +149,9 @@ class createCourse(coursePageGetter):
                     chapterObj.save()
                     i=i+1
             return super().get(request, *args, **kwargs)
-        # try to segregate the procs for course description creation and 
-        # course content creation
-        courseName = request.POST.get('courseName','')
-        # check if Edit course flow.
-        if courseName == '':
-            return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
-        courseObj.name = courseName
+        courseObj.name = request.POST.get('courseName','')
         courseObj.description=request.POST.get('courseDescription','')
         courseObj.exam=request.POST.get("courseExam",'')
         courseObj.provider=getProvider(request)
@@ -176,9 +170,9 @@ class createCourse(coursePageGetter):
         kwargs["courseId"] = courseObj.id
         return super().get(request, *args, **kwargs)
 
-class createFromCourses(coursePageGetter):
+class createFromCourses(coursePageBase):
     template_name = "create_course.html"
-    http_method_names = ['get','post']
+    http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
         providerObj = getProvider(request)
@@ -216,58 +210,37 @@ class createFromCourses(coursePageGetter):
         linkCourse.save()
         # add sessions from all courses into new course
         newCid = courseObjNew.id
-        '''i=0
-        chCnt = 1
-        while (i<len(cIDS)) :
-            cid = cIDS[i]
-            courseChapterObj = course.models.CourseChapter.objects.filter(course_id=cid).order_by('sequence')
-            for chapter in courseChapterObj:
-                courseChapterNewObj = course.models.CourseChapter()
-                courseChapterNewObj.course_id = newCid
-                courseChapterNewObj.name = 'Chapter '+str(chCnt)
-                courseChapterNewObj.sequence = chCnt
-                for session in chapter.sessions:
-                    courseChapterNewObj.sessions.append(session)
-                    courseChapterNewObj.published.append(False)
-                courseChapterNewObj.save()
-                chCnt = chCnt+1
-            i=i+1'''
         kwargs["courseId"] = newCid
         return super().get(request, *args, **kwargs)
 
-class publishCourse(coursePageGetter):
+class publishCourse(coursePageBase):
     #template_name = "create_course.html"
-    http_method_names = ['get','post']
+    http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
         providerObj = getProvider(request)
         courseId = self.request.POST.get('courseId','')
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
-        if courseId != '':
-            courseObj = course.models.Course.objects.filter(id=courseId)[0]
-            courseObj.published=True
-            courseObj.save()
-            # check if linked course, then return
-            if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
-                for chapter in courseChapterObj:
-                    lectureCnt = len(chapter.sessions)
-                    i = 0
-                    publishedArr = []
-                    while i < len(chapter.sessions):
-                        publishedArr.append(True)
-                        i=i+1
-                    chapter.published = publishedArr
-                    chapter.save()
-                data = {'is_valid': True, 'courseId': courseId}
-            kwargs["courseId"] = courseId
-            return super().get(request, *args, **kwargs)
-        else:
-            data = {'is_valid': False}
-            return super().get(request, *args, **kwargs)
+        courseObj = course.models.Course.objects.filter(id=courseId)[0]
+        courseObj.published=True
+        courseObj.save()
+        # check if linked course, then return
+        if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
+            for chapter in courseChapterObj:
+                lectureCnt = len(chapter.sessions)
+                i = 0
+                publishedArr = []
+                while i < len(chapter.sessions):
+                    publishedArr.append(True)
+                    i=i+1
+                chapter.published = publishedArr
+                chapter.save()
+        kwargs["courseId"] = courseId
+        return super().get(request, *args, **kwargs)
 
-class editCourse(coursePageGetter):
-    template_name = 'create_course.html'
-    http_method_names = ['get','post']
+class editCourse(coursePageBase):
+    #template_name = 'create_course.html'
+    http_method_names = ['get']
 
     def get(self, request, id, *args, **kwargs):
         if not request.user.is_staff:
@@ -276,9 +249,7 @@ class editCourse(coursePageGetter):
         courseObj = course.models.Course.objects.filter(id=courseid)
         if len(courseObj) == 0:
             raise Http404()
-        courseObj = courseObj[0]
-        # use this in template to populate the fields
-        kwargs["edit_course"] = courseObj
+        kwargs["courseId"] = courseid
         return super().get(request, *args, **kwargs)
 
 class viewSessions(LoginRequiredMixin, generic.TemplateView):

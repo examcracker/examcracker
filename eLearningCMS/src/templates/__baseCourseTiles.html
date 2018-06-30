@@ -34,25 +34,12 @@
                                 <td>Duration (months):  </td>
                                 <td align="right">{{ currentCourse.duration }}</td>
                             </tr>
-
                         </table>
-                        
                         {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                         <p align='center'>
-                        <table>
-                            <tr>
-                            <td>
-                    <form method="post" action="{% url 'provider:create_course' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="courseId" value="{{ currentCourse.id }}">
-                        <input type=submit value="Edit" style="width:100%;float: right;">
-                            </form>
-                            </td>
-                            </tr>
-                        </table>
+                            <input class="btn btn-block" type="button" value="Edit Course" onclick="location.href='{% url 'provider:edit_course' currentCourse.id %}'"  />
                         </p>
-                    {% endif %}
-                        
+                    {% endif %}     
                     </div>
                 </div>
             {% endfor %}

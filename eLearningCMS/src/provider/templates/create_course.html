@@ -36,7 +36,7 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 		<div class="row my-2">
 				<div class="col-lg-8 order-lg-2">
 						<ul class="nav nav-tabs">
-								{% if not editCourse and allChildCoursesCount > 0 %}
+								{% if not editCourse and allChildCoursesCount and allChildCoursesCount > 0 %}
 								<li class="nav-item">
 									<a href="" data-target="#courseFromCourses" data-toggle="tab" 
 									class= "nav-link" >Create Course From Courses</a>
@@ -75,7 +75,7 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 										</div>
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Select Subject</label>
-											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required multiple>
+											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required>
 												{% if editCourse and editCourse.subjects != "" %}
 													{% if editCourseSubjects %}
 														{% for subj in editCourseSubjects %}
