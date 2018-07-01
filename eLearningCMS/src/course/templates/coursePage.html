@@ -11,6 +11,8 @@ courses ( all courses ,course model)
 
     <head>
         <link href="{% static 'course/base.css' %}" rel="stylesheet">
+        <link href="{% static 'userDashBoard/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'userDashBoard/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     </head>
 
     <body>
@@ -156,10 +158,16 @@ courses ( all courses ,course model)
         </div>
 
         {% endif %}
+
+    {% include "courseReview.html" with course_id=course_overview.id %}
         
     </div>
 
+    
+
     {%  endblock container %}
+
+    
 
     </body>
 </html>

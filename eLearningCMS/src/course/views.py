@@ -19,8 +19,50 @@ import payments
 from collections import defaultdict
 from django.http import Http404
 from math import ceil
+from django.contrib.auth.models import User
 
 # Create your views here.
+
+def getCourseReview(courseid, **kwargs):
+    reviewSummary = {}
+    reviewObj = course.models.CourseReview.objects.filter(id=courseid)
+
+    reviewSummary['totalReviews'] = len(reviewObj)
+    reviewSummary['0'] = 0
+    reviewSummary['1'] = 0
+    reviewSummary['2'] = 0
+    reviewSummary['3'] = 0
+    reviewSummary['4'] = 0
+    reviewSummary['5'] = 0
+    totalRating = 0
+    userReviewList = []
+    for review in reviewObj:
+        if review.rating >= 0 and review.rating <= 5:
+            reviewSummary[str(review.rating)] += 1
+            totalRating += review.rating
+            userDetails = {}
+            profileObj = profiles.models.Profile.objects.filter(user_id=review.student)
+            picture = profileObj.picture
+            if picture is not None:
+                userDetails['profilePic'] = picture
+            try:
+                user = User.objects.get(id=review.student)
+                userDetails['name'] = user.name
+            except:
+                userDetails['name'] = 'Anonymous'
+            
+            userDetails['review'] = reviewObj.review
+            
+            userReviewList.append(userDetails)
+
+    if len(reviewObj) > 0:       
+        reviewSummary['averageRating'] = (int(totalRating*10.0/len(reviewObj)))/10.0
+    else:
+        reviewSummary['averageRating'] = 0
+
+    kwargs['reviewSummary'] = reviewSummary
+    kwargs['userReviewList'] = userReviewList
+
 
 class courseDetails(generic.TemplateView):
     template_name = 'coursePage.html'
@@ -41,6 +83,8 @@ class courseDetails(generic.TemplateView):
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
+
+        getCourseReview(courseid=courseid, kwargs=kwargs)
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
@@ -151,3 +195,21 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
         kwargs["session_url"] = "sessions/" + str(sessionObj.provider_id) + "/" + str(sessionid) + "_"
         return super().get(request, chapterid, sessionid, *args, **kwargs)
+
+class addReview(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['post']
+
+    def post(self, request, id, *args, **kwargs):
+        courseid = id
+        studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+
+        CourseReviewObj = models.CourseReview()
+        CourseReviewObj.student = studentObj
+        CourseReviewObj.course = courseObj
+        CourseReviewObj.review = request.POST.get('review')
+        CourseReviewObj.rating = int(request.POST.get('stars'))
+        CourseReviewObj.save()
+
+        url = "course:coursePage"
+        return redirect(url,courseid)

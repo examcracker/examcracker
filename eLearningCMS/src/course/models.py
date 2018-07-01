@@ -99,3 +99,9 @@ class CourseChapter(models.Model):
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
     child = ArrayField(models.IntegerField(), default=list, blank=False)
+
+class CourseReview(models.Model):
+    student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    review = models.CharField(max_length=10000)
+    rating = models.IntegerField(default=0)
