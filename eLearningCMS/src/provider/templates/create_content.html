@@ -21,14 +21,14 @@
                     <div id="accordianChapters">
                     {% for item in courseDetails %}
                     {% for chapid, value in item.items %}
-                    <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{forloop.parentloop.counter}}">
+                    <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{chapid}}">
                         <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{forloop.parentloop.counter}}">{{value.name}}</a>
+                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{chapid}}">{{value.name}}</a>
                             {% ifequal course_detail|length 1 %}
                             <button type="button" onclick="deleteChapter(this)" class="btn btn-primary float-right">Delete this chapter</button>
                             {% endifequal %}
                         </div>
-                        <div id="c{{forloop.parentloop.counter}}" class="collapse">
+                        <div id="c{{chapid}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
                                 <input id="fileupload{{chapid}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
                                 <input type="hidden" value="{{chapid}}" name="lcids" />
