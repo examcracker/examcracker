@@ -78,10 +78,12 @@
 					{% if user.is_superuser %}
 					{% else %}
 						<a class="dropdown-item" href="{% url 'provider:provider_home' %}">My Dashboard</a>
+						<a class="dropdown-item" href="{% url 'provider:view_courses' %}">My Courses</a>
 						<a class="dropdown-item" href="{% url 'provider:my_profile' %}">Profile</a>
 					{% endif %}
 				{% else %}
 					<a class="dropdown-item" href="{% url 'student:student_home' %}">My Dashboard</a>
+					<a class="dropdown-item" href="{% url 'student:my_courses' %}">My Courses</a>
 					<a class="dropdown-item" href="{% url 'student:my_profile' %}">Profile</a>
 				{% endif %}
 				<a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a>
@@ -121,7 +123,7 @@
 				{% if user.is_authenticated %}
 					{% if user.is_staff and not user.is_superuser %}
 						<a href="{% url 'provider:create_course' %}">
-						<button type="button" class="btn btn-outline-light btn-lg">Create Courses</button>
+						<button type="button" class="btn btn-outline-light btn-lg">Create Course</button>
 						</a>
 					{% else %}
 					<a href="{% url 'student:my_courses' %}">
