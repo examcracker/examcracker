@@ -21,14 +21,14 @@
 </div>
 
 <form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse" 
-onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
-	<input type="hidden" name="courseId" value="{{editCourse.id}}" />
+onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
 	{% if email_pending %}
 	<div class="text-left">
         <h4><font color="red">Verify email to Publish</font></h4>
     </div>
-    {% else %}
-	<button class="btn btn-lg btn-success float-right" {% if not editCourse %} disabled {% endif %} type="submit">Publish Course</button>
+	{% else %}
+	<button class="btn btn-success btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish course</button>
+	<!--<button class="btn btn-lg btn-success float-right" {% if not editCourse %} disabled {% endif %} type="submit">Publish Course</button> -->
 	{% endif %}
 </form>
 </nav>
@@ -153,6 +153,13 @@ onSubmit="if(!confirm('Do you want to submit and publish this course ?')){return
 		</div>
 </div>
 <script src="{% static 'provider/js/createCourseContent.js' %}"></script>
-
+<script>
+function publishCourse(el) {
+	//var clone  =  $("#contentForm").find("input[type=hidden]").clone()
+	var clone = $("#contentForm").find("input").clone().attr('type','hidden')
+	clone.appendTo("#publishCourse");
+	$('#publishCourse').submit()
+}
+</script>
 
 {% endblock %}
