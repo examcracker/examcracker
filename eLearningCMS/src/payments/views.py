@@ -50,6 +50,7 @@ def payment_process(request):
     courselist = str.split(courses, " ")
 
     totalCost = 0
+    courseList = []
 
     for c in courselist:
         try:
@@ -57,6 +58,7 @@ def payment_process(request):
         except:
             continue
         courseObj = course.models.Course.objects.filter(id=c)[0]
+        courseList.append(courseObj)
         totalCost = totalCost + courseObj.cost
 
         cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=courseObj.id)
@@ -71,8 +73,9 @@ def payment_process(request):
         'return_url': 'http://{}{}'.format(host, reverse('payments:done')),
         'cancel_return': 'http://{}{}'.format(host, reverse('payments:canceled')),
     }
+
     form = PayPalPaymentsForm(initial=paypal_dict)
-    return render(request, 'payment/process.html', {'form': form})
+    return render(request, 'payment/process.html', {'form': form, 'courses': courseList})
 
 class Cart(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_cart.html'
