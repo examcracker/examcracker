@@ -8,6 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from paypal.standard.forms import PayPalPaymentsForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict
+from django.http import Http404
 import urllib
 from . import models
 import course
@@ -78,6 +79,8 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
+        if request.user.is_staff:
+            raise Http404()
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
         courses = course.models.Course.objects.raw('SELECT * from course_course WHERE id IN (SELECT course_id from payments_cart WHERE student_id = ' + str(studentObj.id) + ')')
         kwargs["courses"] = courses
@@ -87,6 +90,8 @@ class Cart(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        if request.user.is_staff:
+            raise Http404()
         studentObj = getStudent(request)
         selectedCourses = request.POST.getlist('courses[]')
         if len(selectedCourses) == 0:

@@ -75,7 +75,6 @@ class courseDetails(generic.TemplateView):
         if courseObj.published == False:
             kwargs["not_published"] = True
             raise Http404()
-            return super().get(request, id, *args, **kwargs)
 
         courseDetailMap = algos.getCourseDetails(id)
         kwargs["course_detail"] = courseDetailMap
