@@ -12,12 +12,7 @@
 
 	{% if not user.is_staff %}
 	  <form method="post" action="">
-        {% for course in courses %}
-		  <input type="checkbox" name="courses[]" value="{{ course.id }}"</input>
-		  <label for="option"><a href="{% url 'course:coursePage' course.id %}">{{ course.name }}</a></label><br>
-		{% endfor %}
-		{% csrf_token %}
-		<div class="form-group">
+	    <div class="form-group">
 	  		<div class="col-sm-offset-2 col-sm-10">
 			{% if email_pending %}
 			    <div class="text-center">
@@ -28,7 +23,50 @@
 			{% endif %}
 			<button name="delete" type="submit" class="btn btn-success">Delete from Cart</button>
 			</div>
- 		 </div>
+ 		</div>
+		<div class="container mt-4">
+		<h1 class="text-center mb-3">Courses in Cart</h1>
+        <div class="row">
+        <div class="card-deck">
+        {% for currentCourse in courses %}
+		        <input type="checkbox" name="courses[]" value="{{ currentCourse.id }}"</input>
+		        <div class="card mb-4" id ="courseCard"style="min-width: 14rem; max-width: 16rem;">
+                    {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+                        <a href="{% url 'course:coursePage' currentCourse.id %}">
+                    {% endif %}
+                            <img class="card-img-top" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
+                    {% if user.is_staff %}
+                        </a> 
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="text-center"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h5>
+                        <table>
+                        {% if currentCourse.provider__user__name %}
+                        <tr>
+                            <td>Provider: </td>
+                            <td align="right">{{ currentCourse.provider__user__name }}</td>
+                        </tr>
+                        {% endif %}
+                            <tr>
+                                <td>Exam: </td>
+                                <td align="right">{{ currentCourse.exam }}</td>
+                            </tr>
+                            <tr>
+                                <td>Cost (INR): </td>
+                                <td align="right">{{ currentCourse.cost }}</td>
+                            </tr>
+                            <tr>
+                                <td>Duration (months):  </td>
+                                <td align="right">{{ currentCourse.duration }}</td>
+                            </tr>
+                        </table> 
+                    </div>
+                </div>
+		{% endfor %}
+		</div>
+		</div>
+		</div>
+		{% csrf_token %}
 	  </form>
 	{% endif %}
     
