@@ -126,17 +126,7 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 										name="courseCost" id="cCost" placeholder="Enter Cost" required>
 									</div>
 								</div>
-								<div class="form-group">
-									<div class="form-check">
-										<input class="form-check-input is-invalid" type="checkbox" value="" id="invalidCheck3" required {% if editCourse %} checked {% endif %}>
-										<label class="form-check-label" for="invalidCheck3">
-											Agree to terms and conditions
-										</label>
-										<div class="invalid-feedback">
-											You must agree before submitting.
-										</div>
-									</div>
-								</div>
+
 									<input type="hidden" value= {% if editCourse.id %} "{{editCourse.id}}" {% endif %} name="courseId" />
 									<button class="btn btn-primary" type="reset">Reset</button>
 									<button id="toContent" class="btn btn-primary" type="submit">Proceed to Next</button>

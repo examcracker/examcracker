@@ -222,7 +222,7 @@ class publishCourse(coursePageBase):
         courseId = self.request.POST.get('courseId','')
         # first save course and then publish
         saveCourseContent(request,courseId)
-        
+
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
         courseObj.published=True
@@ -271,10 +271,10 @@ class viewCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         providerObj = getProvider(request)
-        courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
-        kwargs["courses"] = courseList
         if providerObj:
             kwargs["providerId"] = providerObj.id
+            courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
+            kwargs["courses"] = courseList
         return super().get(request, *args, **kwargs)
 
 class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
