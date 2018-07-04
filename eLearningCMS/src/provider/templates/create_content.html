@@ -25,7 +25,7 @@
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{chapid}}">{{value.name}}</a>
                             {% ifequal course_detail|length 1 %}
-                            <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-primary float-right">Delete this chapter</button>
+                            <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right">Delete this chapter</button>
                             {% endifequal %}
                         </div>
                         <div id="c{{chapid}}" class="collapse">
@@ -39,7 +39,7 @@
                                 <div class="row">
                                     {% ifequal course_detail|length 1 %}
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,'{{ editCourse.id }}','{{ courseName }}')" class="btn-xs btn-primary float-right">Add New Lecture</button></div>
-                                    <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-primary float-right">Add Lecture from library</button></div>
+                                    <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-default float-right">Add Lecture from library</button></div>
                                     {% endifequal %}
                                 </div>
                                 {% for session in value.sessions %}
@@ -152,7 +152,7 @@
         var id = chapCnt;
         var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
         //var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this,'+'{{ editCourse.id }}'+')" class="btn btn-primary float-right">Add Lecture</button></div><div class="col-auto"><button type="button" onclick="addLectureFromLibrary(this)" class="btn-sm btn-primary float-right">Add Lecture from library</button></div></div></div></div></div>');
-        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Lecture</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-primary float-right">Add Lecture from library</button></div></div></div></div></div>');
+        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Lecture</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Add Lecture from library</button></div></div></div></div></div>');
         myChapter.appendTo('#accordianChapters');
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
