@@ -163,9 +163,8 @@
             // Increment the loop to the parent node
             el = el.parentNode;
         }
-        var cardBody = el.querySelector('.card-body');
-        var lcount = cardBody.children.length;
-        if (lcount > 3) {
+        var lectureFound = el.querySelector('.card-body .row table');
+        if (lectureFound) {
             alert('Cannot delete chapter. It has lectures');
         }
         else {
