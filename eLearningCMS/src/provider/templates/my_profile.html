@@ -28,7 +28,7 @@
                       <hr>
                       <div class="row">
                           <div class="col-md-6">
-                              <h6>About</h6>
+                              <h6>About Me</h6>
                               <p>
                                   {{ userDetails.bio }}
                               </p>
@@ -85,13 +85,13 @@
                       <form class="form-horizontal" role="form" method="post" action="" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
-                          <label class="col-lg-3 control-label">Name:</label>
+                          <label class="col-lg-3 control-label">Name</label>
                           <div class="col-lg-7">
                             <input class="form-control" type="text" value="{{ authUserDetails.name }}" name="name">
                           </div>
                         </div>
                   <div class="form-group">
-                          <label class="col-md-3 control-label">About Me:</label>
+                          <label class="col-md-3 control-label">About Me</label>
                           <div class="col-md-8">
                            {% if userDetails.bio|length > 0 %}
                            <textarea class="form-control" rows="4" cols="50" name="bio">{{ userDetails.bio }}</textarea>
@@ -103,7 +103,7 @@
                          </div>
                         </div>
                         <div class="form-group">
-                          <label class="col-lg-3 control-label">Mobile:</label>
+                          <label class="col-lg-3 control-label">Mobile</label>
                           <div class="col-lg-8">
                            {% if userDetails.phone|length > 0 %}
                               <input class="form-control" type="text" value="{{ userDetails.phone }}" name="mobile" pattern="[789][0-9]{9}" title="Enter a valid 10 digit number">
@@ -113,13 +113,7 @@
                           </div>
                         </div>
                         <div class="form-group">
-                          <label class="col-lg-3 control-label">Email:</label>
-                          <div class="col-lg-8">
-                            <input class="form-control" type="email" value="{{ authUserDetails.email }}" name="email">
-                          </div>
-                        </div>
-                        <div class="form-group">
-                          <label class="col-md-3 control-label">Address:</label>
+                          <label class="col-md-3 control-label">Address</label>
                           <div class="col-md-8">
                            {% if userDetails.address|length > 0 %}
                             <input class="form-control" type="text" value="{{ userDetails.address }}" name="address">
@@ -129,7 +123,7 @@
                          </div>
                         </div>
                   <div class="form-group">
-                          <label class="col-md-3 control-label">City:</label>
+                          <label class="col-md-3 control-label">City</label>
                           <div class="col-md-8">
                            {% if userDetails.city|length > 0 %}
                             <input class="form-control" type="text" value="{{ userDetails.city }}" name="city">
@@ -139,7 +133,7 @@
                          </div>
                         </div>
                   <div class="form-group">
-                          <label class="col-md-3 control-label">Country:</label>
+                          <label class="col-md-3 control-label">Country</label>
                           <div class="col-md-8">
                            {% if userDetails.country|length > 0 %}
                             <input class="form-control" type="text" value="{{ userDetails.country }}" name="country">
@@ -154,7 +148,7 @@
                         <div class="form-group">
                           <label class="col-md-3 control-label"></label>
                           <div class="col-md-8">
-                            <input type="submit" class="btn btn-primary" value="Save Changes">
+                            <input type="submit" class="btn btn-primary" value="Save">
                             <span></span>
                             <input type="reset" class="btn btn-default" value="Cancel">
                           </div>
@@ -167,7 +161,7 @@
             {% csrf_token %}
             <div class="col-lg-3 order-lg-1 text-center">
                 <img id="profilePic" src="{% thumbnail userDetails.picture|default:'default_profile.png' 100x100 crop %}" class="mx-auto img-fluid img-circle d-block" alt="avatar">
-                <p>Upload Profile photo</p>
+                <p>Upload Photo</p>
                 <input type="file" onchange="readURL(this);" class="form-control" name="profile_pic">
                 <hr>  
             </div>

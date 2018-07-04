@@ -18,20 +18,20 @@
                         <table>
                         {% if currentCourse.provider__user__name %}
                         <tr>
-                            <td>Provider: </td>
+                            <td>Course Provider</td>
                             <td align="right">{{ currentCourse.provider__user__name }}</td>
                         </tr>
                         {% endif %}
                             <tr>
-                                <td>Exam: </td>
+                                <td>Exam</td>
                                 <td align="right">{{ currentCourse.exam }}</td>
                             </tr>
                             <tr>
-                                <td>Cost (INR): </td>
+                                <td>Cost (INR)</td>
                                 <td align="right">{{ currentCourse.cost }}</td>
                             </tr>
                             <tr>
-                                <td>Duration (months):  </td>
+                                <td>Duration (months)</td>
                                 <td align="right">{{ currentCourse.duration }}</td>
                             </tr>
                         </table>

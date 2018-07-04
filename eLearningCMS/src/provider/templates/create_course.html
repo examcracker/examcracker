@@ -24,10 +24,10 @@
 onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
 	{% if email_pending %}
 	<div class="text-left">
-        <h4><font color="red">Verify email to Publish</font></h4>
+        <h4><font color="red">Verify Email to Publish</font></h4>
     </div>
 	{% else %}
-	<button class="btn btn-success btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish course</button>
+	<button class="btn btn-success btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
 	<!--<button class="btn btn-lg btn-success float-right" {% if not editCourse %} disabled {% endif %} type="submit">Publish Course</button> -->
 	{% endif %}
 </form>
@@ -39,16 +39,16 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 								{% if not editCourse and allChildCoursesCount and allChildCoursesCount > 0 %}
 								<li class="nav-item">
 									<a href="" data-target="#courseFromCourses" data-toggle="tab" 
-									class= "nav-link" >Create Course From Courses</a>
+									class= "nav-link" >From Existing Courses</a>
 								</li>
 								{% endif %}
 								<li class="nav-item">
 										<a href="" data-target="#courseDescription" data-toggle="tab" 
-										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Add Course Description</a>
+										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Summary</a>
 								</li>
 								<li class="nav-item">
 										<a href="" data-target="#addContent" data-toggle="tab" 
-										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Add Content</a>
+										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Populate</a>
 								</li>
 						</ul>
 						<div class="tab-content py-4">
@@ -56,17 +56,17 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 									<form action="{% url 'provider:create_course' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
 										<div class="form-row">
 		  								<div class="col-md-4 mb-3">
-												<label for="cName">Course Name</label>
+												<label for="cName">Name</label>
 												<input type="text" class="form-control" value= {% if editCourse %} "{{ editCourse.name }}" {% else %} "" {% endif %}
 													name="courseName" id="cName" placeholder="Course Name" required>
 											</div>
 										<div class="col-md-4 mb-3">
-											<label for="cExam">Select Exam</label>
+											<label for="cExam">Exam</label>
 											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" {% if editCourse and editCourse.exam != ""  %} readonly {% endif %} required>
 												{% if editCourse and editCourse.exam != "" %}
 												<option value="{{ editCourse.exam }}"selected>{{editCourse.exam}}</option>
 												{% else %}
-												<option value="">Select Exam</option>
+												<option value="">Exam</option>
 												{% for x,y in allExams %}
 												<option value="{{ x }}"{% if editCourse.exam == x %} selected{% endif %}>{{x}}</option>
 											{% endfor %}
@@ -74,7 +74,7 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 											</select>
 										</div>
 										<div class="col-md-4 mb-3">
-											<label for="cSubject">Select Subject</label>
+											<label for="cSubject">Subject(s)</label>
 											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} readonly {% endif %} required>
 												{% if editCourse and editCourse.subjects != "" %}
 													{% if editCourseSubjects %}
@@ -85,7 +85,7 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 													<option value="{{ editCourse.exam }}:{{ editCourse.subjects }}"selected>{{editCourse.subjects}}</option>
 													{% endif %}
 												{% else %}
-												<option value="">Select Subject</option>
+												<option value="">Subject(s)</option>
 												
 											{% for examKey,subjectVals in allSubjects.items  %}
 												{% for subj in subjectVals %}
@@ -105,31 +105,31 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 								</div>
 								<div class="form-row">
 									<div class="col-md-12 mb-3">
-										<label for="cDescription">Description</label>
-										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Fill Course Description" rows="3">{% if editCourse %}{{editCourse.description}}{% endif %}</textarea>
+										<label for="cDescription">Summary</label>
+										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Add Summary" rows="3">{% if editCourse %}{{editCourse.description}}{% endif %}</textarea>
 									</div>
 								</div>
 								<div class="form-row">
 										<div class="col-md-6 mb-3">
-									<label for="cDuration">Course Duration</label>
+									<label for="cDuration">Duration (months)</label>
 									<div class="input-group">
 										<div class="input-group-prepend">
 										<span class="input-group-text" id="inputGroupPrepend3">#</span>
 										</div>
 										<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 0 {% endif %}
-										name="courseDuration" id="cDuration" placeholder="Duration Months" aria-describedby="cDuration" required>
+										name="courseDuration" id="cDuration" placeholder="Duration" aria-describedby="cDuration" required>
 									</div>
 									</div>
 									<div class="col-md-6 mb-3">
-										<label for="cCost">Cost</label>
+										<label for="cCost">Cost (INR)</label>
 										<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 0 {% endif %} 
-										name="courseCost" id="cCost" placeholder="Enter Cost" required>
+										name="courseCost" id="cCost" placeholder="Cost" required>
 									</div>
 								</div>
 
 									<input type="hidden" value= {% if editCourse.id %} "{{editCourse.id}}" {% endif %} name="courseId" />
 									<button class="btn btn-primary" type="reset">Reset</button>
-									<button id="toContent" class="btn btn-primary" type="submit">Proceed to Next</button>
+									<button id="toContent" class="btn btn-primary" type="submit">Proceed</button>
 									</form>
 								</div>
 								<div {% if isCourseContent  %} class="tab-pane active" {% else %} class="tab-pane" {% endif %} id="addContent">

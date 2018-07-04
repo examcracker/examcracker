@@ -70,7 +70,12 @@ class courseDetails(generic.TemplateView):
 
     def get(self, request, id, *args, **kwargs):
         courseid = id
-        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+        courseObj = course.models.Course.objects.filter(id=courseid)
+
+        if len(courseObj) == 0:
+            raise Http404()
+
+        courseObj = courseObj[0]
 
         if courseObj.published == False:
             kwargs["not_published"] = True
@@ -158,7 +163,12 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
     template_name = 'playSession.html'
 
     def get(self, request, chapterid, sessionid, *args, **kwargs):
-        courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
+        courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
+
+        if len(courseChapterObj) == 0:
+            raise Http404()
+
+        courseChapterObj = courseChapterObj[0]
 
         # check whether the session is in that course
         if sessionid not in courseChapterObj.sessions:
