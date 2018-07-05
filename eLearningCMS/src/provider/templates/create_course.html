@@ -44,11 +44,11 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 								{% endif %}
 								<li class="nav-item">
 										<a href="" data-target="#courseDescription" data-toggle="tab" 
-										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Summary</a>
+										class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %} >Overview</a>
 								</li>
 								<li class="nav-item">
 										<a href="" data-target="#addContent" data-toggle="tab" 
-										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Populate</a>
+										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Content</a>
 								</li>
 						</ul>
 						<div class="tab-content py-4">
