@@ -28,11 +28,15 @@ class Session(models.Model):
 
     def save(self, *args, **kwargs):
         super(Session, self).save(*args, **kwargs)
-        response = ffmpy.FFprobe(inputs={os.path.join(settings.MEDIA_ROOT, self.video.name): None},
+
+        try:
+            response = ffmpy.FFprobe(inputs={os.path.join(settings.MEDIA_ROOT, self.video.name): None},
                         global_options=['-v', 'error', '-show_entries', 'format=Duration', '-print_format', 'json'])
-        out = response.run(stdout=subprocess.PIPE)
-        decoded = json.loads(out[0].decode('utf-8'))
-        self.duration = int(float(decoded['format']['duration']))
-        tasks.processSession(self.id, self.video.name)
+            out = response.run(stdout=subprocess.PIPE)
+            decoded = json.loads(out[0].decode('utf-8'))
+            self.duration = int(float(decoded['format']['duration']))
+        except:
+            self.duration = 0
+
         return super(Session, self).save(*args, **kwargs)
 
