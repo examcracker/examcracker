@@ -50,7 +50,7 @@ courses ( all courses ,course model)
 							    {% csrf_token %}
 								{% if email_pending %}
 								    <div class="text-center">
-                                        <h4><font color="red">Verify email to Join</font></h4>
+                                        <h4><font color="red">Verify Email to Join</font></h4>
                                     </div>
 								{% else %}
                                     <input type="submit" name="join" class="btn btn-primary" value="Join"></input>
@@ -82,7 +82,7 @@ courses ( all courses ,course model)
                     <a class="nav-link active" href="#overview" role="tab" data-toggle="tab">Overview</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#content" role="tab" data-toggle="tab">Course Content</a>
+                    <a class="nav-link" href="#content" role="tab" data-toggle="tab">Content</a>
                 </li>
             </ul>
         </div>
@@ -97,24 +97,24 @@ courses ( all courses ,course model)
                     <hr>
                     <table>
                         <tr>
-                            <td>Subject: </td>
+                            <td>Subject</td>
                             <td align="right">{{ course_overview.Subject }}</td>
                         </tr>
                         <tr>
-                            <td>Exam: </td>
+                            <td>Exam</td>
                             <td align="right">{{ course_overview.Exam }}</td>
                         </tr>
                         <tr>
-                            <td>Cost (INR): </td>
+                            <td>Cost (INR)</td>
                             <td align="right">{{ course_overview.Cost }}</td>
                         </tr>
                         <tr>
-                            <td>Duration (months):  </td>
+                            <td>Duration (months)</td>
                             <td align="right">{{ course_overview.Duration }}</td>
                         </tr>
       
                       </table>
-                      <p class="card-text"><small class="text-muted">Published date: {{ course_overview.Published }}</small></p>
+                      <p class="card-text"><small class="text-muted">Published {{ course_overview.Published }}</small></p>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="content">
                         <div class="container">
@@ -165,8 +165,6 @@ courses ( all courses ,course model)
 
 
     {%  endblock container %}
-
-    
 
     </body>
 </html>

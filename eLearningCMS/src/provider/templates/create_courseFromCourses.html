@@ -4,10 +4,10 @@
 <div class="container">
     <form action="{% url 'provider:create_from_courses' %}" method="post" enctype="multipart/form-data"> {% csrf_token %}
         <div class="form-row">
-            <label for="cExam" class="col-sm-4 mb-3 col-form-label">Select Exam</label>
+            <label for="cExam" class="col-sm-4 mb-3 col-form-label">Exam</label>
                 <div class="col-sm-8">
                     <select class="form-control" name="courseExam" id="cExam" data-live-search="true" required>
-                    <option value="">Select Exam</option>
+                    <option value="">Exam</option>
                     {% for key,value in allChildCoursesByMe.items %}
                     <option value="{{key}}">{{key}}</option>
                     {% endfor %}
@@ -18,24 +18,24 @@
                 <label for="cSubjectMultiple" class="col-sm-4 mb-3 col-form-label">Select Courses</label>
                     <div class="col-sm-8">
                         <select class="form-control" name="courseSubject" id="cSubjectMultiple" data-live-search="true" required multiple>
-                            <option value="">Select courses</option>                        
+                            <option value="">Select Courses</option>                        
                             {% for examKey,value in allChildCoursesByMe.items  %}
                             {% for course in value %}
                             <option value="{{examKey}}:{{course.name}}:{{course.id}}" hidden>{{course.name}}</option>
                             {% endfor %}
                             {% endfor %}
                         </select>
-                        <button class="btn btn-primary" type="button" onclick="addSelectedCourses(this)" >Add Selected</button>
+                        <button class="btn btn-primary" type="button" onclick="addSelectedCourses(this)" >Add</button>
                     </div>                   
             </div>
             <br>
             
                 <div class="form-row" id="selectedCourses">
-                    <label id="labelSelecytedCourses" for="coursesTable" class="col-sm-4 col-form-label" style="display: none;">Courses Selected</label>
+                    <label id="labelSelecytedCourses" for="coursesTable" class="col-sm-4 col-form-label" style="display: none;">Courses Chosen</label>
             </div>
             <div class="form-row">
                 <div class="offset-4 col-8 mb-5">
-                <button class="btn btn-primary" type="submit" id="createAndSubmit" disabled>Create Course from Selections</button>
+                <button class="btn btn-primary" type="submit" id="createAndSubmit" disabled>Create</button>
                 </div> 
                 </div>   
  </form>

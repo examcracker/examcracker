@@ -259,7 +259,7 @@
     {% endfor %}
 {% if reviewSummary.enrolledCourse %}
     <hr style="border:3px solid #f1f1f1">
-    <h4>Leave review</h4>
+    <h4>Leave Review</h4>
     <form action="{% url 'course:addReview' course_id %}" method="post"> {% csrf_token %}
         <div class="form-row">
             <div class="col-xs-12 col-md-2">
