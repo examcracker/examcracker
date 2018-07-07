@@ -159,11 +159,10 @@ courses ( all courses ,course model)
 
         {% endif %}
 
-    {% include "courseReview.html" with course_id=course_overview.id %}
+    {% include "courseReview.html" with course_id=course_overview.id reviewSummary=reviewSummary userReviewList=userReviewList %}
         
     </div>
 
-    
 
     {%  endblock container %}
 

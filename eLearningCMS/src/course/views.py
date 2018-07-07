@@ -6,7 +6,6 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from collections import OrderedDict
 from operator import itemgetter
-from django.contrib.auth import get_user_model
 from django.http import QueryDict
 from . import models
 import course
@@ -19,49 +18,49 @@ import payments
 from collections import defaultdict
 from django.http import Http404
 from math import ceil
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 # Create your views here.
 
-def getCourseReview(courseid, **kwargs):
-    reviewSummary = {}
-    reviewObj = course.models.CourseReview.objects.filter(id=courseid)
-
+def getCourseReview(reviewSummary, userReviewList, courseid):
+    reviewObj = course.models.CourseReview.objects.filter(course_id=courseid)
+    reviewSummary['star_count'] = range(1, 6)
     reviewSummary['totalReviews'] = len(reviewObj)
-    reviewSummary['0'] = 0
     reviewSummary['1'] = 0
     reviewSummary['2'] = 0
     reviewSummary['3'] = 0
     reviewSummary['4'] = 0
     reviewSummary['5'] = 0
     totalRating = 0
-    userReviewList = []
     for review in reviewObj:
-        if review.rating >= 0 and review.rating <= 5:
+        if review.rating > 0 and review.rating <= 5:
             reviewSummary[str(review.rating)] += 1
             totalRating += review.rating
             userDetails = {}
-            profileObj = profiles.models.Profile.objects.filter(user_id=review.student)
+            profileObj = profiles.models.Profile.objects.filter(user_id=review.student_id)[0]
             picture = profileObj.picture
             if picture is not None:
                 userDetails['profilePic'] = picture
             try:
-                user = User.objects.get(id=review.student)
+                User = get_user_model()
+                user = User.objects.filter(id=review.student_id)[0]
                 userDetails['name'] = user.name
             except:
                 userDetails['name'] = 'Anonymous'
             
-            userDetails['review'] = reviewObj.review
+            userDetails['review'] = review.review
+            userDetails['rating'] = int(review.rating)
+            userDetails['reviewedTime'] = review.reviewed
             
             userReviewList.append(userDetails)
 
-    if len(reviewObj) > 0:       
+    if totalRating > 0:       
         reviewSummary['averageRating'] = (int(totalRating*10.0/len(reviewObj)))/10.0
-    else:
-        reviewSummary['averageRating'] = 0
-
-    kwargs['reviewSummary'] = reviewSummary
-    kwargs['userReviewList'] = userReviewList
+        reviewSummary['1Avg'] = str((int(reviewSummary['1']*100.0/len(reviewObj)))) + "%"
+        reviewSummary['2Avg'] = str((int(reviewSummary['2']*100.0/len(reviewObj)))) + "%"
+        reviewSummary['3Avg'] = str((int(reviewSummary['3']*100.0/len(reviewObj)))) + "%"
+        reviewSummary['4Avg'] = str((int(reviewSummary['4']*100.0/len(reviewObj)))) + "%"
+        reviewSummary['5Avg'] = str((int(reviewSummary['5']*100.0/len(reviewObj)))) + "%"
 
 
 class courseDetails(generic.TemplateView):
@@ -83,7 +82,16 @@ class courseDetails(generic.TemplateView):
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
 
-        getCourseReview(courseid=courseid, kwargs=kwargs)
+        #################Get review details########################
+
+        reviewSummary = {}
+        userReviewList = []
+
+        getCourseReview(reviewSummary, userReviewList, courseid)
+
+        kwargs['userReviewList'] = userReviewList
+
+        ##########################################################
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
@@ -95,6 +103,7 @@ class courseDetails(generic.TemplateView):
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True
+                    reviewSummary["enrolledCourse"] = True
 
                     # calculate duration completed
                     durationCompleted = 0
@@ -130,6 +139,8 @@ class courseDetails(generic.TemplateView):
         courseOverviewMap["Published"] = courseObj.created
 
         kwargs["course_overview"] = courseOverviewMap
+        kwargs['reviewSummary'] = reviewSummary
+
         return super().get(request, id, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):

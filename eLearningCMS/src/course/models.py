@@ -105,3 +105,4 @@ class CourseReview(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     review = models.CharField(max_length=10000)
     rating = models.IntegerField(default=0)
+    reviewed = models.DateTimeField(auto_now_add=True)
