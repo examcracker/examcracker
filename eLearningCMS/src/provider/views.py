@@ -10,7 +10,7 @@ from django.http import Http404
 from . import forms
 import course
 import datetime
-#import pdb
+import pdb
 import profiles
 import json
 
@@ -159,13 +159,14 @@ class createCourse(coursePageBase):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
-        subj = subjects[0].split(':')[1]
-        courseObj.subjects = subj
-        i=1
-        while(i<len(subjects)):
-            subj = subjects[i].split(':')[1]
-            courseObj.subjects = courseObj.subjects+";"+subj
-            i=i+1
+        if (len(subjects) > 0):
+            subj = subjects[0].split(':')[1]
+            courseObj.subjects = subj
+            i=1
+            while(i<len(subjects)):
+                subj = subjects[i].split(':')[1]
+                courseObj.subjects = courseObj.subjects+";"+subj
+                i=i+1
         courseObj.save()
         kwargs["isCourseContent"] = 'true'
         kwargs["courseId"] = courseObj.id

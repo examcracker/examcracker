@@ -30,6 +30,10 @@ def getAllChildCoursesbyExamsFromProvider(pId):
     courseByExams.default_factory = None
     return courseByExams
 
+def parseAndGetSubjectsArr(subjects):
+    return subjects.split(';')
+
+
 def getLinkedCourseDetails(courseid,published):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     #pdb.set_trace()
@@ -39,11 +43,58 @@ def getLinkedCourseDetails(courseid,published):
         childCourses = courseObj[0].child
         for child in childCourses:
             childCourseObj = models.Course.objects.filter(id=child)[0]
-            courseDetails[childCourseObj.name] = getCourseDetails(child,0)
+            subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
+            i=0
+            while(i<len(subjects)):
+                courseDetails[subjects[i]] = getCourseDetailsBySubject(child,subjects[i],published)
+                i=i+1
     else:
         childCourseObj = models.Course.objects.filter(id=courseid)[0]
-        courseDetails[childCourseObj.name] = getCourseDetails(courseid,0)
+        subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
+        i=0
+        while(i<len(subjects)):
+            courseDetails[subjects[i]] = getCourseDetailsBySubject(courseid,subjects[i],published)
+            i=i+1
     return courseDetails
+
+# get course content
+def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
+    courseDetailMap = []
+    chapters = models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
+
+    if len(chapters) > 0:
+        courseIdNameMap = {}
+
+        for item in chapters:
+            courseIdNameMap[item.id] = item.name
+            sessions = item.sessions
+            publishedStatus = item.published
+
+            chapterDetailMap = {}
+
+            chapterId = item.id
+            chapterDetailMap[chapterId] = {}
+            chapterDetailMap[chapterId]["name"] = item.name
+            chapterDetailMap[chapterId]["sessions"] = []
+            chapterDetailMap[chapterId]["duration"] = 0
+
+            for sess in sessions:
+                pos = sessions.index(sess)
+                # Skipping unpublished items
+                if not publishedStatus[pos] and onlyPublished == 1 :
+                    continue
+                sessionDetails = {}
+                sessionObj = provider.models.Session.objects.filter(id=sess)[0]
+                sessionDetails["name"] = sessionObj.name
+                sessionDetails["video"] = sessionObj.video
+                sessionDetails["id"] = sessionObj.id
+                sessionDetails["published"] = publishedStatus[pos]
+                chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
+                chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
+
+            courseDetailMap.append(chapterDetailMap)
+    return courseDetailMap
+
 
 # get course content
 def getCourseDetails(courseid, onlyPublished = 1):
