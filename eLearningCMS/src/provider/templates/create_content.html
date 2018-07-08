@@ -9,38 +9,37 @@
 </style>
 
 <div class="container">
-
+    <form action="{% url 'provider:create_course' %}" method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
 {% for courseName,courseDetails in course_detail.items %}
     <h5>{{courseName}}</h5>
-    <form action="{% url 'provider:create_course' %}" method="POST" enctype="multipart/form-data" id="contentForm" > {% csrf_token %}
         <div class="card bg-light text-dark">
             <div class="course-header">
             </div>
             <div class="card-body">
                 <div class="container">
-                    <div id="accordianChapters">
+                    <div id="accordianChapters-{{courseName}}">
                     {% for item in courseDetails %}
                     {% for chapid, value in item.items %}
                     <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{chapid}}">
                         <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c{{chapid}}">{{value.name}}</a>
-                            {% ifequal course_detail|length 1 %}
-                            <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right">Delete</button>
-                            {% endifequal %}
+                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters-{{courseName}}" href="#c{{chapid}}">{{value.name}}</a>
+                            {% if not editContentDisable %}
+                            <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="{{courseName}}-deleteChapter">Delete</button>
+                            {% endif %}
                         </div>
                         <div id="c{{chapid}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
                                 <input id="fileupload{{chapid}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
-                                <input type="hidden" value="{{chapid}}" name="lcids" />
+                                <input type="hidden" value="{{chapid}}-{{courseName}}" name="lcids" />
                                 <div class="row">
                                     <input type="text" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" >
                                     <input type="hidden" class="form-control" name="cpids[]" value = "{{chapid}}" >
                                 </div>
                                 <div class="row">
-                                    {% ifequal course_detail|length 1 %}
+                                    {% if not editContentDisable %}
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,'{{ editCourse.id }}','{{ courseName }}')" class="btn-xs btn-primary float-right">Add Session</button></div>
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-default float-right">Select existing Session</button></div>
-                                    {% endifequal %}
+                                    {% endif %}
                                 </div>
                                 {% for session in value.sessions %}
                                 <!-- lectures here -->
@@ -48,9 +47,9 @@
                                     <table id="{{courseName}};{{chapid}};{{forloop.counter}}">
                                         <tr>
                                             {% if not session.published %}
-                                            {% ifequal course_detail|length 1 %}
+                                            {% if not editContentDisable %}
                                             <td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td>
-                                            {% endifequal %}
+                                            {% endif %}
                                             {% endif %}
                                             <td style="font-weight:bold">Session {{forloop.counter}}</td>
                                             <td>
@@ -71,22 +70,22 @@
                     </div>
                     {% endfor %}
                     {% endfor %}
-                <br>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
       <input type="hidden" value="true" name="isCourseContent" />
       <input type="hidden" value="{{editCourse.id}}" name="courseId"/>
-    {% ifequal course_detail|length 1 %}
-      <button type="submit"  class="btn btn-info btn-lg float-right mt-4" id="saveAllChanges">Save</button>
-      <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg mt-4" id="btnGen">Add Chapter</button>
-     {% endifequal  %}
-    </form>
-    
+    {% if not editContentDisable %}
+      <button type="button" onclick="addChapter(this)" class="btn btn-info btn-lg mt-4" id="{{courseName}}-addChapter">Add Chapter</button>
+     {% endif  %}
 <hr class="my-4">
-    
 {% endfor %}
+    {% if not editContentDisable %}
+    <button type="submit"  class="btn btn-info btn-lg float-right mt-4" id="saveAllChanges">Save</button>
+    {% endif %}
+</form>
+
     <div class="modal fade" id="modal-progress" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -144,20 +143,43 @@
 
 <script>
     var chapCnt = 1;
-    function addChapter(elmnt) {
-        var currentChapCnt = document.getElementById("accordianChapters").children.length;
-        if (currentChapCnt > chapCnt) {
-            chapCnt=currentChapCnt;
+    var myMap = new Map();
+    $(function(){
+        var chapterStr = "accordianChapters-";
+        queryselect = '[id^="'+chapterStr+'"]';
+        var query = document.querySelectorAll(queryselect);
+        for(i=0;i<query.length;i++) {
+            var q = query[i].id;
+            var subj = q.split('-')[1]
+            myMap.set(subj,query[i].children.length + 1);
+            chapCnt = chapCnt +  myMap.get(subj);
         }
+});
+
+    function addChapter(elmnt) {
+        var subject = elmnt.id.split("-")[0]
+        var fatherid = "accordianChapters-"+subject
+        var fatherOfChapter = document.getElementById(fatherid);
+        var currentChapCnt = fatherOfChapter.children.length;
+        //if (currentChapCnt > chapCnt) {
+        //    chapCnt=currentChapCnt;
+        //}
+        var chapterNum = myMap.get(subject);
+        myMap.set(subject,myMap.get(subject) + 1);
         var id = chapCnt;
+        var lcidval = id + '-' + subject;
         var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
-        //var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-primary float-right">Delete this chapter</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><div class="col-auto"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="col-auto"><button type="button" onclick="addLecture(this,'+'{{ editCourse.id }}'+')" class="btn btn-primary float-right">Add Lecture</button></div><div class="col-auto"><button type="button" onclick="addLectureFromLibrary(this)" class="btn-sm btn-primary float-right">Add Lecture from library</button></div></div></div></div></div>');
-        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters" href="#c'+id+'">Chapter '+id+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+id+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+id+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div></div></div></div>');
-        myChapter.appendTo('#accordianChapters');
+        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div></div></div></div>');
+        myChapter.appendTo(fatherOfChapter);
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
     }
      function deleteChapter(elmnt) {
+ 
+        var subject = elmnt.id.split("-")[0];
+        var fatherid = "accordianChapters-"+subject;
+        var fatherOfChapter = document.getElementById(fatherid);
+
         var el = elmnt;
         while (el.className != 'card') {
             // Increment the loop to the parent node
@@ -169,7 +191,7 @@
             alert('Cannot Delete !! It has sessions');
         }
         else {
-            document.getElementById("accordianChapters").removeChild(el);
+            fatherOfChapter.removeChild(el);
             //chapCnt = chapCnt-1;
         }
     }
@@ -266,7 +288,7 @@
                 
                 var queryselect = gcoursename+';'+gcname+';';
                 queryselect = '[id^="'+queryselect+'"]';
-                var query = document.querySelectorAll(queryselect)
+                var query = document.querySelectorAll(queryselect);
                 if (query && query.length > 0) {
                     var last = query[query.length- 1].id;
                     gid = last.split(";")[2];

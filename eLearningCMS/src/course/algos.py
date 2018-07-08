@@ -34,7 +34,7 @@ def parseAndGetSubjectsArr(subjects):
     return subjects.split(';')
 
 
-def getLinkedCourseDetails(courseid,published):
+def getCourseDetails(courseid,published):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     #pdb.set_trace()
     courseDetails = {}
@@ -60,46 +60,7 @@ def getLinkedCourseDetails(courseid,published):
 # get course content
 def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
     courseDetailMap = []
-    chapters = models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
-
-    if len(chapters) > 0:
-        courseIdNameMap = {}
-
-        for item in chapters:
-            courseIdNameMap[item.id] = item.name
-            sessions = item.sessions
-            publishedStatus = item.published
-
-            chapterDetailMap = {}
-
-            chapterId = item.id
-            chapterDetailMap[chapterId] = {}
-            chapterDetailMap[chapterId]["name"] = item.name
-            chapterDetailMap[chapterId]["sessions"] = []
-            chapterDetailMap[chapterId]["duration"] = 0
-
-            for sess in sessions:
-                pos = sessions.index(sess)
-                # Skipping unpublished items
-                if not publishedStatus[pos] and onlyPublished == 1 :
-                    continue
-                sessionDetails = {}
-                sessionObj = provider.models.Session.objects.filter(id=sess)[0]
-                sessionDetails["name"] = sessionObj.name
-                sessionDetails["video"] = sessionObj.video
-                sessionDetails["id"] = sessionObj.id
-                sessionDetails["published"] = publishedStatus[pos]
-                chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
-                chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
-
-            courseDetailMap.append(chapterDetailMap)
-    return courseDetailMap
-
-
-# get course content
-def getCourseDetails(courseid, onlyPublished = 1):
-    courseDetailMap = []
-    chapters = models.CourseChapter.objects.filter(course_id=courseid).order_by('sequence')
+    chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
 
     if len(chapters) > 0:
         courseIdNameMap = {}
