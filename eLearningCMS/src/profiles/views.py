@@ -58,3 +58,29 @@ class EditProfile(LoginRequiredMixin, generic.TemplateView):
         profile.save()
         messages.success(request, "Profile details saved!")
         return redirect("profiles:show_self")
+
+class MyProfile(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get', 'post']
+
+    def get(self, request, *args, **kwargs):
+        profileObj = models.Profile.objects.filter(user_id=request.user.id)[0]
+        kwargs["userDetails"] = profileObj
+        kwargs["authUserDetails"] = request.user
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        userObj = request.user
+        profileObj = models.Profile.objects.filter(user_id=request.user.id)[0]
+        picture = self.request.FILES.get("profile_pic")
+        if picture is not None:
+            profileObj.picture = picture
+
+        profileObj.bio = self.request.POST.get("bio")
+        profileObj.address = self.request.POST.get("address")
+        profileObj.city = self.request.POST.get("city")
+        profileObj.country = self.request.POST.get("country")
+        profileObj.phone = self.request.POST.get("mobile")
+        userObj.name = self.request.POST.get("name")
+
+        userObj.save()
+        profileObj.save()
