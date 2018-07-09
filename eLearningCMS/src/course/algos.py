@@ -34,7 +34,7 @@ def parseAndGetSubjectsArr(subjects):
     return subjects.split(';')
 
 
-def getCourseDetails(courseid,published):
+def getCourseDetails(courseid,published=1):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     #pdb.set_trace()
     courseDetails = {}

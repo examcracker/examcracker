@@ -168,6 +168,7 @@ class createCourse(coursePageBase):
         # check if course content flow
         if isCourseContent != '':
             saveCourseContent(request,courseId)
+            kwargs["isCourseContent"] = 'true'
             return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
