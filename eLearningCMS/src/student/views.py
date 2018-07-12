@@ -18,7 +18,6 @@ import re
 import profiles
 import payments
 from math import ceil
-import profiles
 
 User = get_user_model()
 
@@ -36,34 +35,15 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["category"] = category
         return super().get(request, *args, **kwargs)
 
-class showStudentProfile(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'my_profile.html'
+class StudentProfile(profiles.views.MyProfile):
+    template_name = 'student_profile.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
-        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        kwargs["userDetails"] = profileObj
-        kwargs["authUserDetails"] = request.user
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        userObj = request.user
-        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        picture = self.request.FILES.get("profile_pic")
-        if picture is not None:
-            profileObj.picture = picture
-
-        profileObj.bio = self.request.POST.get("bio")
-        profileObj.address = self.request.POST.get("address")
-        profileObj.city = self.request.POST.get("city")
-        profileObj.country = self.request.POST.get("country")
-        profileObj.phone = self.request.POST.get("mobile")
-
-        userObj.name = self.request.POST.get("name")
-        userObj.email = self.request.POST.get("email")
-
-        userObj.save()
-        profileObj.save()
+        super().post(request, *args, **kwargs)
         return redirect("student:my_profile")
 
 class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):

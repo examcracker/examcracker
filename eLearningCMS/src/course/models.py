@@ -95,6 +95,7 @@ class CourseChapter(models.Model):
     sequence = models.IntegerField(default=0)
     sessions = ArrayField(models.IntegerField(), default=list, blank=True)
     published = ArrayField(models.BooleanField(), default=list, blank=True)
+    subject = models.CharField(max_length=100)
 
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
