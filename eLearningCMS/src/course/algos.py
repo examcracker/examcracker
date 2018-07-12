@@ -12,6 +12,9 @@ from collections import defaultdict
 import provider
 import pdb
 
+def str2bool(v):
+  return v.lower() in ("yes", "true", "t", "1")
+
 #get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
     courseByExams = defaultdict(list)
@@ -67,8 +70,14 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
 
         for item in chapters:
             courseIdNameMap[item.id] = item.name
-            sessions = item.sessions
-            publishedStatus = item.published
+            
+            sessionsStrArr = item.sessions.split(',')
+            sessions = [int(x) for x in sessionsStrArr]
+            #sessions = item.sessions
+
+            publishedStatusStrArr = item.published.split(',')
+            publishedStatus = [str2bool(x) for x in publishedStatusStrArr]
+            #publishedStatus = item.published
 
             chapterDetailMap = {}
 

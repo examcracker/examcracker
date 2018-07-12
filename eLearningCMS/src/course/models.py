@@ -93,13 +93,16 @@ class CourseChapter(models.Model):
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     sequence = models.IntegerField(default=0)
-    sessions = ArrayField(models.IntegerField(), default=list, blank=True)
-    published = ArrayField(models.BooleanField(), default=list, blank=True)
+    sessions = models.CharField(max_length=1000, blank=True)
+    published = models.CharField(max_length=1000, blank=True)
+    #sessions = ArrayField(models.IntegerField(), default=list, blank=True)
+    #published = ArrayField(models.BooleanField(), default=list, blank=True)
     subject = models.CharField(max_length=100)
 
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
-    child = ArrayField(models.IntegerField(), default=list, blank=False)
+    child = models.CharField(max_length=200, blank=False)
+    #child = ArrayField(models.IntegerField(), default=list, blank=False)
 
 class CourseReview(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)

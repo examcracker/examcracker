@@ -102,10 +102,19 @@ def saveCourseContent(request,courseId):
                 j=0
                 while j<len(filesUploaded):
                     sessionsIdArr.append(filesUploaded[j])
-                    publishedArr.append(filePublishedArr[j])
+                    if filePublishedArr[j].lower() == 'true':
+                        publishedArr.append('true')
+                    else:
+                        publishedArr.append('false')
                     j=j+1
-            chapterObj.sessions=sessionsIdArr
-            chapterObj.published=publishedArr
+            
+            sessionsIdArrStr =  ','.join([str(x) for x in sessionsIdArr])
+            publishedArrStr =  ','.join([str(x) for x in publishedArr])
+            chapterObj.sessions = sessionsIdArrStr
+            chapterObj.published = publishedArrStr
+
+            #chapterObj.sessions=sessionsIdArr
+            #chapterObj.published=publishedArr
             chapterObj.save()
             chpArr.append(chapterObj.id)
             i=i+1
@@ -207,7 +216,9 @@ class createFromCourses(coursePageBase):
         courseObj = course.models.Course.objects.filter(id=cIDS[0])[0]
         linkCourse = course.models.LinkCourse()
         linkCourse.parent = courseObjNew
-        linkCourse.child.append(courseObj.id)
+        childOfParent = []
+        childOfParent.append(courseObj.id)
+        #linkCourse.child.append(courseObj.id)
         courseObjNew.name = courseObj.name
         courseObjNew.description = courseObj.description
         courseObjNew.cost = courseObj.cost
@@ -217,7 +228,8 @@ class createFromCourses(coursePageBase):
         i=1
         while(i<len(cIDS)):
             cid = cIDS[i]
-            linkCourse.child.append(cid)
+            childOfParent.append(cid)
+            #linkCourse.child.append(cid)
             courseObj = course.models.Course.objects.filter(id=cid)[0]
             courseObjNew.name = courseObjNew.name + " and " + courseObj.name
             courseObjNew.description = courseObjNew.description + " and " + courseObj.description
@@ -228,6 +240,8 @@ class createFromCourses(coursePageBase):
                 courseObjNew.subjects = courseObjNew.subjects + ";" + courseObj.subjects
             i=i+1
         courseObjNew.save()
+        childOfParentStr = ','.join([str(x) for x in childOfParent])
+        linkCourse.child = childOfParentStr
         linkCourse.save()
         # add sessions from all courses into new course
         newCid = courseObjNew.id
@@ -255,9 +269,11 @@ class publishCourse(coursePageBase):
                 i = 0
                 publishedArr = []
                 while i < len(chapter.sessions):
-                    publishedArr.append(True)
+                    #publishedArr.append(True)
+                    publishedArr.append('true')
                     i=i+1
-                chapter.published = publishedArr
+                publishedArrStr =  ','.join([str(x) for x in publishedArr])
+                chapter.published = publishedArrStr
                 chapter.save()
         kwargs["courseId"] = courseId
         return super().get(request, *args, **kwargs)
