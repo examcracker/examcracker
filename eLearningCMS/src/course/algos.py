@@ -72,11 +72,15 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
             courseIdNameMap[item.id] = item.name
             
             sessionsStrArr = item.sessions.split(',')
-            sessions = [int(x) for x in sessionsStrArr]
+            sessions = []
+            if len(sessionsStrArr) > 0 and sessionsStrArr[0]!= '':
+                sessions = [int(x) for x in sessionsStrArr]
             #sessions = item.sessions
 
             publishedStatusStrArr = item.published.split(',')
-            publishedStatus = [str2bool(x) for x in publishedStatusStrArr]
+            publishedStatus = []
+            if len(publishedStatusStrArr) > 0 and publishedStatusStrArr[0] != '':
+                publishedStatus = [str2bool(x) for x in publishedStatusStrArr]
             #publishedStatus = item.published
 
             chapterDetailMap = {}
