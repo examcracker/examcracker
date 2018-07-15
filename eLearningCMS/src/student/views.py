@@ -29,8 +29,12 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        if not profileObj.email_verified:
+            kwargs["email_pending"] = True
+
         category = "ALL Courses"
-        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True ORDER BY created')
+        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
         kwargs["allCourses"] = allCourses
         kwargs["category"] = category
         return super().get(request, *args, **kwargs)

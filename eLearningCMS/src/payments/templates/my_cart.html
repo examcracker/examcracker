@@ -14,13 +14,7 @@
 	  <form method="post" action="">
 	    <div class="form-group">
 	  		<div class="col-sm-offset-2 col-sm-10">
-			{% if email_pending %}
-			    <div class="text-center">
-                    <h3><font color="red">Verify Email to Checkout</font></h3>
-                </div>
-			{% else %}
-			    <button name="checkout" type="submit" class="btn btn-success">Checkout</button>
-			{% endif %}
+			<button name="checkout" type="submit" class="btn btn-success">Checkout</button>
 			<button name="delete" type="submit" class="btn btn-success">Delete from Cart</button>
 			</div>
  		</div>

@@ -32,6 +32,13 @@ def getSessionsBySubjects(providerId,subjects):
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'provider_home.html'
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
+        if not profileObj.email_verified:
+            kwargs["email_pending"] = True
+        return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
@@ -129,9 +136,6 @@ class coursePageBase(LoginRequiredMixin, generic.TemplateView):
     def get(self,request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        if not profileObj.email_verified:
-            kwargs["email_pending"] = True
         courseId = kwargs.pop('courseId', '')
         if courseId == '':
             courseId = self.request.POST.get("courseId", '')
@@ -164,8 +168,6 @@ class createCourse(coursePageBase):
         if not request.user.is_staff:
             raise Http404()
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        if not profileObj.email_verified:
-            kwargs["email_pending"] = True
         isCourseContent = request.POST.get('isCourseContent','')
         courseId = request.POST.get('courseId','')
         courseObj = course.models.Course()
