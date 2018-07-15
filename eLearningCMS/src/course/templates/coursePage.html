@@ -119,7 +119,15 @@ courses ( all courses ,course model)
                 <div role="tabpanel" class="tab-pane fade" id="content">
                         <div class="container">
                             <div id="accordion">
-                                {% for item in course_detail %}
+                                {% for subject, subValue in course_detail.items %}
+                                <div class="card">
+                                <div class="card-header">
+                                    <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ subject }}">{{ subject }}</a>
+                                </div>
+                                <div id="{{ subject }}" class="collapse">
+                                <div class="card-body">
+
+                                {% for item in subValue %}
                                 {% for chapId, value in item.items %}
                                  <div class="card">
                                    <div class="card-header">
@@ -147,7 +155,10 @@ courses ( all courses ,course model)
                                  </div>
                                 {% endfor %}
                                 {% endfor %}
-                                 
+                                </div>
+                                </div>
+                            </div>
+                                {% endfor %}
                                 <br>
                             </div>
                         </div>
