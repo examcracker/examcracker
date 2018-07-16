@@ -48,13 +48,7 @@ courses ( all courses ,course model)
                             {% if not course_overview.myCourse %}
 							  <form method="post" action="" enctype="multipart/form-data">
 							    {% csrf_token %}
-								{% if email_pending %}
-								    <div class="text-center">
-                                        <h4><font color="red">Verify Email to Join</font></h4>
-                                    </div>
-								{% else %}
-                                    <input type="submit" name="join" class="btn btn-primary" value="Join"></input>
-								{% endif %}
+								<input type="submit" name="join" class="btn btn-primary" value="Join"></input>
 								<br>
 								{% if not course_overview.addedCourse %}
 								 <input type="submit" name="cart" class="btn btn-primary" value="Add to Cart"></input>
