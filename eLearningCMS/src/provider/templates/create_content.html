@@ -221,6 +221,21 @@
          $("#fileupload"+cname).click();
          $("#fileupload"+cname).fileupload({
             dataType: 'json',
+            add: function (e, data) {
+                var goUpload = true;
+                var uploadFile = data.files[0];
+                if (!(/\.(mp4|mpeg|mpg|avi|asf)$/i).test(uploadFile.name)) {
+                    alert(uploadFile.name + ' is not a valid video file. You must select valid video file');
+                    goUpload = false;
+                }
+                /*if (uploadFile.size > 0) {
+                    alert('Invalid file size');
+                    goUpload = false;
+                }*/
+                if (goUpload == true) {
+                    data.submit();
+                }
+            },
             formData: [
                     { name: "coid", value: courseid},
                     { name: "csrfmiddlewaretoken", value: "{{ csrf_token }}"}
