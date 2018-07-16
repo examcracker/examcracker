@@ -86,11 +86,11 @@
     {% endif %}
 </form>
 
-    <div class="modal fade" id="modal-progress" data-backdrop="static" data-keyboard="false">
+    <div class="modal" id="modal-progress" tabindex="-2" role="dialog" aria-labelledby="uploadProgress" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Uploading...</h4>
+                    <h4 class="modal-title" id="modal-progress">Uploading...</h4>
                 </div>
                 <div class="modal-body">
                     <div class="progress">
@@ -230,6 +230,7 @@
                 $("#modal-progress").modal("show");
             },
             stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
+                $(".progress-bar").css({"width": "0%"});
                 $("#modal-progress").modal("hide");
             },
             progressall: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
@@ -239,6 +240,7 @@
                 $(".progress-bar").text(strProgress);
             },
             done: function (e, data) {
+                
                 if (data.result.is_valid) {
                     var queryselect = coursename+';'+cname+';';
                     queryselect = '[id^="'+queryselect+'"]';
@@ -253,7 +255,6 @@
                     //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
                     lecture.appendTo(el);
                     id = id+1;
-                    
                 }
             }
     });
