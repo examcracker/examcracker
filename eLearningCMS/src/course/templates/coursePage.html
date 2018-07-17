@@ -1,4 +1,4 @@
-<!-- This file has following objects with it 
+<!-- This file has following objects with it
 exams ( from course model)
 courses ( all courses ,course model)
 -->
@@ -80,7 +80,7 @@ courses ( all courses ,course model)
                 </li>
             </ul>
         </div>
-            
+
             <!-- Tab panes -->
             <div class="card-body">
                     <div class="tab-content">
@@ -106,7 +106,7 @@ courses ( all courses ,course model)
                             <td>Duration (months)</td>
                             <td align="right">{{ course_overview.Duration }}</td>
                         </tr>
-      
+
                       </table>
                       <p class="card-text"><small class="text-muted">Published {{ course_overview.Published }}</small></p>
                 </div>
@@ -125,9 +125,9 @@ courses ( all courses ,course model)
                                 {% for chapId, value in item.items %}
                                  <div class="card">
                                    <div class="card-header">
-                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ value.name }}">{{ value.name }}</a>
+                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}">{{ value.name }}</a>
                                    </div>
-                                   <div id="{{ value.name }}" class="collapse">
+                                   <div id="{{ value.name }}:{{ subject }}" class="collapse">
                                      <div class="card-body">
                                         <div class="list-group">
                                             {% for session in value.sessions %}
@@ -165,7 +165,7 @@ courses ( all courses ,course model)
         {% endif %}
 
     {% include "courseReview.html" with course_id=course_overview.id reviewSummary=reviewSummary userReviewList=userReviewList %}
-        
+
     </div>
 
 
