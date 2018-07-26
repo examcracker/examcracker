@@ -3,19 +3,18 @@ Setup Instructions
 
 1. Download and install python 3.0 or higher (https://www.python.org/downloads/)
 2. Download and install pip (https://pip.pypa.io/en/stable/installing/)
-3. Install Django through pip (pip install Django)
-4. Checkout the source code from https://github.com/examcracker/examcracker into a directory examcracker
-5. Create python virtual environment with following commands
+3. Checkout the source code from https://github.com/examcracker/examcracker into a directory examcracker
+4. Create python virtual environment with following commands
 --  python -m venv py34env (this creates a folder py34env)
 --  cd py34env\Scripts
 --  activate.bat
-6. Go to examcracker directory created in step 4 and run the following commands
+5. Go to examcracker directory created in step 4 and run the following commands
 --  cd eLearningCMS
 --  pip install -r requirements.txt
 --  cd src
 --  python manage.py makemigrations
 --  python manage.py migrate
-7. To run the project, go to examcracker\eLearningCMS\src and type python manage.py runserver
+6. To run the project, go to examcracker\eLearningCMS\src and type python manage.py runserver
 
 Execution Instructions
 
