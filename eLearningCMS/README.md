@@ -1,36 +1,33 @@
 
+Setup Instructions
 
-# my_proj
+1. Download and install python 3.0 or higher (https://www.python.org/downloads/)
+2. Download and install pip (https://pip.pypa.io/en/stable/installing/)
+3. Install Django through pip (pip install Django)
+4. Checkout the source code from https://github.com/examcracker/examcracker into a directory examcracker
+5. Create python virtual environment with following commands
+--  python -m venv py34env (this creates a folder py34env)
+--  cd py34env\Scripts
+--  activate.bat
+6. Go to examcracker directory created in step 4 and run the following commands
+--  cd eLearningCMS
+--  pip install -r requirements.txt
+--  cd src
+--  python manage.py makemigrations
+--  python manage.py migrate
+7. To run the project, go to examcracker\eLearningCMS\src and type python manage.py runserver
 
-my_proj is a _short description_. It is built with [Python][0] using the [Django Web Framework][1].
+Execution Instructions
 
-This project has the following basic apps:
+1. Go to py34env\Scripts and run activate.bat
+2. If there are any database schema changes, run
+--  python manage.py makemigrations
+--  python manage.py migrate
+3. To execute run python manage.py runserver
+4. Open the browser and type localhost:8000 to start working
 
-* App1 (short desc)
-* App2 (short desc)
-* App3 (short desc)
+Developer Note
 
-## Installation
+1. Everytime an additional package is installed, make sure its captured in requirements.txt with needed version
 
-### Quick start
 
-To set up a development environment quickly, first install Python 3. It
-comes with virtualenv built-in. So create a virtual env by:
-
-    1. `$ python3 -m venv my_proj`
-    2. `$ . my_proj/bin/activate`
-
-Install all dependencies:
-
-    pip install -r requirements.txt
-
-Run migrations:
-
-    python manage.py migrate
-
-### Detailed instructions
-
-Take a look at the docs for more information.
-
-[0]: https://www.python.org/
-[1]: https://www.djangoproject.com/
