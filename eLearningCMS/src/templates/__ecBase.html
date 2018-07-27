@@ -62,10 +62,10 @@
 					</form>
 				</li>
 			</ul>
-		</div>
+		
 		{% endif %}
 		
-		<div class="navbar-collapse collapse">
+		
 			<ul class="navbar-nav ml-auto">
 			{% if user.is_authenticated %}
 
@@ -91,13 +91,13 @@
 			</li>
 			{% else %}
 			<li class="nav-item">
-				<a class="nav-link" href="{% url 'accounts:login' %}"><button type="button" class="btn btn-primary btn-sm">Login</button></a>
+				<a class="nav-link" href="{% url 'accounts:login' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn btn-primary btn-sm">Login</button></a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="{% url 'accounts:signup' %}"><button type="button" class="btn  btn-sm">Sign Up</button></a>
+				<a class="nav-link" href="{% url 'accounts:signup' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn  btn-sm">Sign Up</button></a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="{% url 'accounts:registerprovider' %}"><button type="button" class="btn  btn-sm">Be Course Provider</button></a>
+				<a class="nav-link" href="{% url 'accounts:registerprovider' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn  btn-sm">Be Course Provider</button></a>
 			</li>
 			{% endif %}	
 			</ul>
