@@ -10,7 +10,7 @@
     <li class="breadcrumb-item active">Dashboard</li>
   </ol>
 
-  {% include "__baseCourseTiles.html" with allCourses=allCourses divId="AllCourses" category=category %}
+  {% include "__baseCourseTiles.html" with allCourses=allCourses divId="AllCourses" category=category tilesLimit=":50" %}
 
     
 {% endblock active %}

@@ -11,5 +11,5 @@
     </li>
     <li class="breadcrumb-item active">My Courses</li>
 	</ol>
-	{% include "__baseCourseTiles.html" with allCourses=courses divId="ProviderMyCourses" category="My Courses" provider_id=providerId %}    
+	{% include "__baseCourseTiles.html" with allCourses=courses divId="ProviderMyCourses" category="My Courses" provider_id=providerId tilesLimit=":50" %}    
 {% endblock active %}

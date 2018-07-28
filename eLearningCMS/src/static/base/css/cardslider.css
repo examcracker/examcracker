@@ -29,7 +29,11 @@
  }
  #courseCard .card-img-top{
    margin-top:0px;
-   max-height: 120px;
+   max-height: 180px;
+ }
+ #courseCard .card-body{
+   margin-top:0px;
+   max-height: 200px;
  }
  .row{
    margin-right:auto;

@@ -127,19 +127,19 @@ WSGI_APPLICATION = 'examcracker.wsgi.application'
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db(),
+   'default': env.db(),
 }
 
-#DATABASES = {
+# DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'postgres2',                      
+#        'NAME': 'postgres',                      
 #        'USER': 'postgres',
-#        'PASSWORD': 'kunal',
+#        'PASSWORD': 'postgres',
 #        'HOST': 'localhost',
 #        'PORT': '5432',
 #    }
-#}
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/

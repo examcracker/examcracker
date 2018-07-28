@@ -24,7 +24,7 @@
   <ol class="breadcrumb">
   </ol>
 
-	{% include "__baseCourseTiles.html" with allCourses=courses divId="CheckedOutCourses" category="Checked Out Courses" %}
+	{% include "__baseCourseTiles.html" with allCourses=courses divId="CheckedOutCourses" category="Checked Out Courses" tilesLimit=":50" %}
 									
     
 {% endblock active %}

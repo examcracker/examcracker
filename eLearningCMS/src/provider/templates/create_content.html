@@ -41,31 +41,33 @@
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-default float-right">Select existing Session</button></div>
                                     {% endif %}
                                 </div>
-                                {% for session in value.sessions %}
+                                <div class="container">
+                                    {% for session in value.sessions %}
                                 <!-- lectures here -->
-                                <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
-                                    <table id="{{courseName}};{{chapid}};{{forloop.counter}}">
-                                        <tr>
-                                            {% if not session.published %}
-                                            {% if not editContentDisable %}
-                                            <td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td>
-                                            {% endif %}
-                                            {% endif %}
-                                            <td style="font-weight:bold">Session {{forloop.counter}}</td>
-                                            <td>
+                                    <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
+                                           
+                                        <div class="col-xs-2 col-sm-2">
+                                                <button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button>
+                                        </div>
+                                        <div class="col-xs-3 col-sm-3">
+                                                Session {{forloop.counter}}        
+                                        </div>
+                                        <div class="col-xs-7 col-sm-7">
+                                        
                                                 <a href="{% url 'course:playSession' chapid session.id %}" >
-                                                <i class="fa fa-play fa-fw" ></i>
-                                                {{ session.name }}
-                                                </a>
-                                                <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
-                                                <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
-                                            </td>
-                                        </tr>
-                                    </table>
+                                                        <i class="fa fa-play fa-fw" ></i>
+                                                        {{ session.name }}
+                                                        </a>
+                                                        <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
+                                                        <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
+
+                                        </div>
                                 
                                 </div>
+                                <hr>
                                 {% endfor %}
                             </div>
+                        </div>
                         </div>
                     </div>
                     {% endfor %}
