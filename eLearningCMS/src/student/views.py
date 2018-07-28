@@ -32,7 +32,9 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
         if not profileObj.email_verified:
             kwargs["email_pending"] = True
-
+        else:
+            kwargs["email_pending"] = False
+            
         category = "ALL Courses"
         allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
         kwargs["allCourses"] = allCourses

@@ -103,7 +103,9 @@ class courseDetails(generic.TemplateView):
                 profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
                 if not profileObj.email_verified:
                     kwargs["email_pending"] = True
-
+                else:
+                    kwargs["email_pending"] = False
+                    
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:

@@ -38,6 +38,9 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
         if not profileObj.email_verified:
             kwargs["email_pending"] = True
+        else:
+            kwargs["email_pending"] = False
+
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -129,7 +132,7 @@ def saveCourseContent(request,courseId):
         fullCourse.delete()
     return
 
-class coursePageBase(LoginRequiredMixin, generic.TemplateView):
+class coursePageBase(showProviderHome, generic.TemplateView):
     template_name = 'create_course.html'
     http_method_names = ['get']
 
@@ -153,7 +156,9 @@ class coursePageBase(LoginRequiredMixin, generic.TemplateView):
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             linkCourseObj = course.models.LinkCourse.objects.filter(parent_id=courseId)
             if linkCourseObj.exists():
-                kwargs["editContentDisable"] = 1
+                kwargs["editContentDisable"] = True
+            else:
+                kwargs["editContentDisable"] = False
             kwargs["sessionsBySubjects"] = getSessionsBySubjects(providerObj.id, courseObj.subjects)
         else :
             allProviderChildCourses = course.algos.getAllChildCoursesbyExamsFromProvider(providerObj.id)
@@ -179,7 +184,7 @@ class createCourse(coursePageBase):
         # check if course content flow
         if isCourseContent != '':
             saveCourseContent(request,courseId)
-            kwargs["isCourseContent"] = 'true'
+            kwargs["isCourseContent"] = True
             return super().get(request, *args, **kwargs)
 
         # no need to validate, validation already done in html form
@@ -199,7 +204,7 @@ class createCourse(coursePageBase):
                 courseObj.subjects = courseObj.subjects+";"+subj
                 i=i+1
         courseObj.save()
-        kwargs["isCourseContent"] = 'true'
+        kwargs["isCourseContent"] = True
         kwargs["courseId"] = courseObj.id
         return super().get(request, *args, **kwargs)
 
@@ -292,6 +297,7 @@ class editCourse(coursePageBase):
         if len(courseObj) == 0:
             raise Http404()
         kwargs["courseId"] = courseid
+        kwargs["isCourseContent"] = True
         return super().get(request, *args, **kwargs)
 
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
@@ -304,7 +310,7 @@ class viewSessions(LoginRequiredMixin, generic.TemplateView):
         kwargs["sessions"] = sessionList
         return super().get(request, *args, **kwargs)
 
-class viewCourses(LoginRequiredMixin, generic.TemplateView):
+class viewCourses(showProviderHome, generic.TemplateView):
     template_name = "view_courses.html"
     http_method_names = ['get']
 
@@ -344,7 +350,7 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
 
-class myStudents(LoginRequiredMixin, generic.TemplateView):
+class myStudents(showProviderHome, generic.TemplateView):
     template_name = "my_students.html"
     http_method_names = ['get']
 
