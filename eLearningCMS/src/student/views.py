@@ -58,7 +58,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
+        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
         kwargs["remaining_courses"] = notJoinedCourses
         return super().get(request, *args, **kwargs)
 
