@@ -9,44 +9,52 @@ import provider
 # Create your models here.
 
 # All exams dictionary
-IITJEE = ['Physics', 'Chemistry', 'Maths']
-CAT = ['Quant','LR','Verbal Ability']
-PMT = ['Physics','Chemistry','Biology']
+IITJEE = ['Physics', 'Chemistry', 'Mathematics']
+CAT = ['Quantitative Ability', 'Data Interpretation, Logical Reasoning', 'Verbal Ability']
+PMT = ['Physics', 'Chemistry', 'Biology']
+
 IAS = [
-    'Geography',
-    'History',
-    'Public Admin',
-    'Phylosophy',
-    'Socialogy',
-    'Language',
-    'Commerce',
-    'Physics',
-    'Chemistry',
-    'Mathematics',
-    'Anthropology',
-    'Economics',
-    'GS 1',
-    'GS 2',
-    'Gs 3',
-    'GS 4',
-    'CSAT',
-    'Botony',
-    'Geology',
     'Agriculture',
-    'Law'
+    'Animal Husbandry and Veterinary Science',
+    'Anthropology',
+    'Botany',
+    'Chemistry',
+    'Civil Engineering',
+    'Commerce and Accountancy',
+    'Economics',
+    'Electrical Engineering',
+    'Geography',
+    'Geology',
+    'Indian History',
+    'Law',
+    'Management',
+    'Mathematics',
+    'Mechanical Engineering',
+    'Medical Science',
+    'Philosophy',
+    'Physics',
+    'Political Science and International Relations',
+    'Psychology',
+    'Public Administration',
+    'Sociology',
+    'Statistics',
+    'Zoology',
 ]
 
 GATE = [
     'Computer Science',
+    'Chemical',
+    'Civil',
     'Electrical',
     'Electronics',
-    'Civil',
-    'Mechanical',
-    'Polymer science',
     'Environmental'
+    'Mechanical',
+    'Metallurgy',
+    'Polymer Science',
 ]
-GRE = ['Verbal','Quant','LR']
-TOEFL = ['Verbal']
+
+GRE = ['Verbal Reasoning', 'Quantitative','Logical Reasoning']
+TOEFL = ['Verbal Ability']
 
 ExamDict = {'IIT-JEE': IITJEE, 
     'AIEEE': IITJEE,
