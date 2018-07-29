@@ -189,7 +189,8 @@ label {
   margin-bottom: 0.5rem; }
 
 button {
-  border-radius: 0; }
+  border-radius: 0; 
+}
 
 button:focus {
   outline: 1px dotted;
@@ -3049,7 +3050,7 @@ input[type="button"].btn-block {
 
 .card-body {
   flex: 1 1 auto;
-  padding: 1.25rem; }
+  padding: .25rem; }
 
 .card-title {
   margin-bottom: 0.75rem; }
@@ -6205,6 +6206,27 @@ a.text-dark:hover, a.text-dark:focus {
 
 .invisible {
   visibility: hidden !important; }
+  
+.customText {
+  display: block; /* or inline-block */
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  overflow: hidden;
+  max-height: 2.6em;
+  line-height: 1.3em;
+  margin-bottom: 6px;
+}
+
+.smallText {
+  font-size: 80%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+
+p#firstText{
+	font-weight: bold;
+}
 
 @media print {
   *,

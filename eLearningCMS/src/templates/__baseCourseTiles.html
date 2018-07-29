@@ -32,35 +32,42 @@
                     {% if user.is_staff %}
                         </a> 
                     {% endif %}
-                    <div class="card-body">
-                        <h5 class="text-center"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h5>
-                        <table>
-                        {% if currentCourse.provider__user__name %}
-                        <tr>
-                            <td>Course Provider</td>
-                            <td align="right">{{ currentCourse.provider__user__name }}</td>
-                        </tr>
-                        {% endif %}
-                            <tr>
-                                <td>Exam</td>
-                                <td align="right">{{ currentCourse.exam }}</td>
-                            </tr>
-                            <tr>
-                                <td>Cost (INR)</td>
-                                <td align="right">{{ currentCourse.cost }}</td>
-                            </tr>
-                            <tr>
-                                <td>Duration (months)</td>
-                                <td align="right">{{ currentCourse.duration }}</td>
-                            </tr>
-                        </table>
-                        {% if user.is_staff and currentCourse.provider_id == provider_id  %}
-                        <p align='center'>
-                            <input class="btn btn-block" type="button" value="Edit Course" onclick="location.href='{% url 'provider:edit_course' currentCourse.id %}'"  />
-                        </p>
-                    {% endif %}     
+                    <div class="card-body" style='background-color:#fcfcfc;' >
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-xs-2 col-sm-2" align="left">
+                                    <img id="providerPic" src="{% thumbnail currentCourse.profilePic|default:'default_profile.png' 30x30 crop %}" class="rounded-circle" alt="avatar">
+                                </div>
+                                <div class="col-xs-5 col-sm-5">
+                                        {{ currentCourse.provider_name }} 
+                                </div>
+                                <div class="col-xs-5 col-sm-5" align="right">
+                                    <i class="fas fa-rupee-sign" aria-hidden="true"></i> 
+                                    {{ currentCourse.cost }}
+                                </div>
+                            </div>
+                                <div align="centre">
+                                    <p class="customText" id="firstText"><a style='color:#585858;' href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}: {{ currentCourse.description }} </a></p>
+                                    <p class="smallText">{{ currentCourse.exam }} ({{ currentCourse.duration }} months)</p>
+                                    <!-- <p class="customText text-center small"> {{ currentCourse.description }} </p> -->
+                                </div>
+                                <div class="row">
+                                <div class="col-xs-4 col-sm-4" align="left">
+                                    {% if user.is_staff and currentCourse.provider_id == provider_id  %}
+                                        <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="far fa-edit"></i></a>
+                                    {% else %}
+                                        <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="fa fa-shopping-cart"></i></a>
+                                    {% endif %}     
+                                </div>
+                                <div class="col-xs-8 col-sm-8" align="right">
+                                    <i class="fas fa-graduation-cap" aria-hidden="true"></i> 
+                                    {{ currentCourse.enrolledCount }} Student
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
             </div>
         </div>
+    </div>

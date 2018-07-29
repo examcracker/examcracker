@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from collections import defaultdict
 import provider
 import pdb
+import profiles
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
@@ -175,3 +176,22 @@ def getExams():
 def getProviders():
     User = get_user_model()
     return User.objects.filter(is_staff=1)
+
+def getUserNameAndPic(user_id):
+    userDetails = {}
+    profileObj = profiles.models.Profile.objects.filter(user_id=user_id)[0]
+    picture = profileObj.picture
+    if picture is not None:
+        userDetails['profilePic'] = picture
+    try:
+        User = get_user_model()
+        user = User.objects.filter(id=user_id)[0]
+        userDetails['name'] = user.name
+    except:
+        userDetails['name'] = 'Anonymous'
+
+    return userDetails
+
+def getEnrolledStudentsCount(courseId):
+    enrolledCount = len(models.Course.objects.filter(id=courseId))
+    return enrolledCount
