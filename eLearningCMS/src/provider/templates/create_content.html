@@ -211,7 +211,13 @@
             // Increment the loop to the parent node
             c_elem = c_elem.parentNode;
         }
+        var idOfLectureFather = c_elem.id;
+        idOfLectureFather = idOfLectureFather.split("-")[1];
+        var lecCnt = c_elem.querySelectorAll('.row #lectureFound');
+        lecCnt = lecCnt.length-1;
         c_elem.removeChild(l_elem);
+        var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+idOfLectureFather);
+        spanBadgeSessionCnt.innerHTML = lecCnt + ' <i class="fa fa-video-camera"></i>';
     }
 
     function addLecture(elmnt,courseid,coursename) {
@@ -325,7 +331,6 @@
                 $(this).prop("checked", false);
                 var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+gcname);
                 spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
-                //spanBadgeSessionCnt.append('<i class="fa fa-video-camera"></i>');
              }
              });
             });
