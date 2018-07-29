@@ -9,44 +9,52 @@ import provider
 # Create your models here.
 
 # All exams dictionary
-IITJEE = ['Physics', 'Chemistry', 'Maths']
-CAT = ['Quant','LR','Verbal Ability']
-PMT = ['Physics','Chemistry','Biology']
+IITJEE = ['Physics', 'Chemistry', 'Mathematics']
+CAT = ['Quantitative Ability', 'Data Interpretation, Logical Reasoning', 'Verbal Ability']
+PMT = ['Physics', 'Chemistry', 'Biology']
+
 IAS = [
-    'Geography',
-    'History',
-    'Public Admin',
-    'Phylosophy',
-    'Socialogy',
-    'Language',
-    'Commerce',
-    'Physics',
-    'Chemistry',
-    'Mathematics',
-    'Anthropology',
-    'Economics',
-    'GS 1',
-    'GS 2',
-    'Gs 3',
-    'GS 4',
-    'CSAT',
-    'Botony',
-    'Geology',
     'Agriculture',
-    'Law'
+    'Animal Husbandry and Veterinary Science',
+    'Anthropology',
+    'Botany',
+    'Chemistry',
+    'Civil Engineering',
+    'Commerce and Accountancy',
+    'Economics',
+    'Electrical Engineering',
+    'Geography',
+    'Geology',
+    'Indian History',
+    'Law',
+    'Management',
+    'Mathematics',
+    'Mechanical Engineering',
+    'Medical Science',
+    'Philosophy',
+    'Physics',
+    'Political Science and International Relations',
+    'Psychology',
+    'Public Administration',
+    'Sociology',
+    'Statistics',
+    'Zoology',
 ]
 
 GATE = [
     'Computer Science',
+    'Chemical',
+    'Civil',
     'Electrical',
     'Electronics',
-    'Civil',
-    'Mechanical',
-    'Polymer science',
     'Environmental'
+    'Mechanical',
+    'Metallurgy',
+    'Polymer Science',
 ]
-GRE = ['Verbal','Quant','LR']
-TOEFL = ['Verbal']
+
+GRE = ['Verbal Reasoning', 'Quantitative','Logical Reasoning']
+TOEFL = ['Verbal Ability']
 
 ExamDict = {'IIT-JEE': IITJEE, 
     'AIEEE': IITJEE,
@@ -87,22 +95,19 @@ class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     enrolled = models.DateTimeField(auto_now_add=True)
-    sessions = ArrayField(models.IntegerField(), default=list, blank=True)
+    sessions = models.CharField(max_length=10000, blank=True)
 
 class CourseChapter(models.Model):
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     sequence = models.IntegerField(default=0)
-    sessions = models.CharField(max_length=1000, blank=True)
+    sessions = models.CharField(max_length=10000, blank=True)
     published = models.CharField(max_length=1000, blank=True)
-    #sessions = ArrayField(models.IntegerField(), default=list, blank=True)
-    #published = ArrayField(models.BooleanField(), default=list, blank=True)
     subject = models.CharField(max_length=100)
 
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
     child = models.CharField(max_length=200, blank=False)
-    #child = ArrayField(models.IntegerField(), default=list, blank=False)
 
 class CourseReview(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)

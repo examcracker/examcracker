@@ -20,6 +20,7 @@ from django.http import Http404
 from math import ceil
 from django.contrib.auth import get_user_model
 
+
 # Create your views here.
 
 def getCourseReview(reviewSummary, userReviewList, courseid):
@@ -93,7 +94,9 @@ class courseDetails(generic.TemplateView):
                 profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
                 if not profileObj.email_verified:
                     kwargs["email_pending"] = True
-
+                else:
+                    kwargs["email_pending"] = False
+                    
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
@@ -104,12 +107,20 @@ class courseDetails(generic.TemplateView):
                     durationCompleted = 0
                     totalDuration = 0
                     enrolledCourseObj = enrolledCourse[0]
-                    for s in enrolledCourseObj.sessions:
-                        sessionObj = provider.models.Session.objects.filter(id=s)[0]
-                        durationCompleted = durationCompleted + sessionObj.duration
-                    for chapDetail in courseDetailMap:
-                        for chapId in chapDetail:
-                            totalDuration = totalDuration + chapDetail[chapId]["duration"]
+
+                    if enrolledCourseObj.sessions != '':
+                        sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
+                        for s in sessionsPlayed:
+                            sessionObj = provider.models.Session.objects.filter(id=int(s))[0]
+                            durationCompleted = durationCompleted + sessionObj.duration
+
+                    for subj in courseDetailMap:
+                        chapters = courseDetailMap[subj]
+                        for chapDetails in chapters:
+                            for chapId in chapDetails:
+                                chapDetail = chapDetails[chapId]
+                                totalDuration = totalDuration + chapDetail["duration"]
+
                     if totalDuration > 0:
                         courseOverviewMap["progress"] = str(ceil(durationCompleted*100/totalDuration)) + '%'
                     else:
@@ -170,15 +181,16 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             raise Http404()
 
         courseChapterObj = courseChapterObj[0]
+        sessions = str.split(courseChapterObj.sessions, ",")
 
         # check whether the session is in that course
-        if sessionid not in courseChapterObj.sessions:
+        if str(sessionid) not in sessions:
             kwargs["wrong_content"] = True
             raise Http404()
 
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
-            index = courseChapterObj.sessions.index(sessionid)
+            index = sessions.index(str(sessionid))
             if courseChapterObj.published[index] == False:
                 kwargs["not_published"] = True
                 raise Http404()
@@ -190,8 +202,9 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
             enrolledCourseObj = enrolledCourse[0]
-            if sessionid not in enrolledCourseObj.sessions:
-                enrolledCourseObj.sessions.append(sessionid)
+            sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
+            if sessionid not in sessionsPlayed:
+                enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
                 enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)

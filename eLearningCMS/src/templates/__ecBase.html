@@ -8,6 +8,7 @@
 	<title>GyaanHive -- Learn Assimilate and Excel</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="{% static 'bootstrap/js/popper.min.js' %}"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 	<script src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 	<link href="{% static 'ec/style.css' %}" rel="stylesheet">
@@ -28,7 +29,7 @@
 {% block topHeader %}
 <nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.png' %}"></a>
+		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.jpg' %}"></a> 
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
 			data-target = "#navbarResponsive">
 		<span class="navbar-toggler-icon"></span>

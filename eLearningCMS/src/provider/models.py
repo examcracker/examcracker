@@ -5,7 +5,6 @@ from django.forms import forms
 from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
-from transcoder import tasks
 import subprocess
 import ffmpy
 import json
