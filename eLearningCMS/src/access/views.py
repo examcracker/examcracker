@@ -16,6 +16,7 @@ import json
 import calendar
 import time
 import profiles
+import notification
 from . import models
 
 User = get_user_model()
@@ -61,7 +62,7 @@ def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
     server.starttls()
     server.ehlo()
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    server.sendmail(settings.EMAIL_HOST_USER, userObj.email, msg.as_string())
+    server.sendmail(settings.EMAIL_HOST_USER, 'kghoshnitk@gmail.com', msg.as_string())
     
     
 class allowDevice(generic.TemplateView):
@@ -107,8 +108,8 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
         deviceObj = models.UserDevice.objects.filter(user_id=userid)[0]
 
         # check if the link is accessed within 5 minutes of its generation
-        if int(deviceObj.time) < int(calendar.timegm(time.gmtime())) - 300:
-            raise Http404()
+        #if int(deviceObj.time) < int(calendar.timegm(time.gmtime())) - 300:
+        #    raise Http404()
 
         devicecipher = urllib.parse.unquote(request.GET['cipher'])
 
@@ -151,5 +152,6 @@ class challengeAccept(generic.TemplateView):
         deviceObj.device = deviceStr
         deviceObj.save()
 
+        notification.models.notify(deviceObj.user_id, notification.models.DEVICE_ADDED, notification.models.INFO)
         return HttpResponse(True)
 
