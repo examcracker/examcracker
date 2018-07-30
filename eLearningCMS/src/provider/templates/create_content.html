@@ -85,9 +85,6 @@
      {% endif  %}
 <hr class="my-4">
 {% endfor %}
-    {% if not editContentDisable %}
-    <button type="submit"  class="btn btn-info btn-lg float-right mt-4" id="saveAllChanges">Save</button>
-    {% endif %}
 </form>
 
     <div class="modal" id="modal-progress" tabindex="-2" role="dialog" aria-labelledby="uploadProgress" aria-hidden="true">
@@ -104,11 +101,7 @@
             </div>
         </div>
     </div>
-<!-- Button trigger modal 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-    Launch demo modal
-  </button>
--->
+
   <!-- Modal to add lectures from library -->
   <div class="modal fade modal-lg" id="sessionLibraryModel" tabindex="-1" role="dialog" aria-labelledby="sessionLibrary" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
