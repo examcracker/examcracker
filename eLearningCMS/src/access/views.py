@@ -25,7 +25,7 @@ def same(d1, d2):
     c1 = str.split(o1['loc'], ",")
     c2 = str.split(o2['loc'], ",")
     if o1['browser'] == o2['browser'] and o1['os'] == o2['os'] and int(float(c1[0])) == int(float(c2[0])) and int(float(c1[1])) == int(float(c2[1])):
-        return False
+        return True
     return False
 
 def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
