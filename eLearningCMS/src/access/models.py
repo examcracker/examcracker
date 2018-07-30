@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 class UserDevice(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     device = models.CharField(max_length=1000, blank=True)
-    key = models.CharField(max_length=16, blank=True)
+    key = models.CharField(max_length=32, blank=True)
     time = models.IntegerField(default=0)
+    challenge = models.CharField(max_length=32, blank=True)
+
 

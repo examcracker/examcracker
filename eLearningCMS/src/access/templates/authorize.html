@@ -100,8 +100,10 @@
 	deviceInfo.browser = getBrowser();
 	deviceInfo.os = getOS();
 	var deviceJSON = encodeURIComponent(JSON.stringify(deviceInfo));
+	var challengeBytes = encodeURIComponent("{{challenge}}")
 
-	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/challenge/{{challenge}}/" + deviceJSON;
+	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/challenge/" + challengeBytes + "/" + deviceJSON;
+	alert(url)
 	xmlHttp.open("GET", url, false);
     xmlHttp.send(null);
 	
