@@ -132,7 +132,7 @@ def saveCourseContent(request,courseId):
         fullCourse.delete()
     return
 
-class coursePageBase(showProviderHome, generic.TemplateView):
+class coursePageBase(showProviderHome):
     template_name = 'create_course.html'
     http_method_names = ['get']
 
@@ -310,7 +310,7 @@ class viewSessions(LoginRequiredMixin, generic.TemplateView):
         kwargs["sessions"] = sessionList
         return super().get(request, *args, **kwargs)
 
-class viewCourses(showProviderHome, generic.TemplateView):
+class viewCourses(showProviderHome):
     template_name = "view_courses.html"
     http_method_names = ['get']
 
