@@ -20,6 +20,7 @@ from django.http import Http404
 from math import ceil
 from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 # Create your views here.
 
@@ -43,7 +44,6 @@ def getCourseReview(reviewSummary, userReviewList, courseid):
             if picture is not None:
                 userDetails['profilePic'] = picture
             try:
-                User = get_user_model()
                 user = User.objects.filter(id=review.student_id)[0]
                 userDetails['name'] = user.name
             except:
@@ -213,7 +213,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
             enrolledCourseObj = enrolledCourse[0]
             sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
-            if sessionid not in sessionsPlayed:
+            sessionAlreadyPlayed = False
+            for s in sessionsPlayed:
+                if sessionid == int(s):
+                    sessionAlreadyPlayed = True
+            if not sessionAlreadyPlayed:
                 enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
                 enrolledCourseObj.save()
 

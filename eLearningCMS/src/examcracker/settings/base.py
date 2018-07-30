@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'student',
     'course',
     'payments',
+    'access',
 
     # django packages
     'snowpenguin.django.recaptcha2',
