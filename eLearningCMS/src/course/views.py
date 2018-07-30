@@ -129,11 +129,11 @@ class courseDetails(generic.TemplateView):
                     courseOverviewMap["addedCourse"] = True
 
             elif request.user.is_staff:
-                getOnlyPublished = 0
                 providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
                 courseObj = course.models.Course.objects.filter(id=courseid)[0]
                 if courseObj.provider_id == providerObj.id:
                     courseOverviewMap["myCourse"] = True
+                    getOnlyPublished = 0
         
         courseDetailMap = algos.getCourseDetails(id,getOnlyPublished)
         kwargs["course_detail"] = courseDetailMap
