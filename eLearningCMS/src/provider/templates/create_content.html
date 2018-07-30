@@ -155,7 +155,13 @@
             chapCnt = chapCnt +  myMap.get(subj);
         }
 });
-
+function addWarningMessage() {
+    var warningdiv = document.getElementById('addWarningMessage');
+    if (!warningdiv.children.length) {
+        var warningElem = $('<div class="alert alert-warning alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Warning!</strong> There may be unsaved changes in this course. Please click on Save button on the top to save.</div>');
+        warningElem.appendTo(warningdiv);
+    }
+}
     function addChapter(elmnt) {
         var subject = elmnt.id.split("-")[0]
         var fatherid = "accordianChapters-"+subject
@@ -173,6 +179,7 @@
         myChapter.appendTo(fatherOfChapter);
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
+        addWarningMessage();
     }
      function deleteChapter(elmnt) {
  
@@ -193,6 +200,7 @@
         else {
             fatherOfChapter.removeChild(el);
         }
+        addWarningMessage();
     }
     function deleteLecture(elmnt) {
         var l_elem = elmnt;
@@ -218,6 +226,7 @@
             var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+idOfLectureFather);
             spanBadgeChapterPublishedStatus.setAttribute('hidden',true);
         }
+        addWarningMessage();
     }
 
     function addLecture(elmnt,courseid,coursename) {
@@ -284,7 +293,7 @@
                     spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
                     var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+cname);
                     spanBadgeChapterPublishedStatus.removeAttribute('hidden');
-                    
+                    addWarningMessage();
                 }
             }
     });
@@ -336,6 +345,7 @@
                 spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
                 var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+gcname);
                 spanBadgeChapterPublishedStatus.removeAttribute('hidden');
+                addWarningMessage();
              }
              });
             });
