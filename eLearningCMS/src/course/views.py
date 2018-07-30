@@ -38,17 +38,8 @@ def getCourseReview(reviewSummary, userReviewList, courseid):
         if review.rating > 0 and review.rating <= 5:
             reviewSummary[str(review.rating)] += 1
             totalRating += review.rating
-            userDetails = {}
-            profileObj = profiles.models.Profile.objects.filter(user_id=review.student_id)[0]
-            picture = profileObj.picture
-            if picture is not None:
-                userDetails['profilePic'] = picture
-            try:
-                user = User.objects.filter(id=review.student_id)[0]
-                userDetails['name'] = user.name
-            except:
-                userDetails['name'] = 'Anonymous'
-            
+            userDetails = algos.getUserNameAndPic(review.student_id)
+           
             userDetails['review'] = review.review
             userDetails['rating'] = int(review.rating)
             userDetails['reviewedTime'] = review.reviewed

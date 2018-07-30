@@ -5,6 +5,7 @@ from course.algos import *
 from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 from provider.views import *
+from django.forms.models import model_to_dict
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(generic.TemplateView):
@@ -58,7 +59,18 @@ class HomePage(generic.TemplateView):
         if providerObj:
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
-        kwargs["allCourses"] = courseList
+        allCourses = []
+        for item in courseList:
+            courseDetails = model_to_dict(item)
+            courseDetails["provider_id"] = item.provider_id
+            userDetails = getUserNameAndPic(item.provider_id)
+            courseDetails["provider_name"] = userDetails['name']
+            if 'profilePic' in userDetails: 
+                courseDetails["profilePic"] = userDetails['profilePic']
+            courseDetails["enrolledCount"] = getEnrolledStudentsCount(item.id)
+            courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
+            allCourses.append(courseDetails)
+        kwargs["allCourses"] = allCourses
         return super().get(request, *args, **kwargs)
 
 class AboutPage(generic.TemplateView):

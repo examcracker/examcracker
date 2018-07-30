@@ -22,9 +22,10 @@
                     {% for chapid, value in item.items %}
                     <div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card{{chapid}}">
                         <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" data-parent="#accordianChapters-{{courseName}}" href="#c{{chapid}}">{{value.name}}</a>
+                            <a class="card-link mr-3" data-toggle="collapse" data-parent="#accordianChapters-{{courseName}}" href="#c{{chapid}}">{{value.name}}</a>
                             {% if not editContentDisable %}
                             <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="{{courseName}}-deleteChapter">Delete</button>
+                            <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fa fa-video-camera"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-{{chapid}}" hidden><i class="fa fa-exclamation-triangle"></i></span>
                             {% endif %}
                         </div>
                         <div id="c{{chapid}}" class="collapse">
@@ -41,30 +42,30 @@
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-default float-right">Select existing Session</button></div>
                                     {% endif %}
                                 </div>
-                                <div class="container">
-                                    {% for session in value.sessions %}
+                            <div class="container" id="lecturesHere-{{chapid}}">
+                                {% for session in value.sessions %}
                                 <!-- lectures here -->
-                                    <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
-                                           
-                                        <div class="col-xs-2 col-sm-2">
-                                                <button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button>
+                                <hr>
+                                <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
+                                        <div class="col-xs-2 col-sm-2" id="lectureFound">
+                                            {% if not session.published or editContentDisable  %}
+                                            <span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span>
+                                            {% else %}
+                                            <button type="button" class="btn btn-outline-info" disabled><i class="fa fa-ban" data-toggle="tooltip" data-placement="top" title="Published session cant be deleted"></i></button>
+                                            {% endif %}
                                         </div>
-                                        <div class="col-xs-3 col-sm-3">
+                                        <div class="col-xs-3 col-sm-3" id="{{courseName}};{{chapid}};{{forloop.counter}}">
                                                 Session {{forloop.counter}}        
                                         </div>
                                         <div class="col-xs-7 col-sm-7">
-                                        
-                                                <a href="{% url 'course:playSession' chapid session.id %}" >
-                                                        <i class="fa fa-play fa-fw" ></i>
-                                                        {{ session.name }}
-                                                        </a>
-                                                        <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
-                                                        <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
-
+                                            <a href="{% url 'course:playSession' chapid session.id %}" >
+                                                <i class="fa fa-play fa-fw" ></i>
+                                                {{ session.name }}
+                                            </a>
+                                            <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
+                                            <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
                                         </div>
-                                
                                 </div>
-                                <hr>
                                 {% endfor %}
                             </div>
                         </div>
@@ -144,7 +145,10 @@
 
 
 <script>
-    var chapCnt = 1;
+    $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+    var chapCnt = Math.floor((Math.random() * 2000) + 1000);;
     var myMap = new Map();
     $(function(){
         var chapterStr = "accordianChapters-";
@@ -153,7 +157,7 @@
         for(i=0;i<query.length;i++) {
             var q = query[i].id;
             var subj = q.split('-')[1]
-            myMap.set(subj,query[i].children.length + 1);
+            myMap.set(subj,query[i].children.length+1);
             chapCnt = chapCnt +  myMap.get(subj);
         }
 });
@@ -163,15 +167,15 @@
         var fatherid = "accordianChapters-"+subject
         var fatherOfChapter = document.getElementById(fatherid);
         var currentChapCnt = fatherOfChapter.children.length;
-        //if (currentChapCnt > chapCnt) {
-        //    chapCnt=currentChapCnt;
-        //}
+
         var chapterNum = myMap.get(subject);
         myMap.set(subject,myMap.get(subject) + 1);
         var id = chapCnt;
         var lcidval = id + '-' + subject;
+        var lectureFatherId = 'lecturesHere-'+id;
         var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
-        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div></div></div></div>');
+        var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link mr-3" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button><span class="badge badge-secondary" id="span-badge-sessionCnt-'+id+'">0 <i class="fa fa-video-camera"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-'+id+'" hidden><i class="fa fa-exclamation-triangle"></i></span></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
+        //var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
         myChapter.appendTo(fatherOfChapter);
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
@@ -188,13 +192,12 @@
             el = el.parentNode;
         }
 
-        var lectureFound = el.querySelector('.card-body .row table');
+        var lectureFound = el.querySelector('.card-body .container .row #lectureFound');
         if (lectureFound) {
             alert('Cannot Delete !! It has sessions');
         }
         else {
             fatherOfChapter.removeChild(el);
-            //chapCnt = chapCnt-1;
         }
     }
     function deleteLecture(elmnt) {
@@ -204,11 +207,17 @@
             l_elem = l_elem.parentNode;
         }
         var c_elem = l_elem;
-        while (c_elem.className != 'card-body') {
+        while (c_elem.className != 'container') {
             // Increment the loop to the parent node
             c_elem = c_elem.parentNode;
         }
+        var idOfLectureFather = c_elem.id;
+        idOfLectureFather = idOfLectureFather.split("-")[1];
+        var lecCnt = c_elem.querySelectorAll('.row #lectureFound');
+        lecCnt = lecCnt.length-1;
         c_elem.removeChild(l_elem);
+        var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+idOfLectureFather);
+        spanBadgeSessionCnt.innerHTML = lecCnt + ' <i class="fa fa-video-camera"></i>';
     }
 
     function addLecture(elmnt,courseid,coursename) {
@@ -217,8 +226,7 @@
             // Increment the loop to the parent node
             el = el.parentNode;
         }
-        
-         var id = el.children.length-3;
+         var id = el.children.length-4;
          var cname = el.id;
          $("#fileupload"+cname).click();
          $("#fileupload"+cname).fileupload({
@@ -257,7 +265,6 @@
                 $(".progress-bar").text(strProgress);
             },
             done: function (e, data) {
-                
                 if (data.result.is_valid) {
                     var queryselect = coursename+';'+cname+';';
                     queryselect = '[id^="'+queryselect+'"]';
@@ -268,10 +275,13 @@
                         id = parseInt(id)+1;
                     }
                     var lectureid = coursename+';'+cname+';'+id;
-                    var lecture = $('<div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'"><input type="hidden" name ="lecPub['+cname+'][]" value="False"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><table id="'+lectureid+'"><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Session '+id+'</td><td>'+data.result.videoName+'</td></tr></table></div>');
-                    //var lecture = $('<div class="row"><table><tr><td>Lecture '+id+'</td><td><div class="input-group"><div class="custom-file"><input type="file" name ="lc['+cname+'][]" class="custom-file-input"><label class="custom-file-label" >Choose Lecture </label></div></div></td></tr></table></div>');
-                    lecture.appendTo(el);
+                    var lecture = $('<hr><div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'""><input type="hidden" name ="lecPub['+cname+'][]" value="False"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><div class="col-xs-2 col-sm-2" id="lectureFound"><span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span></div><div class="col-xs-3 col-sm-3" id="'+lectureid+'">Session '+id+'</div><div class="col-xs-7 col-sm-7">'+data.result.videoName+'</div></div>');
+                    var lectureFatherid = "lecturesHere-"+cname;
+                    var lectureFather = document.getElementById(lectureFatherid);
+                    lecture.appendTo(lectureFather);
                     id = id+1;
+                    var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+cname);
+                    spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
                 }
             }
     });
@@ -289,7 +299,7 @@
             // Increment the loop to the parent node
             lChapter = lChapter.parentNode;
         }
-        var id = lChapter.children.length-3;
+        var id = lChapter.children.length-4;
         gid = id;
         var cname = lChapter.id;
         gcname = cname;
@@ -313,10 +323,14 @@
                     gid = parseInt(gid)+1;
                 }
                 var lectureid = gcoursename+';'+gcname+';'+gid;
-                var lecture = $('<div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+gcname+'lc'+gid+'"><input type="hidden" name ="lecPub['+gcname+'][]" value="False"><input type="hidden" name ="lec['+gcname+'][]" value="'+lid+'"><table id="'+lectureid+'"><tr><td><button type="button" class="btn" onclick="deleteLecture(this)"><i class="fa fa-trash fa-fw"></i></button></td><td style="font-weight:bold">Session '+gid+'</td><td>'+lval+'</td></tr></table></div>');
-                lecture.appendTo(gElm);
+                var lecture = $('<hr><div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+gcname+'lc'+gid+'""><input type="hidden" name ="lecPub['+gcname+'][]" value="False"><input type="hidden" name ="lec['+gcname+'][]" value="'+lid+'"><div class="col-xs-2 col-sm-2" id="lectureFound"><span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span></div><div class="col-xs-3 col-sm-3" id="'+lectureid+'">Session '+gid+'</div><div class="col-xs-7 col-sm-7">'+lval+'</div></div>');
+                var lectureFatherid = "lecturesHere-"+gcname;
+                var lectureFather = document.getElementById(lectureFatherid);
+                lecture.appendTo(lectureFather);
                 gid = gid+1;
                 $(this).prop("checked", false);
+                var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+gcname);
+                spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
              }
              });
             });
