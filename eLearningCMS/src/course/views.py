@@ -72,9 +72,6 @@ class courseDetails(generic.TemplateView):
             kwargs["not_published"] = True
             raise Http404()
 
-        courseDetailMap = algos.getCourseDetails(id)
-        kwargs["course_detail"] = courseDetailMap
-
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
@@ -89,7 +86,7 @@ class courseDetails(generic.TemplateView):
         kwargs['userReviewList'] = userReviewList
 
         ##########################################################
-
+        getOnlyPublished = 1
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
@@ -136,7 +133,10 @@ class courseDetails(generic.TemplateView):
                 courseObj = course.models.Course.objects.filter(id=courseid)[0]
                 if courseObj.provider_id == providerObj.id:
                     courseOverviewMap["myCourse"] = True
-
+                    getOnlyPublished = 0
+        
+        courseDetailMap = algos.getCourseDetails(id,getOnlyPublished)
+        kwargs["course_detail"] = courseDetailMap
         courseOverviewMap["Name"] = courseObj.name
         courseOverviewMap["Description"] = courseObj.description
         courseOverviewMap["Subject"] = courseObj.subjects

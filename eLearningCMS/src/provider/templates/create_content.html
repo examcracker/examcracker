@@ -25,7 +25,8 @@
                             <a class="card-link mr-3" data-toggle="collapse" data-parent="#accordianChapters-{{courseName}}" href="#c{{chapid}}">{{value.name}}</a>
                             {% if not editContentDisable %}
                             <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="{{courseName}}-deleteChapter">Delete</button>
-                            <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fa fa-video-camera"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-{{chapid}}" hidden><i class="fa fa-exclamation-triangle"></i></span>
+                            <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fa fa-video-camera"></i></span>
+                            <span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-{{chapid}}" {% if not value.hasUnPublishedSessions %} hidden {% endif %}><i class="fa fa-exclamation-triangle"></i></span>
                             {% endif %}
                         </div>
                         <div id="c{{chapid}}" class="collapse">
@@ -84,9 +85,6 @@
      {% endif  %}
 <hr class="my-4">
 {% endfor %}
-    {% if not editContentDisable %}
-    <button type="submit"  class="btn btn-info btn-lg float-right mt-4" id="saveAllChanges">Save</button>
-    {% endif %}
 </form>
 
     <div class="modal" id="modal-progress" tabindex="-2" role="dialog" aria-labelledby="uploadProgress" aria-hidden="true">
@@ -103,11 +101,7 @@
             </div>
         </div>
     </div>
-<!-- Button trigger modal 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-    Launch demo modal
-  </button>
--->
+
   <!-- Modal to add lectures from library -->
   <div class="modal fade modal-lg" id="sessionLibraryModel" tabindex="-1" role="dialog" aria-labelledby="sessionLibrary" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -161,7 +155,13 @@
             chapCnt = chapCnt +  myMap.get(subj);
         }
 });
-
+function addWarningMessage() {
+    var warningdiv = document.getElementById('addWarningMessage');
+    if (!warningdiv.children.length) {
+        var warningElem = $('<div class="alert alert-warning alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Warning!</strong> There may be unsaved changes in this course. Please click on Save button on the top to save.</div>');
+        warningElem.appendTo(warningdiv);
+    }
+}
     function addChapter(elmnt) {
         var subject = elmnt.id.split("-")[0]
         var fatherid = "accordianChapters-"+subject
@@ -179,6 +179,7 @@
         myChapter.appendTo(fatherOfChapter);
         fileTag.appendTo($("#"+id+".card-body"));
         chapCnt = chapCnt+1;
+        addWarningMessage();
     }
      function deleteChapter(elmnt) {
  
@@ -199,6 +200,7 @@
         else {
             fatherOfChapter.removeChild(el);
         }
+        addWarningMessage();
     }
     function deleteLecture(elmnt) {
         var l_elem = elmnt;
@@ -218,6 +220,13 @@
         c_elem.removeChild(l_elem);
         var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+idOfLectureFather);
         spanBadgeSessionCnt.innerHTML = lecCnt + ' <i class="fa fa-video-camera"></i>';
+        
+        lecCnt = c_elem.querySelectorAll('.row #lectureFound .fa-trash');
+        if (!lecCnt.length) {
+            var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+idOfLectureFather);
+            spanBadgeChapterPublishedStatus.setAttribute('hidden',true);
+        }
+        addWarningMessage();
     }
 
     function addLecture(elmnt,courseid,coursename) {
@@ -282,6 +291,9 @@
                     id = id+1;
                     var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+cname);
                     spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
+                    var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+cname);
+                    spanBadgeChapterPublishedStatus.removeAttribute('hidden');
+                    addWarningMessage();
                 }
             }
     });
@@ -331,6 +343,9 @@
                 $(this).prop("checked", false);
                 var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+gcname);
                 spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fa fa-video-camera"></i>';
+                var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+gcname);
+                spanBadgeChapterPublishedStatus.removeAttribute('hidden');
+                addWarningMessage();
              }
              });
             });

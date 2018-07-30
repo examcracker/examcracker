@@ -19,12 +19,21 @@
 	<!--<button class="btn btn-sm btn-success float-right" style="position:absolute;right:10rem;">Preview Course</button>-->
 </ol>
 </div>
+{% if editCourse %}
+<a href="{% url 'course:coursePage' editCourse.id %}" class="btn btn-outline-secondary btn-lg mx-2 px-2" role="button" aria-pressed="true">Preview</a>
 
+{% if not editContentDisable %}
+<button class="btn btn-outline-info btn-lg mx-2 px-2" aria-pressed="true" onclick="saveCourse(this)">Save</button>
+{% endif %}
 <form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse" 
 onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
-	<button class="btn btn-success btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
+	<button class="btn btn-outline-dark btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
 </form>
+{% endif %}
 </nav>
+<!--Warning message that course has been changed-->
+<div id="addWarningMessage">
+</div>
 <div class="container">
 		<div class="row my-2">
 				<div class="col-lg-8 order-lg-2">
@@ -126,11 +135,11 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 									</form>
 								</div>
 								<div {% if isCourseContent  %} class="tab-pane active" {% else %} class="tab-pane" {% endif %} id="addContent">
-									{% include "create_content.html" %}		
+									{% include "create_content.html" %}	
 								</div>
 								<div class="tab-pane" id="courseFromCourses">
 										{% include "create_courseFromCourses.html" %}		
-									</div>
+								</div>
 						</div>
 				</div>
 		</div>
@@ -138,10 +147,17 @@ onSubmit="if(!confirm('Do you want to Save and publish this course ?')){return f
 <script src="{% static 'provider/js/createCourseContent.js' %}"></script>
 <script>
 function publishCourse(el) {
-	//var clone  =  $("#contentForm").find("input[type=hidden]").clone()
 	var clone = $("#contentForm").find("input").clone().attr('type','hidden')
 	clone.appendTo("#publishCourse");
 	$('#publishCourse').submit()
+}
+function saveCourse(el) {
+	if(confirm("Do you want to save changes in this course ?")) {
+    	$('#contentForm').submit();
+	}
+  else {
+    return false;
+  }
 }
 </script>
 
