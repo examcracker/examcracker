@@ -272,12 +272,11 @@ class publishCourse(coursePageBase):
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
             for chapter in courseChapterObj:
                 lectureCnt = len(chapter.sessions)
-                i = 0
+
                 publishedArr = []
-                while i < len(chapter.sessions):
-                    #publishedArr.append(True)
+                for s in str.split(chapter.sessions, ","):
                     publishedArr.append('true')
-                    i=i+1
+
                 publishedArrStr =  ','.join([str(x) for x in publishedArr])
                 chapter.published = publishedArrStr
                 chapter.save()
