@@ -8,8 +8,14 @@
     <head>
     </head>
 
-    <body onload="allowDevice()">
-		<video id="v" controls preload="auto" width="80%" height="80%"></video>
+    <body onload="allowChallenge()">
+
+	<div class="container">
+
+        <div class="text-center" style="height:80%">
+            <p id="para"></p>
+        </div>
+    </div>
 
 	<script type="text/javascript">
 	function getBrowser() {
@@ -82,7 +88,7 @@
 	return '';
 	}
 	
-	function allowDevice() {
+	function allowChallenge() {
 	var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", "http://ipinfo.io/json", false);
     xmlHttp.send(null);
@@ -94,16 +100,21 @@
 	deviceInfo.browser = getBrowser();
 	deviceInfo.os = getOS();
 	var deviceJSON = encodeURIComponent(JSON.stringify(deviceInfo));
+	var challengeBytes = encodeURIComponent("{{challenge}}")
 
-	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
+	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/challenge/" + challengeBytes + "/" + deviceJSON;
 	xmlHttp.open("GET", url, false);
     xmlHttp.send(null);
 	
 	var accepted = (/True/).test(xmlHttp.responseText);
-	if (accepted)
-	  document.getElementById("v").src = "video source";
-	else
-	  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+	if (accepted){
+	  document.getElementById("para").innerHTML = "Your device is successfully authorized";
+	  document.getElementById("para").color = "green";
+	}
+	else {
+	  document.getElementById("para").innerHTML = "Your device could not be authorized";
+	  document.getElementById("para").color = "red";
+	}
     }
     </script>
     </body>

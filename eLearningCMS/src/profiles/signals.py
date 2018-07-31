@@ -5,12 +5,18 @@ import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+import notification
 from . import models
 
 logger = logging.getLogger("project")
 
+def getHost():
+    if len(settings.ALLOWED_HOSTS) == 0:
+        return 'localhost:8000'
+    return settings.ALLOWED_HOSTS[0]
+
 def sendVerificationMail(email, typeofuser, code):
-    link = 'http://{}/{}/verifyEmail/{}'.format('localhost:8000', typeofuser, code)
+    link = 'http://{}/{}/verifyEmail/{}'.format(getHost(), typeofuser, code)
 
     msg = MIMEMultipart()
     msg['From'] = settings.EMAIL_HOST_USER
@@ -39,5 +45,6 @@ def create_profile_handler(sender, instance, created, **kwargs):
     if instance.is_staff:
         typeofuser = 'provider'
 
+    notification.models.notify(instance.id, notification.models.EMAIL_NOT_VERIFIED, notification.models.WARNING, instance.email)
     sendVerificationMail(instance.email, typeofuser, profile.slug)
     logger.info('New user profile for {} created'.format(instance))

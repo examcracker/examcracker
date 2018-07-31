@@ -165,18 +165,33 @@
             </span>
           </a>
           <div class="dropdown-menu" aria-labelledby="alertsDropdown">
-            <h6 class="dropdown-header">New Alerts:</h6>
+            <h6 class="dropdown-header">New Notifications</h6>
             <div class="dropdown-divider"></div>
-            {% if email_pending %}
+            {% for n in notifications %}
             <a class="dropdown-item" href="#">
-              <span class="text-danger">
-                <strong>
-                  <i class="fas fa-long-arrow-up"></i>Email not Verified</strong>
+              <span">
+			    {% if n.notification == 100 %}
+				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Course Published</strong>
+				{% endif %}
+				{% if n.notification == 101 %}
+				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Device Added</strong>
+				{% endif %}
+				{% if n.notification == 102 %}
+				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Email not Verified</strong>
+				{% endif %}
               </span>
-              <div class="dropdown-message small">Your email is not verified. Go to your email and click the verification link.</div>
+			  {% if n.notification == 100 %}
+              <div class="dropdown-message small">Course {{ n.args }} is published.</div>
+			  {% endif %}
+			  {% if n.notification == 101 %}
+              <div class="dropdown-message small">A new device is authorized to your account.</div>
+			  {% endif %}
+			  {% if n.notification == 102 %}
+              <div class="dropdown-message small">Your email {{ n.args }} is not verified. Go to your email and click the verification link.</div>
+			  {% endif %}
             </a>
-			{% endif %}
-            <a class="dropdown-item small" href="#">View all alerts</a>
+			{% endfor %}
+            <a class="dropdown-item small" href="{% url 'notification:all' %}">View all notifications</a>
           </div>
         </li>
         <li class="nav-item">

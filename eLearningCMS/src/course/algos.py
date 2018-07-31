@@ -91,12 +91,14 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
             chapterDetailMap[chapterId]["name"] = item.name
             chapterDetailMap[chapterId]["sessions"] = []
             chapterDetailMap[chapterId]["duration"] = 0
-
+            chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
             for sess in sessions:
                 pos = sessions.index(sess)
                 # Skipping unpublished items
                 if not publishedStatus[pos] and onlyPublished == 1 :
                     continue
+                if not chapterDetailMap[chapterId]["hasUnPublishedSessions"] and not publishedStatus[pos]:
+                    chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 1
                 sessionDetails = {}
                 sessionObj = provider.models.Session.objects.filter(id=sess)[0]
                 sessionDetails["name"] = sessionObj.name

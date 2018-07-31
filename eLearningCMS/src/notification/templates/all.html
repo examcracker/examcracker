@@ -1,0 +1,34 @@
+{% extends "__ecBase.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
+
+{% block container %}
+
+{% block content %}
+<div class="text-center">
+{% for n in notifications %}
+ {% if n.notification == 100 %}
+  <strong>Course Published</strong>
+  <div>Course {{ n.args }} is published.</div>
+ {% endif %}
+ {% if n.notification == 101 %}
+  <strong>Device Added</strong>
+  <div>A new device is authorized to your account.</div>
+ {% endif %}
+ {% if n.notification == 102 %}
+  <strong>Email not Verified</strong>
+  <div>Your email {{ n.args }} is not verified. Go to your email and click the verification link</div>
+ {% endif %}
+{% endfor %}
+</div>
+{% endblock %}
+
+{% endblock container %}
+
+{% block title %}Pay using PayPal{% endblock %}

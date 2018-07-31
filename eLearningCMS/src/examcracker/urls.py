@@ -8,6 +8,8 @@ import accounts.urls
 import provider.urls
 import student.urls
 import course.urls
+import access.urls
+import notification.urls
 from . import views
 
 # Personalized admin site settings like title and header
@@ -27,6 +29,8 @@ urlpatterns = [
     path('courses/', views.CoursesPage.as_view(), name='courses'),
     path('provider/',include(provider.urls)),
     path('student/',include(student.urls)),
+    path('access/',include(access.urls)),
+    path('notification/', include(notification.urls)),
     path('course/',include(course.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),

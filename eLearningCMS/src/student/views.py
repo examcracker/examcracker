@@ -17,6 +17,7 @@ import provider
 import re
 import profiles
 import payments
+import notification
 from math import ceil
 
 User = get_user_model()
@@ -29,11 +30,8 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        if not profileObj.email_verified:
-            kwargs["email_pending"] = True
-        else:
-            kwargs["email_pending"] = False
+        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id, saw=False))
+        kwargs["notifications"] = notifications
             
         category = "ALL Courses"
         allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')

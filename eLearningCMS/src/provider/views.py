@@ -15,6 +15,8 @@ import profiles
 import json
 from django.forms.models import model_to_dict
 from course import algos
+import notification
+import student
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -37,12 +39,8 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-        if not profileObj.email_verified:
-            kwargs["email_pending"] = True
-        else:
-            kwargs["email_pending"] = False
-
+        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id, saw=False))
+        kwargs["notifications"] = notifications
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -134,7 +132,7 @@ def saveCourseContent(request,courseId):
         fullCourse.delete()
     return
 
-class coursePageBase(showProviderHome, generic.TemplateView):
+class coursePageBase(showProviderHome):
     template_name = 'create_course.html'
     http_method_names = ['get']
 
@@ -258,7 +256,6 @@ class createFromCourses(coursePageBase):
         return super().get(request, *args, **kwargs)
 
 class publishCourse(coursePageBase):
-
     http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
@@ -269,7 +266,7 @@ class publishCourse(coursePageBase):
 
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
-        courseObj.published=True
+        courseObj.published = True
         courseObj.save()
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
@@ -285,6 +282,12 @@ class publishCourse(coursePageBase):
                 chapter.published = publishedArrStr
                 chapter.save()
         kwargs["courseId"] = courseId
+
+        enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseId)
+        for c in enrolledCourse:
+            studentUserObj = student.models.Student.objects.filter(id=c.student_id)[0]
+            notification.models.notify(studentUserObj.user_id, notification.models.COURSE_PUBLISHED, notification.models.INFO, courseObj.name)
+
         return super().get(request, *args, **kwargs)
 
 class editCourse(coursePageBase):
@@ -312,7 +315,7 @@ class viewSessions(LoginRequiredMixin, generic.TemplateView):
         kwargs["sessions"] = sessionList
         return super().get(request, *args, **kwargs)
 
-class viewCourses(showProviderHome, generic.TemplateView):
+class viewCourses(showProviderHome):
     template_name = "view_courses.html"
     http_method_names = ['get']
 
@@ -364,7 +367,7 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
 
-class myStudents(showProviderHome, generic.TemplateView):
+class myStudents(showProviderHome):
     template_name = "my_students.html"
     http_method_names = ['get']
 

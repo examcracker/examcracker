@@ -20,6 +20,7 @@ from django.http import Http404
 from math import ceil
 from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 # Create your views here.
 
@@ -38,7 +39,7 @@ def getCourseReview(reviewSummary, userReviewList, courseid):
             reviewSummary[str(review.rating)] += 1
             totalRating += review.rating
             userDetails = algos.getUserNameAndPic(review.student_id)
-            
+           
             userDetails['review'] = review.review
             userDetails['rating'] = int(review.rating)
             userDetails['reviewedTime'] = review.reviewed
@@ -71,9 +72,6 @@ class courseDetails(generic.TemplateView):
             kwargs["not_published"] = True
             raise Http404()
 
-        courseDetailMap = algos.getCourseDetails(id)
-        kwargs["course_detail"] = courseDetailMap
-
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
@@ -88,6 +86,19 @@ class courseDetails(generic.TemplateView):
         kwargs['userReviewList'] = userReviewList
 
         ##########################################################
+        getOnlyPublished = 1
+
+        # check if user is provider and its own course
+        # Then Retrieve unpublished sessions as well in course detail
+        if request.user.is_staff:
+            providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+            courseObj = course.models.Course.objects.filter(id=courseid)[0]
+            if courseObj.provider_id == providerObj.id:
+                courseOverviewMap["myCourse"] = True
+                getOnlyPublished = 0
+        
+        courseDetailMap = algos.getCourseDetails(id,getOnlyPublished)
+        kwargs["course_detail"] = courseDetailMap
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
@@ -129,13 +140,7 @@ class courseDetails(generic.TemplateView):
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
                     courseOverviewMap["addedCourse"] = True
-
-            elif request.user.is_staff:
-                providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
-                courseObj = course.models.Course.objects.filter(id=courseid)[0]
-                if courseObj.provider_id == providerObj.id:
-                    courseOverviewMap["myCourse"] = True
-
+    
         courseOverviewMap["Name"] = courseObj.name
         courseOverviewMap["Description"] = courseObj.description
         courseOverviewMap["Subject"] = courseObj.subjects
@@ -203,7 +208,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
             enrolledCourseObj = enrolledCourse[0]
             sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
-            if sessionid not in sessionsPlayed:
+            sessionAlreadyPlayed = False
+            for s in sessionsPlayed:
+                if sessionid == int(s):
+                    sessionAlreadyPlayed = True
+            if not sessionAlreadyPlayed:
                 enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
                 enrolledCourseObj.save()
 
