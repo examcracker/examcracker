@@ -20,6 +20,7 @@ class UserNotification(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     args = models.CharField(max_length=100, blank=True)
     level = models.IntegerField(default=0)
+    saw = models.BooleanField(default=False)
 
 def notify(userid, notificationType, level, *args):
     notificationObj = UserNotification(user=User.objects.filter(id=userid)[0])
