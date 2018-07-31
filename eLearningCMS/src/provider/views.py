@@ -13,6 +13,8 @@ import datetime
 #import pdb
 import profiles
 import json
+from django.forms.models import model_to_dict
+from course import algos
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -319,7 +321,19 @@ class viewCourses(showProviderHome, generic.TemplateView):
         if providerObj:
             kwargs["providerId"] = providerObj.id
             courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
-            kwargs["courses"] = courseList
+            allCourses = []
+            for item in courseList:
+                courseDetails = model_to_dict(item)
+                courseDetails["provider_id"] = providerObj.id
+                userDetails = algos.getUserNameAndPic(providerObj.id)
+                courseDetails["provider_name"] = userDetails['name']
+                if 'profilePic' in userDetails: 
+                    courseDetails["profilePic"] = userDetails['profilePic']
+                courseDetails["enrolledCount"] = algos.getEnrolledStudentsCount(item.id)
+                courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
+                allCourses.append(courseDetails)
+
+            kwargs["courses"] = allCourses
         return super().get(request, *args, **kwargs)
 
 class ProviderProfile(profiles.views.MyProfile):
