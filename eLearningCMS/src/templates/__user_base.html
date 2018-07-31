@@ -9,16 +9,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-  <title>SB Admin - Start Bootstrap Template</title>
   <!-- Bootstrap core CSS-->
-	<link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
   
   <!-- <link href="{% static 'userDashBoard/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet"> -->
   <!-- Custom fonts for this template-->
   <link href="{% static 'userDashBoard/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+  
   <!-- Custom styles for this template-->
   <link href="{% static 'userDashBoard/css/sb-admin.css' %}" rel="stylesheet">
-  <link href="{% static 'base/css/cardslider.css' %}" rel="stylesheet">
 
   <!-- Bootstrap core JavaScript-->
   <script src="{% static 'fileUploader/js/jquery-3.1.1.min.js' %}"></script>
@@ -26,6 +24,11 @@
   <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
   <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
   
+  <script src="{% static 'fontawesome/js/all.js' %}"></script>
+	<link href="/static/base/css/cardslider.css" rel="stylesheet">
+	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+  <link href="{% static 'fontawesome/css/all.css' %}" rel="stylesheet">
+
 </head>
 <body class="fixed-nav sticky-footer bg-dark" id="page-top">
   <!-- Navigation-->
@@ -47,7 +50,7 @@
                   {% else %}
                     {% url 'student:student_home' %}
                   {% endif %}">
-            <i class="fa fa-fw fa-dashboard"></i>
+            <i class="fas fa-tachometer-alt"></i>
             <span class="nav-link-text">Dashboard</span>
           </a>
         </li>
@@ -58,20 +61,20 @@
                 {% else %}
                   {% url 'student:my_courses' %}
                 {% endif %}">
-            <i class="fa fa-fw fa-bookmark-o"></i>
+            <i class="fas fa-book"></i>
             <span class="nav-link-text">My Courses</span>
           </a>
         </li>
         {% if user.is_staff %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">
             <a class="nav-link" href="{% url 'provider:create_course' %}">
-                <i class="fa fa-fw fa-graduation-cap"></i>
+                <i class="fas fa-list-alt"></i>
               <span class="nav-link-text">Create Course</span>
             </a>
           </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Students">
           <a class="nav-link" href="{% url 'provider:my_students' %}">
-            <i class="fa fa-fw fa-child"></i>
+            <i class="fas fa-child"></i>
             <span class="nav-link-text">My Students</span>
           </a>
         </li>
@@ -83,7 +86,7 @@
                 {% else %}
                   {% url 'student:my_profile' %}
                 {% endif %}">
-            <i class="fa fa-fw fa-user"></i>
+            <i class="fas fa-user"></i>
             <span class="nav-link-text">Profile</span>
           </a>
         </li>
@@ -205,7 +208,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" data-toggle="modal" data-target="#exampleModal" href ="{% url 'accounts:logout' %}">
-            <i class="fa fa-fw fa-sign-out"></i>Logout</a>
+            <i class="fas fa-sign-out-alt"></i>Logout</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'home' %}">

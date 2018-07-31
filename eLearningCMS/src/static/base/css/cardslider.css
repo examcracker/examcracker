@@ -11,9 +11,6 @@
 
 
 #courseCard.card {
-   padding-left:0;
-   padding-right:0;
-   margin: 5px;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
   -webkit-transition: .25s box-shadow;
   transition: .25s box-shadow;
@@ -31,14 +28,10 @@
    margin-top:0px;
    max-height: 180px;
  }
- #courseCard .card-body{
-   margin-top:0px;
-   max-height: 200px;
- }
  .row{
-   margin-right:auto;
-   margin-left:auto;
- }
+  margin-right:auto;
+  margin-left:auto;
+}
 
   .carousel-inner .carousel-item-next,
   .carousel-inner .carousel-item-prev {
