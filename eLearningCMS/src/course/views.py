@@ -87,6 +87,19 @@ class courseDetails(generic.TemplateView):
 
         ##########################################################
         getOnlyPublished = 1
+
+        # check if user is provider and its own course
+        # Then Retrieve unpublished sessions as well in course detail
+        if request.user.is_staff:
+            providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+            courseObj = course.models.Course.objects.filter(id=courseid)[0]
+            if courseObj.provider_id == providerObj.id:
+                courseOverviewMap["myCourse"] = True
+                getOnlyPublished = 0
+        
+        courseDetailMap = algos.getCourseDetails(id,getOnlyPublished)
+        kwargs["course_detail"] = courseDetailMap
+
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
@@ -127,16 +140,7 @@ class courseDetails(generic.TemplateView):
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
                     courseOverviewMap["addedCourse"] = True
-
-            elif request.user.is_staff:
-                providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
-                courseObj = course.models.Course.objects.filter(id=courseid)[0]
-                if courseObj.provider_id == providerObj.id:
-                    courseOverviewMap["myCourse"] = True
-                    getOnlyPublished = 0
-        
-        courseDetailMap = algos.getCourseDetails(id,getOnlyPublished)
-        kwargs["course_detail"] = courseDetailMap
+    
         courseOverviewMap["Name"] = courseObj.name
         courseOverviewMap["Description"] = courseObj.description
         courseOverviewMap["Subject"] = courseObj.subjects
