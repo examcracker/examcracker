@@ -37,7 +37,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        notifications = notification.models.UserNotification.objects.filter(user=request.user.id)
+        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id))
         kwargs["notifications"] = notifications
         return super().get(request, *args, **kwargs)
 
