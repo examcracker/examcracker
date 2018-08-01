@@ -10,7 +10,6 @@ from django.db.models import Count
 from django.contrib.auth import get_user_model
 from collections import defaultdict
 import provider
-import pdb
 import profiles
 
 def str2bool(v):

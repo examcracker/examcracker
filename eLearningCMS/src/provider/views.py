@@ -10,7 +10,7 @@ from django.http import Http404
 from . import forms
 import course
 import datetime
-import pdb
+#import pdb
 import profiles
 import json
 from django.forms.models import model_to_dict
@@ -79,7 +79,6 @@ def saveCourseContent(request,courseId):
         cpPrefix = 'Chapter '              
         i = 0
         subjectChapterCntMap = {}
-        #pdb.set_trace()
         chpArr = []
         while i < len(lcids):
             cpid = lcids[i].split('-')
@@ -262,9 +261,7 @@ class publishCourse(coursePageBase):
         providerObj = getProvider(request)
         courseId = self.request.POST.get('courseId','')
         # first save course and then publish
-        #pdb.set_trace()
         saveCourseContent(request,courseId)
-        #pdb.set_trace()
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
         courseObj.published = True
@@ -272,7 +269,6 @@ class publishCourse(coursePageBase):
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
             for chapter in courseChapterObj:
-                #pdb.set_trace()
                 publishedArr = course.algos.strToBoolList(chapter.sessions)
                 lectureCnt = len(publishedArr)
 
