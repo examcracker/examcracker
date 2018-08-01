@@ -13,12 +13,15 @@ import provider
 import pdb
 import profiles
 
+def str2bool(v):
+  return v.lower() in ("yes", "true", "t", "1")
+
 def strToBoolList(array):
   if not array or array == '':
     return []
   out = []
   for ele in array:
-    if ele == '0':
+    if not str2bool(ele):
       out.append(False)
     else:
       out.append(True)
