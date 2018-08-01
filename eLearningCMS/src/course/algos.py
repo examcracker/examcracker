@@ -12,6 +12,8 @@ from collections import defaultdict
 import provider
 import pdb
 import profiles
+import student
+from django.forms.models import model_to_dict
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
@@ -155,7 +157,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
         providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
         courseList = courseList.filter(Q(provider_id__in=providerList))
     if searchText == '':
-        return courseList.values('id','name','created','exam','cost','duration','provider__user__name')
+        return courseList
         
     userList = allProviders.filter( Q(name__icontains = searchText))
     providerList = provider.models.Provider.objects.filter(Q(user_id__in=userList))
@@ -164,7 +166,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
     Q(exam__icontains=searchText) |
     Q(provider_id__in=providerList)
     )
-    return courseList.values('id','name','created','exam','cost','duration','provider__user__name')
+    return courseList
 
 # return all published courses
 def getPublishedCourses():
@@ -195,5 +197,33 @@ def getUserNameAndPic(user_id):
     return userDetails
 
 def getEnrolledStudentsCount(courseId):
-    enrolledCount = len(models.Course.objects.filter(id=courseId))
+    enrolledCount = len(models.EnrolledCourse.objects.filter(course_id=courseId))
     return enrolledCount
+
+def checkIfStudentEnrolledInCourse(courseId, userId):
+    studentObj = student.models.Student.objects.filter(user_id=userId)
+    if len(studentObj) > 0:
+        studentId = studentObj[0].id
+        enrolledStudent = models.EnrolledCourse.objects.filter(Q(course_id=courseId) & Q(student_id=studentId))
+        if len(enrolledStudent) > 0:
+            return True
+    
+    return False
+
+def getCourseDetailsForCards(request, courseList):
+    allCourses = []
+    for item in courseList:
+        courseDetails = model_to_dict(item)
+        courseDetails["provider_id"] = item.provider_id
+        userDetails = getUserNameAndPic(item.provider_id)
+        courseDetails["provider_name"] = userDetails['name']
+        if 'profilePic' in userDetails: 
+            courseDetails["profilePic"] = userDetails['profilePic']
+        courseDetails["enrolledCount"] = getEnrolledStudentsCount(item.id)
+        if request.user.is_authenticated and request.user.is_staff == False:
+            courseDetails["alreadyEnrolled"] = checkIfStudentEnrolledInCourse(item.id, request.user.id)
+        else:
+            courseDetails["alreadyEnrolled"] = False
+        courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
+        allCourses.append(courseDetails)
+    return allCourses

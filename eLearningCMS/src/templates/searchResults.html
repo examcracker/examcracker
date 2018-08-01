@@ -52,7 +52,7 @@
 {% endblock jumbotronBlock %}
 
 {% block container %}
-{% if searchResult.count >= 0 %}
+{% if searchResult %}
 <div class="container-fluid">
   <p class="text-left mb-3"> Courses from  '{{searchText}}'
       {% include "__baseCourseTiles.html" with allCourses=searchResult divId="search" category="" provider_id=providerId tilesLimit=":100" %}

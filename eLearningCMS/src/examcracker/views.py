@@ -5,7 +5,6 @@ from course.algos import *
 from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 from provider.views import *
-from django.forms.models import model_to_dict
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(generic.TemplateView):
@@ -22,7 +21,7 @@ class SearchResultsPage(generic.TemplateView):
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = getExams()
         kwargs["providers"] = getProviders()
-        kwargs["searchResult"] = courseList
+        kwargs["searchResult"] = getCourseDetailsForCards(request, courseList)
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
 
@@ -36,7 +35,7 @@ class SearchResultsPage(generic.TemplateView):
         courseList = searchCourseByText(searchText,examText,providerText)
         kwargs["exams"] = getExams()
         kwargs["providers"] = getProviders()
-        kwargs["searchResult"] = courseList
+        kwargs["searchResult"] = getCourseDetailsForCards(request, courseList)
         providerObj = getProvider(request)
         if providerObj:
             kwargs["providerId"] = providerObj.id
@@ -59,18 +58,7 @@ class HomePage(generic.TemplateView):
         if providerObj:
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
-        allCourses = []
-        for item in courseList:
-            courseDetails = model_to_dict(item)
-            courseDetails["provider_id"] = item.provider_id
-            userDetails = getUserNameAndPic(item.provider_id)
-            courseDetails["provider_name"] = userDetails['name']
-            if 'profilePic' in userDetails: 
-                courseDetails["profilePic"] = userDetails['profilePic']
-            courseDetails["enrolledCount"] = getEnrolledStudentsCount(item.id)
-            courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
-            allCourses.append(courseDetails)
-        kwargs["allCourses"] = allCourses
+        kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
         return super().get(request, *args, **kwargs)
 
 class AboutPage(generic.TemplateView):

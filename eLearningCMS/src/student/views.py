@@ -35,7 +35,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
             
         category = "ALL Courses"
         allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
-        kwargs["allCourses"] = allCourses
+        kwargs["allCourses"] = algos.getCourseDetailsForCards(request, allCourses)
         kwargs["category"] = category
         return super().get(request, *args, **kwargs)
 
@@ -57,7 +57,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
-        kwargs["remaining_courses"] = notJoinedCourses
+        kwargs["remaining_courses"] = algos.getCourseDetailsForCards(request, notJoinedCourses)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -83,29 +83,6 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
             url = "payments:my_cart"
             return redirect(url)
 
-class joinCourses(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'join_courses.html'
-    http_method_names = ['get', 'post']
-
-    def get(self, request, *args, **kwargs):
-        studentObj = getStudent(request)
-        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = True and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
-        kwargs["remaining_courses"] = notJoinedCourses
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        studentObj = getStudent(request)
-        joinedCourses = request.POST.getlist('courses[]')
-
-        for courses in joinedCourses:
-            courseObj = course.models.Course.objects.filter(id=courses)[0]
-            enrolledCourseObj = course.models.EnrolledCourse()
-            enrolledCourseObj.student = studentObj
-            enrolledCourseObj.course = courseObj
-            enrolledCourseObj.save()
-
-        return redirect("student:join_courses")
-
 class myCourses(LoginRequiredMixin, generic.TemplateView):
     template_name = 'my_courses.html'
     http_method_names = ['get']
@@ -113,7 +90,7 @@ class myCourses(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
-        kwargs["courses"] = myCourses
+        kwargs["courses"] = algos.getCourseDetailsForCards(request, myCourses)
         return super().get(request, *args, **kwargs)
 
 class courseDetails(LoginRequiredMixin, generic.TemplateView):
