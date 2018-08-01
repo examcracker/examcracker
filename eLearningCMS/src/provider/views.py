@@ -79,7 +79,6 @@ def saveCourseContent(request,courseId):
         cpPrefix = 'Chapter '              
         i = 0
         subjectChapterCntMap = {}
-        #pdb.set_trace()
         chpArr = []
         while i < len(lcids):
             cpid = lcids[i].split('-')
@@ -114,7 +113,7 @@ def saveCourseContent(request,courseId):
                 j=0
                 while j < len(filesUploaded):
                     sessionsIdArr.append(filesUploaded[j])
-                    if filePublishedArr[j].lower() == 'true':
+                    if course.algos.str2bool(filePublishedArr[j]):
                         publishedArr.append('1')
                     else:
                         publishedArr.append('0')
@@ -263,7 +262,6 @@ class publishCourse(coursePageBase):
         courseId = self.request.POST.get('courseId','')
         # first save course and then publish
         saveCourseContent(request,courseId)
-
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
         courseObj.published = True
@@ -325,19 +323,7 @@ class viewCourses(showProviderHome):
         if providerObj:
             kwargs["providerId"] = providerObj.id
             courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
-            allCourses = []
-            for item in courseList:
-                courseDetails = model_to_dict(item)
-                courseDetails["provider_id"] = providerObj.id
-                userDetails = algos.getUserNameAndPic(providerObj.id)
-                courseDetails["provider_name"] = userDetails['name']
-                if 'profilePic' in userDetails: 
-                    courseDetails["profilePic"] = userDetails['profilePic']
-                courseDetails["enrolledCount"] = algos.getEnrolledStudentsCount(item.id)
-                courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
-                allCourses.append(courseDetails)
-
-            kwargs["courses"] = allCourses
+            kwargs["courses"] = algos.getCourseDetailsForCards(request, courseList)
         return super().get(request, *args, **kwargs)
 
 class ProviderProfile(profiles.views.MyProfile):

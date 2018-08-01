@@ -55,7 +55,7 @@
                                 <div class="col-xs-4 col-sm-4" align="left">
                                     {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                                         <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="far fa-edit"></i></a>
-                                    {% else %}
+                                    {% elif not user.is_staff and not currentCourse.alreadyEnrolled %}
                                         <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="fa fa-shopping-cart"></i></a>
                                     {% endif %}     
                                 </div>
