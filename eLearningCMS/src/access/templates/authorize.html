@@ -1,19 +1,23 @@
+{% extends "__ecBase.html" %}
 
+{% load crispy_forms_tags %}
 
-<html>
-	{% load staticfiles %}
-    {% load crispy_forms_tags %}
-    {% load thumbnail %}
+{% block ImageSlider %}
+{% endblock ImageSlider %}
 
-    <head>
-    </head>
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
+
+{% block container %}
+
+{% block content %}
 
     <body onload="allowChallenge()">
 
 	<div class="container">
 
         <div class="text-center" style="height:80%">
-            <p id="para"></p>
+            <h1><font id="para"></font></h1>
         </div>
     </div>
 
@@ -118,5 +122,6 @@
     }
     </script>
     </body>
-</html>
-<script>
+{% endblock %}
+
+{% endblock container %}

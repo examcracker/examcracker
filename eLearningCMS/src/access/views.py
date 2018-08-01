@@ -62,7 +62,7 @@ def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
     server.starttls()
     server.ehlo()
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    server.sendmail(settings.EMAIL_HOST_USER, 'kghoshnitk@gmail.com', msg.as_string())
+    server.sendmail(settings.EMAIL_HOST_USER, userObj.email, msg.as_string())
     
     
 class allowDevice(generic.TemplateView):
@@ -108,8 +108,8 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
         deviceObj = models.UserDevice.objects.filter(user_id=userid)[0]
 
         # check if the link is accessed within 5 minutes of its generation
-        #if int(deviceObj.time) < int(calendar.timegm(time.gmtime())) - 300:
-        #    raise Http404()
+        if int(deviceObj.time) < int(calendar.timegm(time.gmtime())) - 300:
+            raise Http404()
 
         devicecipher = urllib.parse.unquote(request.GET['cipher'])
 
@@ -128,6 +128,7 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
 
         challengeBytes = base64.b64encode(get_random_bytes(16)).decode()
         deviceObj.challenge = challengeBytes
+        deviceObj.candidate = plaintext.decode()
         deviceObj.save()
 
         kwargs["challenge"] = challengeBytes
@@ -142,6 +143,10 @@ class challengeAccept(generic.TemplateView):
             return HttpResponse(False)
 
         deviceObj = devices[0]
+
+        if not same(json.loads(deviceObj.candidate)['device'], deviceinfo):
+            return HttpResponse(False)
+
         registered = str.split(deviceObj.device, "--")
 
         registered[0] = registered[1]

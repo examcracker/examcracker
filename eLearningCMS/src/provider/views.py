@@ -79,7 +79,6 @@ def saveCourseContent(request,courseId):
         cpPrefix = 'Chapter '              
         i = 0
         subjectChapterCntMap = {}
-        #pdb.set_trace()
         chpArr = []
         while i < len(lcids):
             cpid = lcids[i].split('-')
@@ -100,9 +99,11 @@ def saveCourseContent(request,courseId):
             chapterObj.name = cpPrefix +' ' +str(cpSuffix)
             chapterObj.sequence = i+1
             chapterObj.subject = subject
+
             # first get and save files into provider_session db
             sessionsIdArr = []
             publishedArr = []
+
             # get session ids here
             lcVar = 'lec['+str(cpid[0])+'][]'
             lecPubVar = 'lecPub['+str(cpid[0])+'][]'
@@ -110,23 +111,21 @@ def saveCourseContent(request,courseId):
                 filesUploaded = request.POST.getlist(lcVar)
                 filePublishedArr = request.POST.getlist(lecPubVar)
                 j=0
-                while j<len(filesUploaded):
+                while j < len(filesUploaded):
                     sessionsIdArr.append(filesUploaded[j])
-                    if filePublishedArr[j].lower() == 'true':
-                        publishedArr.append('true')
+                    if course.algos.str2bool(filePublishedArr[j]):
+                        publishedArr.append('1')
                     else:
-                        publishedArr.append('false')
+                        publishedArr.append('0')
                     j=j+1
             
             sessionsIdArrStr =  ','.join([str(x) for x in sessionsIdArr])
             publishedArrStr =  ','.join([str(x) for x in publishedArr])
             chapterObj.sessions = sessionsIdArrStr
             chapterObj.published = publishedArrStr
-
-            #chapterObj.sessions=sessionsIdArr
-            #chapterObj.published=publishedArr
             chapterObj.save()
             chpArr.append(chapterObj.id)
+
             i=i+1
         fullCourse = course.models.CourseChapter.objects.filter(course_id=courseId).exclude(id__in=chpArr)
         fullCourse.delete()
@@ -263,7 +262,6 @@ class publishCourse(coursePageBase):
         courseId = self.request.POST.get('courseId','')
         # first save course and then publish
         saveCourseContent(request,courseId)
-
         courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
         courseObj.published = True
@@ -271,13 +269,14 @@ class publishCourse(coursePageBase):
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
             for chapter in courseChapterObj:
-                lectureCnt = len(chapter.sessions)
+                publishedArr = course.algos.strToBoolList(chapter.sessions)
+                lectureCnt = len(publishedArr)
+
                 i = 0
-                publishedArr = []
-                while i < len(chapter.sessions):
-                    #publishedArr.append(True)
-                    publishedArr.append('true')
-                    i=i+1
+                while i < lectureCnt:
+                    publishedArr[i] = '1'
+                    i = i + 1
+
                 publishedArrStr =  ','.join([str(x) for x in publishedArr])
                 chapter.published = publishedArrStr
                 chapter.save()

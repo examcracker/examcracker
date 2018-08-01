@@ -10,13 +10,28 @@ from django.db.models import Count
 from django.contrib.auth import get_user_model
 from collections import defaultdict
 import provider
-import pdb
 import profiles
 import student
 from django.forms.models import model_to_dict
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
+
+def strToBoolList(array):
+  if not array or array == '':
+    return []
+  out = []
+  for ele in array.split(','):
+    if not str2bool(ele):
+      out.append(False)
+    else:
+      out.append(True)
+  return out
+
+def strToIntList(array):
+  if not array or array == '':
+    return []
+  return [int(x) for x in array.split(",")]
 
 #get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
@@ -32,7 +47,6 @@ def getAllChildCoursesbyExamsFromProvider(pId):
         courseDetails["name"] = course.name
         courseDetails["id"]=course.id
         courseByExams[course.exam].append(courseDetails)
-    #pdb.set_trace()
     courseByExams.default_factory = None
     return courseByExams
 
@@ -42,7 +56,6 @@ def parseAndGetSubjectsArr(subjects):
 
 def getCourseDetails(courseid,published=1):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
-    #pdb.set_trace()
     courseDetails = {}
     # take map of course name to course details
     if courseObj.exists():
@@ -74,18 +87,8 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
         for item in chapters:
             courseIdNameMap[item.id] = item.name
             
-            sessionsStrArr = item.sessions.split(',')
-            sessions = []
-            if len(sessionsStrArr) > 0 and sessionsStrArr[0]!= '':
-                sessions = [int(x) for x in sessionsStrArr]
-            #sessions = item.sessions
-
-            publishedStatusStrArr = item.published.split(',')
-            publishedStatus = []
-            if len(publishedStatusStrArr) > 0 and publishedStatusStrArr[0] != '':
-                publishedStatus = [str2bool(x) for x in publishedStatusStrArr]
-            #publishedStatus = item.published
-
+            sessions = strToIntList(item.sessions)
+            publishedStatus = strToBoolList(item.published)
             chapterDetailMap = {}
 
             chapterId = item.id

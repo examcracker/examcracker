@@ -10,5 +10,6 @@ class UserDevice(models.Model):
     key = models.CharField(max_length=32, blank=True)
     time = models.IntegerField(default=0)
     challenge = models.CharField(max_length=32, blank=True)
+    candidate = models.CharField(max_length=300, blank=True)
 
 
