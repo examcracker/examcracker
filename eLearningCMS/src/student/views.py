@@ -200,10 +200,10 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
             courseid = enrolledCourse.course_id
             durationCompleted = 0
             totalDuration = 0
-            sessions_list = str.split(enrolledCourse.sessions, ",")
+            sessions_list = course.algos.strToIntList(enrolledCourse.sessions)
 
             for s in sessions_list:
-                sessionObj = provider.models.Session.objects.filter(id=int(s))[0]
+                sessionObj = provider.models.Session.objects.filter(id=s)[0]
                 durationCompleted = durationCompleted + sessionObj.duration
 
             courseObj = course.models.Course.objects.filter(id=courseid)[0]
@@ -222,11 +222,21 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
                 durationChapterCompleted = 0
                 durationChapterTotal = 0
 
-                for s in str.split(courseChapter.sessions, ","):
-                    sessionObj = provider.models.Session.objects.filter(id=int(s))[0]
+                chapterSessionList = course.algos.strToIntList(courseChapter.sessions)
+                publishedList = course.algos.strToBoolList(courseChapter.published)
+                totalSessions = len(chapterSessionList)
+
+                i = 0
+                while i < totalSessions:
+                    s = chapterSessionList[i]
+                    if not publishedList[i]:
+                        i=i+1
+                        continue
+                    sessionObj = provider.models.Session.objects.filter(id=s)[0]
                     durationChapterTotal = durationChapterTotal + sessionObj.duration
                     if(s in sessions_list):
                         durationChapterCompleted = durationChapterCompleted + sessionObj.duration
+                    i=i+1
 
                 totalDuration = totalDuration + durationChapterTotal
 

@@ -13,8 +13,21 @@ import provider
 import pdb
 import profiles
 
-def str2bool(v):
-  return v.lower() in ("yes", "true", "t", "1")
+def strToBoolList(array):
+  if not array or array == '':
+    return []
+  out = []
+  for ele in array:
+    if ele == '0':
+      out.append(False)
+    else:
+      out.append(True)
+  return out
+
+def strToIntList(array):
+  if not array or array == '':
+    return []
+  return [int(x) for x in array.split(",")]
 
 #get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
@@ -72,18 +85,8 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
         for item in chapters:
             courseIdNameMap[item.id] = item.name
             
-            sessionsStrArr = item.sessions.split(',')
-            sessions = []
-            if len(sessionsStrArr) > 0 and sessionsStrArr[0]!= '':
-                sessions = [int(x) for x in sessionsStrArr]
-            #sessions = item.sessions
-
-            publishedStatusStrArr = item.published.split(',')
-            publishedStatus = []
-            if len(publishedStatusStrArr) > 0 and publishedStatusStrArr[0] != '':
-                publishedStatus = [str2bool(x) for x in publishedStatusStrArr]
-            #publishedStatus = item.published
-
+            sessions = strToIntList(item.sessions)
+            publishedStatus = strToBoolList(item.published)
             chapterDetailMap = {}
 
             chapterId = item.id

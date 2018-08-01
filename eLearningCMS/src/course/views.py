@@ -102,12 +102,6 @@ class courseDetails(generic.TemplateView):
 
         if request.user.is_authenticated:
             if request.user.is_staff == False:
-                profileObj = profiles.models.Profile.objects.filter(user_id=request.user.id)[0]
-                if not profileObj.email_verified:
-                    kwargs["email_pending"] = True
-                else:
-                    kwargs["email_pending"] = False
-                    
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
@@ -120,9 +114,9 @@ class courseDetails(generic.TemplateView):
                     enrolledCourseObj = enrolledCourse[0]
 
                     if enrolledCourseObj.sessions != '':
-                        sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
+                        sessionsPlayed = course.algos.strToIntList(enrolledCourseObj.sessions)
                         for s in sessionsPlayed:
-                            sessionObj = provider.models.Session.objects.filter(id=int(s))[0]
+                            sessionObj = provider.models.Session.objects.filter(id=s)[0]
                             durationCompleted = durationCompleted + sessionObj.duration
 
                     for subj in courseDetailMap:
@@ -190,30 +184,30 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         # check whether the session is in that course
         if str(sessionid) not in sessions:
-            kwargs["wrong_content"] = True
             raise Http404()
 
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
             index = sessions.index(str(sessionid))
             if courseChapterObj.published[index] == False:
-                kwargs["not_published"] = True
                 raise Http404()
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
-                kwargs["not_enrolled"] = True
                 raise Http404()
 
             enrolledCourseObj = enrolledCourse[0]
-            sessionsPlayed = str.split(enrolledCourseObj.sessions, ",")
+            sessionsPlayed = course.algos.strToBoolList(enrolledCourseObj.sessions)
             sessionAlreadyPlayed = False
             for s in sessionsPlayed:
-                if sessionid == int(s):
+                if sessionid == s:
                     sessionAlreadyPlayed = True
             if not sessionAlreadyPlayed:
-                enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
+                if not enrolledCourseObj.sessions or enrolledCourseObj.sessions == '':
+                    enrolledCourseObj.sessions = str(sessionid)
+                else:
+                    enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
                 enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
