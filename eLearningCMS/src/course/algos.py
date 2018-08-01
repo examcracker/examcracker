@@ -20,7 +20,7 @@ def strToBoolList(array):
   if not array or array == '':
     return []
   out = []
-  for ele in array:
+  for ele in array.split(','):
     if not str2bool(ele):
       out.append(False)
     else:
@@ -46,7 +46,6 @@ def getAllChildCoursesbyExamsFromProvider(pId):
         courseDetails["name"] = course.name
         courseDetails["id"]=course.id
         courseByExams[course.exam].append(courseDetails)
-    #pdb.set_trace()
     courseByExams.default_factory = None
     return courseByExams
 
@@ -56,7 +55,6 @@ def parseAndGetSubjectsArr(subjects):
 
 def getCourseDetails(courseid,published=1):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
-    #pdb.set_trace()
     courseDetails = {}
     # take map of course name to course details
     if courseObj.exists():
