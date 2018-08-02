@@ -12,6 +12,7 @@ from collections import defaultdict
 import provider
 import profiles
 import student
+#import pdb
 from django.forms.models import model_to_dict
 
 def str2bool(v):
@@ -80,13 +81,10 @@ def getCourseDetails(courseid,published=1):
 def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
     courseDetailMap = []
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
-
     if len(chapters) > 0:
         courseIdNameMap = {}
-
         for item in chapters:
             courseIdNameMap[item.id] = item.name
-            
             sessions = strToIntList(item.sessions)
             publishedStatus = strToBoolList(item.published)
             chapterDetailMap = {}
@@ -97,8 +95,10 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
             chapterDetailMap[chapterId]["sessions"] = []
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
-            for sess in sessions:
-                pos = sessions.index(sess)
+            i = 0
+            while (i < len(sessions)):
+                sess = sessions[i]
+                pos = i
                 # Skipping unpublished items
                 if not publishedStatus[pos] and onlyPublished == 1 :
                     continue
@@ -112,7 +112,7 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
                 sessionDetails["published"] = publishedStatus[pos]
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
-
+                i = i+1
             courseDetailMap.append(chapterDetailMap)
     return courseDetailMap
 

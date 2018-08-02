@@ -103,7 +103,6 @@ def saveCourseContent(request,courseId):
             # first get and save files into provider_session db
             sessionsIdArr = []
             publishedArr = []
-
             # get session ids here
             lcVar = 'lec['+str(cpid[0])+'][]'
             lecPubVar = 'lecPub['+str(cpid[0])+'][]'
@@ -269,7 +268,7 @@ class publishCourse(coursePageBase):
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
             for chapter in courseChapterObj:
-                publishedArr = course.algos.strToBoolList(chapter.sessions)
+                publishedArr = course.algos.strToBoolList(chapter.published)
                 lectureCnt = len(publishedArr)
 
                 i = 0
