@@ -150,7 +150,7 @@ class coursePageBase(showProviderHome):
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 0)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, False)
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             linkCourseObj = course.models.LinkCourse.objects.filter(parent_id=courseId)
             if linkCourseObj.exists():

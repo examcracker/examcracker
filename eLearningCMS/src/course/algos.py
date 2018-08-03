@@ -55,7 +55,7 @@ def parseAndGetSubjectsArr(subjects):
     return subjects.split(';')
 
 
-def getCourseDetails(courseid,published=1):
+def getCourseDetails(courseid,published=True):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     courseDetails = {}
     # take map of course name to course details
@@ -78,7 +78,7 @@ def getCourseDetails(courseid,published=1):
     return courseDetails
 
 # get course content
-def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
+def getCourseDetailsBySubject(courseid, subj,onlyPublished = True):
     courseDetailMap = []
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
     if len(chapters) > 0:
@@ -99,8 +99,9 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
             while (i < len(sessions)):
                 sess = sessions[i]
                 pos = i
+                i = i+1
                 # Skipping unpublished items
-                if not publishedStatus[pos] and onlyPublished == 1 :
+                if not publishedStatus[pos] and onlyPublished :
                     continue
                 if not chapterDetailMap[chapterId]["hasUnPublishedSessions"] and not publishedStatus[pos]:
                     chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 1
@@ -112,7 +113,6 @@ def getCourseDetailsBySubject(courseid, subj,onlyPublished = 1):
                 sessionDetails["published"] = publishedStatus[pos]
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
-                i = i+1
             courseDetailMap.append(chapterDetailMap)
     return courseDetailMap
 
