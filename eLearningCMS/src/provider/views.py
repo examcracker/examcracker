@@ -39,8 +39,11 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id, saw=False))
-        kwargs["notifications"] = notifications
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
+        notifications = notifications.filter(saw=False)
+        kwargs["notifications"] = reversed(notifications)
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):

@@ -8,10 +8,10 @@
     <li class="breadcrumb-item">
       <a href="#">Dashboard</a>
     </li>
-    <li class="breadcrumb-item active">Notifications/</li>
+    <li class="breadcrumb-item active">Notifications</li>
   </ol>
   <div class="text-center">
-    {% if not notifications.count > 0 %}
+    {% if notificationsCount > 0 %}
         {% for n in notifications %}
         <span>
 			    {% if n.notification == 100 %}

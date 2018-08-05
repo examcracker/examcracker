@@ -114,9 +114,7 @@
           <a class="nav-link" href="{% url 'notification:all' %}">
             <i class="fa fa-fw fa-bell"></i>
             <span class="nav-link-text">Notifications</span>
-            {% if notifications.count > 0 %}
-            <span class="badge badge-pill badge-warning">{{ notifications.count }}</span>
-            {% endif %}
+            <span class="badge badge-pill badge-warning">{{notificationsCount}}</span>
           </a>
         </li>
       </ul>
