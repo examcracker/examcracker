@@ -11,7 +11,8 @@
     <li class="breadcrumb-item active">Notifications/</li>
   </ol>
   <div class="text-center">
-         {% for n in notifications %}
+    {% if not notifications.count > 0 %}
+        {% for n in notifications %}
         <span>
 			    {% if n.notification == 100 %}
           <strong><i class="fa fa-long-arrow-up fa-fw"></i>Course Published</strong>
@@ -27,5 +28,9 @@
 				{% endif %}
         </span>
        {% endfor %}
+    {% else %}
+        <h1>No New Notifications Found For You</h1>
+    </div>
+    {% endif %}
 {% endblock active %}
 
