@@ -333,6 +333,9 @@ class ProviderProfile(profiles.views.MyProfile):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

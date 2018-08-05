@@ -30,8 +30,12 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id, saw=False))
-        kwargs["notifications"] = notifications
+        
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
+        notifications = notifications.filter(saw=False)
+        kwargs["notifications"] = reversed(notifications)
             
         category = "ALL Courses"
         allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
@@ -44,6 +48,9 @@ class StudentProfile(profiles.views.MyProfile):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
