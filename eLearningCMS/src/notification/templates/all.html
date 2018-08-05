@@ -1,32 +1,31 @@
-{% extends "__ecBase.html" %}
 
-{% load crispy_forms_tags %}
+{% extends "__user_base.html" %}
+{% load staticfiles %}
 
-{% block ImageSlider %}
-{% endblock ImageSlider %}
+{% block active %}
+  <!-- Breadcrumbs-->
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Notifications/</li>
+  </ol>
+  <div class="text-center">
+         {% for n in notifications %}
+        <span>
+			    {% if n.notification == 100 %}
+          <strong><i class="fa fa-long-arrow-up fa-fw"></i>Course Published</strong>
+          <div class="small">Course {{ n.args }} is published.</div>
+				{% endif %}
+				{% if n.notification == 101 %}
+          <strong><i class="fa fa-long-arrow-up fa-fw"></i>Device Added</strong>
+          <div class="small">A new device is authorized to your account.</div>
+				{% endif %}
+				{% if n.notification == 102 %}
+          <strong><i class="fa fa-long-arrow-up fa-fw"></i>Email not Verified</strong>
+          <div class="small">Your email {{ n.args }} is not verified. Go to your email and click the verification link.</div>
+				{% endif %}
+        </span>
+       {% endfor %}
+{% endblock active %}
 
-{% block jumbotronBlock %}
-{% endblock jumbotronBlock %}
-
-{% block container %}
-
-{% block content %}
-<div class="text-center">
-{% for n in notifications %}
- {% if n.notification == 100 %}
-  <strong>Course Published</strong>
-  <div>Course {{ n.args }} is published.</div>
- {% endif %}
- {% if n.notification == 101 %}
-  <strong>Device Added</strong>
-  <div>A new device is authorized to your account.</div>
- {% endif %}
- {% if n.notification == 102 %}
-  <strong>Email not Verified</strong>
-  <div>Your email {{ n.args }} is not verified. Go to your email and click the verification link</div>
- {% endif %}
-{% endfor %}
-</div>
-{% endblock %}
-
-{% endblock container %}

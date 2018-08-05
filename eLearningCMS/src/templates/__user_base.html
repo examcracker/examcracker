@@ -110,7 +110,15 @@
           </a>
         </li>
         {% endif %}
-        
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Notifications">
+          <a class="nav-link" href="{% url 'notification:all' %}">
+            <i class="fa fa-fw fa-bell"></i>
+            <span class="nav-link-text">Notifications</span>
+            {% if notifications.count > 0 %}
+            <span class="badge badge-pill badge-warning">{{ notifications.count }}</span>
+            {% endif %}
+          </a>
+        </li>
       </ul>
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">
@@ -152,46 +160,6 @@
             </a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item small" href="#">View all messages</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle mr-lg-2" id="alertsDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fa fa-fw fa-bell"></i>
-            <span class="d-lg-none">Alerts
-              <span class="badge badge-pill badge-warning">6 New</span>
-            </span>
-            <span class="indicator text-warning d-none d-lg-block">
-              <i class="fa fa-fw fa-circle"></i>
-            </span>
-          </a>
-          <div class="dropdown-menu" aria-labelledby="alertsDropdown">
-            <h6 class="dropdown-header">New Notifications</h6>
-            <div class="dropdown-divider"></div>
-            {% for n in notifications %}
-            <a class="dropdown-item" href="#">
-              <span">
-			    {% if n.notification == 100 %}
-				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Course Published</strong>
-				{% endif %}
-				{% if n.notification == 101 %}
-				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Device Added</strong>
-				{% endif %}
-				{% if n.notification == 102 %}
-				  <strong><i class="fa fa-long-arrow-up fa-fw"></i>Email not Verified</strong>
-				{% endif %}
-              </span>
-			  {% if n.notification == 100 %}
-              <div class="dropdown-message small">Course {{ n.args }} is published.</div>
-			  {% endif %}
-			  {% if n.notification == 101 %}
-              <div class="dropdown-message small">A new device is authorized to your account.</div>
-			  {% endif %}
-			  {% if n.notification == 102 %}
-              <div class="dropdown-message small">Your email {{ n.args }} is not verified. Go to your email and click the verification link.</div>
-			  {% endif %}
-            </a>
-			{% endfor %}
-            <a class="dropdown-item small" href="{% url 'notification:all' %}">View all notifications</a>
           </div>
         </li>
         <li class="nav-item">
