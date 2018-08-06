@@ -14,6 +14,9 @@
 	<link href="{% static 'ec/style.css' %}" rel="stylesheet">
 	<link href="{% static 'base/css/cardslider.css' %}" rel="stylesheet">
 	<link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+
+	<!-- Material Design Bootstrap -->
+	<link href="{% static 'base/css/style.css' %}" rel="stylesheet">
 	
 			<!-- Custom styles for this site -->
     {% block styles %}
@@ -27,18 +30,18 @@
 
 <!-- Navigation -->
 {% block topHeader %}
-<nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark sticky-top">
 	<div class="container-fluid">
 		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.jpg' %}"></a> 
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
 			data-target = "#navbarResponsive">
 		<span class="navbar-toggler-icon"></span>
 		</button>
-		{% if exams %}
 		<div class="collapse navbar-collapse" id="navbarResponsive">
 			<!--<ul class="navbar-nav ml-auto">-->
 			<ul class="navbar-nav mr-2 ml-2">
-				<li class="nav-item active dropdown">	
+			{% if exams %}
+			<li class="nav-item active dropdown">	
 					<a class="nav-link" data-toggle="dropdown" id="coursesDropDown" href="#" aria-haspopup="true" aria-expanded="true">
 						<i class="fa fa-university" aria-hidden="true"></i>Exams
 					</a>
@@ -51,24 +54,27 @@
 			<!--	<li class="nav-item">
 					<a class="nav-link" href="#">Teachers</a>
 				</li> -->
-				<li class="nav-item">
-					<form class="form-inline my-2 my-lg-0 mr-lg-2" method = 'POST' action="{% url 'searchResults' %}">{% csrf_token %}
-					  <div class="input-group">
-						<input class="form-control" name="searchText" type="text" placeholder="Search Courses...">
-						<span class="input-group-append">
-						  <button class="btn btn-primary" type="submit">
-							<i class="fa fa-search"></i>
-						  </button>
-						</span>
-					  </div>
-					</form>
-				</li>
-			</ul>
 		
-		{% endif %}
+			{% endif %}
+
+			<li class="nav-item">
+				<form class="form-inline my-2 my-lg-0 mr-lg-2">
+					<div class="input-group">
+					<input class="form-control" type="text" placeholder="Search Courses...">
+					<span class="input-group-append">
+						<button class="btn" type="button">
+						<i class="fa fa-search"></i>
+						</button>
+					</span>
+					</div>
+				</form>
+			</li>
+		</ul>
 		
 		
 			<ul class="navbar-nav ml-auto">
+			
+				
 			{% if user.is_authenticated %}
 
 			<li class="nav-item dropdown">
@@ -93,7 +99,7 @@
 			</li>
 			{% else %}
 			<li class="nav-item">
-				<a class="nav-link" href="{% url 'accounts:login' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn btn-primary btn-sm">Login</button></a>
+				<a class="nav-link" href="{% url 'accounts:login' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn btn-sm">Login</button></a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'accounts:signup' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn  btn-sm">Sign Up</button></a>
@@ -109,240 +115,42 @@
 {% endblock topHeader %}
 
 {% block ImageSlider %}
-<!--- Image Slider -->
-<div id="slides" class="carousel slide" data-ride = "carousel">
-	<ul class="carousel-indicators">
-		<li data-target="#slides" data-slide-to="0" class="active"></li>
-		<li data-target="#slides" data-slide-to="1"></li>
-		<li data-target="#slides" data-slide-to="2"></li>
-	</ul>
-	<div class="carousel-inner">
-		<div class="carousel-item active">
-			<img src="{% static 'ec/img/teach.jpg' %}" >
-			<div class="carousel-caption">
-				<h1 class="display-2">GyaanHive</h1>
-				<h3>Learn Assimilate and Excel</h3>
-				{% if user.is_authenticated %}
-					{% if user.is_staff and not user.is_superuser %}
-						<a href="{% url 'provider:create_course' %}">
-						<button type="button" class="btn btn-outline-light btn-lg">Create A Course</button>
-						</a>
-					{% else %}
-					<a href="{% url 'student:my_courses' %}">
-						<button type="button" class="btn btn-outline-light btn-lg">My Courses</button>
-					</a>
-					{% endif %}
-				{% else %}
-				<a href="{% url 'accounts:signup' %}">
-					<button type="button" class="btn btn-outline-light btn-lg">SignUp</button>
+<div id="slides" class="view" style="background-image: url({% static 'ec/img/HomeImg.jpg' %}); background-repeat: no-repeat; background-size: cover;">
+
+    <!-- Mask & flexbox options-->
+    <div class="carousel-caption">
+		<h1 class="display-2">GyaanHive</h1>
+		<h3>Learn Assimilate and Excel</h3>
+		{% if user.is_authenticated %}
+			{% if user.is_staff and not user.is_superuser %}
+				<a href="{% url 'provider:create_course' %}">
+				<button type="button" class="btn btn-lg">Create A Course</button>
 				</a>
-				{% endif %}
-				<a href="{% url 'courses' %}">
-					<button type="button" class="btn btn-primary btn-lg">Explore Courses</button>
-				</a>
-			</div>
-		</div>
-		<div class="carousel-item">
-			<img src="{% static 'ec/img/learning.jpg' %}">
-			<div class="carousel-caption">
-				<h1 class="display-2">GyaanHive</h1>
-				<h3>Enabling Seamless Learning</h3>
-			</div>
-		</div>
-		<div class="carousel-item">
-			<img src="{% static 'ec/img/smartClasses.jpg' %}">
-			<div class="carousel-caption">
-				<h1 class="display-2">GyaanHive</h1>
-				<h3>Smart Platform for Smart and Intelligent Classrooms</h3>
-		</div>
-		</div>
+			{% else %}
+			<a href="{% url 'student:my_courses' %}">
+				<button type="button" class="btn btn-lg">My Courses</button>
+			</a>
+			{% endif %}
+		{% else %}
+		<a href="{% url 'accounts:signup' %}">
+			<button type="button" class="btn btn-lg">SignUp</button>
+		</a>
+		<a href="{% url 'courses' %}">
+			<button type="button" class="btn btn-lg">Course Provider</button>
+		</a>
+		{% endif %}
 	</div>
-</div>
+    <!-- Mask & flexbox options-->
+
+  </div>
 {% endblock ImageSlider %}
 <!--- Jumbotron -->
 {% block jumbotronBlock %}
-<div class="container-fluid">
-	<div class="row jumbotron">
-		<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10">
-			<p class="lead">
-			India's cutting edge platform for Video classes. 
-			Learn Assimilate and Excel with GyaanHive.
-			</p>
-		</div>
-		<div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-2">
-			<a href="#"><button type="button" class="btn btn-outline-secondary btn-lg">Join Us</button>
-			</a>
-		</div>
-	</div>
-</div>
-
 {% endblock jumbotronBlock %}
 {% block container %}
-<!--- Welcome Section -->
-<div class="container-fluid padding">
-	<div class="row welcome text-center">
-		<div class="col-12">
-			<h1 class="display-4">Build with ease</h1>
-		</div>
-		<hr>
-		<div class="col-12">
-			<p class="lead">Welcome to GyaanHive VOD Solution. Welcome to ExamCracker VOD Solution.
-					Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution.
-					Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution.
-			</p>
-		</div>
-	</div>
-</div>
 
-<!--- Three Column Section -->
-<div class="container-fluid padding">
-	<div class="row text-center padding">
-		<div class="col-xs-12 col-xm-6 col-md-4">
-			<i class=" fas fa-code"></i>
-			<h3>HTML5</h3>
-			<p>Learn HTML5. Learn latest version of it</p>
-		</div>
-		<div class="col-xs-12 col-xm-6 col-md-4">
-				<i class=" fas fa-bold"></i>
-				<h3>BootStreap</h3>
-				<p>Learn BootStreap. Learn latest version of it</p>
-		</div>
-		<div class="col-s-12 col-md-4">
-			<i class=" fab fa-css3"></i>
-			<h3>CSS3</h3>
-			<p>Learn CCSS3 Learn latest version of it</p>
-		</div>
-	</div>
-<hr class="my-4">
-</div>
-
-<!--- Two Column Section -->
-<div class="container-fluid padding">
-	<div class="row padding">
-		<div class="col-md-12 col-lg-6">
-			<h2>If you subscribe with us...</h2>
-			<p>Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution</p>
-			<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
-			<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
-			<br>
-			<a href="#" class="btn btn-primary">Learn More</a>
-		</div>
-		<div class="col-md-12 col-lg-6">
-			<img src="{% static 'ec/img/desk.png' %}" class="img-fluid">
-		</div>
-	</div>
-</div>
-<hr class="my-4">
-
-<!--- Fixed background -->
-<figure>
-	<div class="fixed-wrap">
-		<div id="fixed"></div>
-	</div>
-</figure>
-
-<!--- Emoji Section -->
-<div class="container-fluid padding">
-	<button class="fun" data-toggle="collapse" data-target="#emoji">click here for Emoji</button>
-	<div id="emoji" class="collapse">
-		<div class="container-fluid padding">
-			<div class="row text-center">
-				<div class="col-sm-6 col-md-3">
-					<img class="gif" src="{% static 'ec/img/gif/panda.gif' %}">
-				</div>
-				<div class="col-sm-6 col-md-3">
-					<img class="gif" src="{% static 'ec/img/gif/chicken.gif' %}">
-				</div>
-				<div class="col-sm-6 col-md-3">
-					<img class="gif" src="{% static 'ec/img/gif/poo.gif' %}">
-				</div>
-				<div class="col-sm-6 col-md-3">
-					<img class="gif" src="{% static 'ec/img/gif/unicorn.gif' %}">
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-  
-<!--- Meet the team -->
-<div class="container-fluid padding">
-	<div class="row welcome text-center">
-		<div class="col-12">
-			<h1 class="display-4">Meet the Team</h1>
-		</div>
-		<hr>
-	</div>
-</div>
-<!--- Cards -->
-<div class="container-fluid padding">
-	<div class="row padding">
-		<div class="col-md-4">
-			<div class="card">
-				<img class="card-img-top" src="{% static 'ec/img/team1.png' %}">
-				<div class="card-body">
-					<h4 class="card-title">Executive</h4>
-					<p class="card-text"> He is an executive of ExamsCracker</p>
-					<a href="#" class="btn btn-outline-secondary"> See Profile</a>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-4">
-				<div class="card">
-					<img class="card-img-top" src="{% static 'ec/img/team2.png' %}">
-					<div class="card-body">
-						<h4 class="card-title">Executive3</h4>
-						<p class="card-text"> He is an executive3 of ExamsCracker</p>
-						<a href="#" class="btn btn-outline-secondary"> See Profile</a>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-4">
-					<div class="card">
-						<img class="card-img-top" src="{% static 'ec/img/team3.png' %}">
-						<div class="card-body">
-							<h4 class="card-title">Executive2</h4>
-							<p class="card-text"> He is an executive2 of ExamsCracker</p>
-							<a href="#" class="btn btn-outline-secondary"> See Profile</a>
-						</div>
-					</div>
-				</div>
-	</div>
-</div>
-
-<!--- Two Column Section -->
-<div class="container-fluid padding">
-		<div class="row padding">
-			<div class="col-md-12 col-lg-6">
-				<h2>Our Philosophy</h2>
-				<p>Welcome to ExamCracker VOD Solution.Welcome to ExamCracker VOD Solution</p>
-				<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
-				<p>Welcome to ExamCracker VOD Solution. Welcome to ExamCracker VOD Solution</p>
-				<br>
-			</div>
-			<div class="col-md-12 col-lg-6">
-				<img src="{% static 'ec/img/bootstrap2.png' %}" class="img-fluid">
-			</div>
-		</div>
-		<hr class="my-4">
-	</div>
-
-
-<!--- Connect -->
-<div class="container-fluid padding">
-	<div class="row text-center padding">
-		<div class="col-12">
-			<h2>Connect</h2>
-		</div>
-		<div class="col-12 social padding">
-			<a href="#"><i class="fab fa-facebook"></i></a>
-			<a href="#"><i class="fab fa-twitter"></i></a>
-			<a href="#"><i class="fab fa-google-plus-g"></i></a>
-			<a href="#"><i class="fab fa-instagram"></i></a>
-			<a href="#"><i class="fab fa-youtube"></i></a>
-		</div>
-	</div>
-</div>
 {% endblock container %}
+
 
 {% block footer %}
 <!--- Footer -->
@@ -389,9 +197,6 @@
 </footer>
 {% endblock footer %}
 
-<script>
-
-</script>
 {% block scripts %}
 {% endblock scripts %}
 
