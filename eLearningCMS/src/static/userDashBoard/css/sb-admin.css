@@ -1,3 +1,31 @@
+.fa-chalkboard-teacher{
+  color:skyblue;
+}
+
+.fa-chalkboard {
+  color: goldenrod;
+}
+.fa-child {
+  color:teal;
+}
+.fa-tachometer-alt {
+  color:olive;
+}
+.fa-user {
+  color:dodgerblue;
+}
+.fa-graduation-cap {
+  color:white;
+}
+.fa-bell {
+  color:yellowgreen;
+}
+.fa-tasks {
+  color:peru;
+}
+.fa-shopping-cart {
+  color:orange;
+}
 html {
   position: relative;
   min-height: 100%;

@@ -50,7 +50,7 @@
                   {% else %}
                     {% url 'student:student_home' %}
                   {% endif %}">
-            <i class="fas fa-tachometer-alt"></i>
+            <i class="fas fa-tachometer-alt fa-lg"></i>
             <span class="nav-link-text">Dashboard</span>
           </a>
         </li>
@@ -61,20 +61,20 @@
                 {% else %}
                   {% url 'student:my_courses' %}
                 {% endif %}">
-            <i class="fas fa-book"></i>
+                <i class="fas fa-chalkboard-teacher fa-lg"></i>
             <span class="nav-link-text">My Courses</span>
           </a>
         </li>
         {% if user.is_staff %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">
             <a class="nav-link" href="{% url 'provider:create_course' %}">
-                <i class="fas fa-list-alt"></i>
+                <i class="fas fa-chalkboard fa-lg"></i>
               <span class="nav-link-text">Create Course</span>
             </a>
           </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Students">
           <a class="nav-link" href="{% url 'provider:my_students' %}">
-            <i class="fas fa-child"></i>
+            <i class="fas fa-child fa-lg"></i>
             <span class="nav-link-text">My Students</span>
           </a>
         </li>
@@ -86,33 +86,33 @@
                 {% else %}
                   {% url 'student:my_profile' %}
                 {% endif %}">
-            <i class="fas fa-user"></i>
+            <i class="fas fa-user fa-lg"></i>
             <span class="nav-link-text">Profile</span>
           </a>
         </li>
         {% if not user.is_staff %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Recommended Courses">
           <a class="nav-link" href="{% url 'student:recommended_courses' %}">
-            <i class="fa fa-fw fa-graduation-cap"></i>
+            <i class="fa fa-fw fa-graduation-cap fa-lg"></i>
             <span class="nav-link-text">Recommended Courses</span>
           </a>
         </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Progress">
           <a class="nav-link" href="{% url 'student:progress' %}">
-            <i class="fa fa-fw fa-trophy"></i>
+            <i class="fas fa-tasks fa-lg"></i>
             <span class="nav-link-text">Progress</span>
           </a>
         </li>
 		<li class="nav-item" data-toggle="tooltip" data-placement="right" title="Cart">
           <a class="nav-link" href="{% url 'payments:my_cart' %}">
-            <i class="fa fa-fw fa-graduation-cap"></i>
+            <i class="fas fa-shopping-cart fa-lg"></i>
             <span class="nav-link-text">Cart</span>
           </a>
         </li>
         {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Notifications">
           <a class="nav-link" href="{% url 'notification:all' %}">
-            <i class="fa fa-fw fa-bell"></i>
+            <i class="fa fa-fw fa-bell fa-lg"></i>
             <span class="nav-link-text">Notifications</span>
             <span class="badge badge-pill badge-warning">{{notificationsCount}}</span>
           </a>
