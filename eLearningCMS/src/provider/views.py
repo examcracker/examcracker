@@ -39,8 +39,11 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        notifications = reversed(notification.models.UserNotification.objects.filter(user=request.user.id, saw=False))
-        kwargs["notifications"] = notifications
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
+        notifications = notifications.filter(saw=False)
+        kwargs["notifications"] = reversed(notifications)
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -103,7 +106,6 @@ def saveCourseContent(request,courseId):
             # first get and save files into provider_session db
             sessionsIdArr = []
             publishedArr = []
-
             # get session ids here
             lcVar = 'lec['+str(cpid[0])+'][]'
             lecPubVar = 'lecPub['+str(cpid[0])+'][]'
@@ -151,7 +153,7 @@ class coursePageBase(showProviderHome):
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
             kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
-            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, 0)
+            kwargs["course_detail"] = course.algos.getCourseDetails(courseId, False)
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             linkCourseObj = course.models.LinkCourse.objects.filter(parent_id=courseId)
             if linkCourseObj.exists():
@@ -269,7 +271,7 @@ class publishCourse(coursePageBase):
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
             for chapter in courseChapterObj:
-                publishedArr = course.algos.strToBoolList(chapter.sessions)
+                publishedArr = course.algos.strToBoolList(chapter.published)
                 lectureCnt = len(publishedArr)
 
                 i = 0
@@ -331,6 +333,9 @@ class ProviderProfile(profiles.views.MyProfile):
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
+        notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        # set total count of notifications
+        kwargs["notificationsCount"] = len(notifications)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

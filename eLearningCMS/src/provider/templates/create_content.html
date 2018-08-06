@@ -49,7 +49,7 @@
                                 <hr>
                                 <div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp{{forloop.parentloop.parentloop.counter}}lc{{session.id}}">
                                         <div class="col-xs-2 col-sm-2" id="lectureFound">
-                                            {% if not session.published or editContentDisable  %}
+                                            {% if not session.published and not editContentDisable  %}
                                             <span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span>
                                             {% else %}
                                             <button type="button" class="btn btn-outline-info" disabled><i class="fa fa-ban" data-toggle="tooltip" data-placement="top" title="Published session cant be deleted"></i></button>

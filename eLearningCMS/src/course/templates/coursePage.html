@@ -55,6 +55,10 @@ courses ( all courses ,course model)
 								{% endif %}
 							  </form>
                             {% endif %}
+                            {% else %}
+                                {% if course_overview.myCourse %}
+                                <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-info btn-lg mx-2 px-2" role="button" aria-pressed="true">Back to Course Edit</a>
+                                {% endif %}
 							{% endif %}
                             <hr>
                             <!-- Turquoise -->

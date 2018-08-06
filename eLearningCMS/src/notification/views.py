@@ -11,8 +11,8 @@ class allNotification(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         notifications = models.UserNotification.objects.filter(user_id=request.user.id)
+        kwargs["notificationsCount"] = len(notifications)
         kwargs["notifications"] = reversed(notifications)
-
         for n in notifications:
             if not n.saw:
                 n.saw = True
