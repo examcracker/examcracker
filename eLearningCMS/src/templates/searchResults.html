@@ -7,7 +7,7 @@
 {% endblock ImageSlider %}
  
 {% block jumbotronBlock %}
-{% if searchResult.count >= 0 %}
+{% if searchResult|length >= 0 %}
 
 <div class="container-fluid">
         <div class="row jumbotron">
@@ -16,7 +16,7 @@
                 Search Results for <p><strong> '{{searchText}}' </strong> </p>
                 </p>
                 <p>
-                Total <strong> ' {{searchResult.count}} '</strong> Results found
+                Total <strong> ' {{searchResult|length}} '</strong> Results found
                 </p>
               </div>
               <div class="row">
