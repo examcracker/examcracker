@@ -101,6 +101,7 @@ INSTALLED_APPS = (
     'payments',
     'access',
     'notification',
+    'cdn',
 
     # django packages
     'snowpenguin.django.recaptcha2',
