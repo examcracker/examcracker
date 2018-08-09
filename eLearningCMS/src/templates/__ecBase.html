@@ -124,7 +124,7 @@
 		{% if user.is_authenticated %}
 			{% if user.is_staff and not user.is_superuser %}
 				<a href="{% url 'provider:create_course' %}">
-				<button type="button" class="btn btn-lg btn-outline-light">Create A Course</button>
+				<button type="button" class="btn btn-lg btn-primary">Create A Course</button>
 				</a>
 			{% else %}
 			<a href="{% url 'student:my_courses' %}">
