@@ -3,8 +3,10 @@ from threading import Thread
 import json
 import os
 import vimeo
+import time
 import requests
 from . import models
+import provider
 
 # methods to go here
 
@@ -44,6 +46,26 @@ def threadedPushVideo(sessionObj):
     cdnSessionObj.session = sessionObj
     cdnSessionObj.vimeo = vimeo_id
     cdnSessionObj.save()
+
+    geturl = 'https://api.vimeo.com/videos/' + vimeo_id
+    ready = False
+
+    while not ready:
+        time.sleep(120)
+        response = requests.get(url=geturl, headers={"Authorization":"bearer " + settings.VIMEO_ACCESS_TOKEN})
+        if response.status_code == 200:
+            videodata = response.json()
+
+            duration = int(videodata['duration'])
+            if duration > 0:
+                ready = True
+
+            sessionObj = provider.models.Session.objects.filter(id=sessionObj.id)[0]
+            sessionObj.duration = duration
+            sessionObj.save()
+            cdnSessionObj.ready = True
+            cdnSessionObj.html = videodata['embed']['html']
+            cdnSessionObj.save()
 
 def pushVideo(sessionObj):
     t = Thread(target=threadedPushVideo, args=(sessionObj,))
