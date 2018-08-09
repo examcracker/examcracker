@@ -10,13 +10,12 @@ from django.http import Http404
 from . import forms
 import course
 import datetime
-#import pdb
 import profiles
 import json
 from django.forms.models import model_to_dict
-from course import algos
 import notification
 import student
+from cdn import algos
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -48,7 +47,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
     template_name = "create_course.html"
-    http_method_names = ['get', 'post']
+    http_method_names = ['post']
     
     def post(self, request):
         providerObj = getProvider(request)
@@ -66,6 +65,7 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             if subject != '':
                 sessionObj.tags = subject
             sessionObj.save()
+            algos.pushVideo(sessionObj)
             videoForm.save()
             data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name}
             return JsonResponse(data)
@@ -325,7 +325,7 @@ class viewCourses(showProviderHome):
         if providerObj:
             kwargs["providerId"] = providerObj.id
             courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
-            kwargs["courses"] = algos.getCourseDetailsForCards(request, courseList)
+            kwargs["courses"] = course.algos.getCourseDetailsForCards(request, courseList)
         return super().get(request, *args, **kwargs)
 
 class ProviderProfile(profiles.views.MyProfile):
