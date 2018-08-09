@@ -16,4 +16,16 @@ text-align:left;
 /* inline-block space fix */
 margin-right:-4px;
 }
+
+.bg-sidebar-custom {
+  background-color: #18243f !important; }
+
+.card-course-details-body {
+  flex: 1 1 auto;
+  padding: 1.25rem; }
+
+.bg-course-detail-card {
+  background-color: #d1ced3 !important; }
+
+  
   

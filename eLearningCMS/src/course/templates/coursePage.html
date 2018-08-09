@@ -11,6 +11,7 @@ courses ( all courses ,course model)
 
     <head>
         <link href="{% static 'course/base.css' %}" rel="stylesheet">
+	    <link href="{% static 'base/css/style.css' %}" rel="stylesheet">
         <link href="{% static 'userDashBoard/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
         <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     </head>
@@ -34,17 +35,39 @@ courses ( all courses ,course model)
                 <p> You are not authorized to view this content. </p>
             </div>
         {% else %}
-        <div class="card bg-dark text-white">
+        <div class="card bg-course-detail-card">
             <div class="course-header">
                 <div class="row">
                     <div class="col">
-                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.png' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
+                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.jpg' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
                     </div>
                     <div class="col">
-                        <div class="card-body">
+                        <div class="card-body card-course-details-body">
                             <h5 class="card-title">{{ course_overview.Name }}</h5>
                             <p class="card-text">{{course_overview.Description}}</p>
-							{% if user.is_authenticated and not user.is_staff %}
+                            <hr>
+                            <table>
+                                <tr>
+                                    <td>Subject</td>
+                                    <td align="right">{{ course_overview.Subject }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Exam</td>
+                                    <td align="right">{{ course_overview.Exam }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost</td>
+                                    <td align="right"> <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{ course_overview.Cost }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Duration (months)</td>
+                                    <td align="right">{{ course_overview.Duration }}</td>
+                                </tr>
+        
+                              </table>
+                              <p class="card-text"><small class="text-muted">Published {{ course_overview.Published }}</small></p>
+                              <hr>
+                              {% if user.is_authenticated and not user.is_staff %}
                             {% if not course_overview.myCourse %}
 							  <form method="post" action="" enctype="multipart/form-data">
 							    {% csrf_token %}
@@ -57,7 +80,7 @@ courses ( all courses ,course model)
                             {% endif %}
                             {% else %}
                                 {% if course_overview.myCourse %}
-                                <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-info btn-lg mx-2 px-2" role="button" aria-pressed="true">Back to Course Edit</a>
+                                <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-primary btn-lg mx-2 px-2" role="button" aria-pressed="true">Edit Course</a>
                                 {% endif %}
 							{% endif %}
                             <hr>
@@ -74,47 +97,10 @@ courses ( all courses ,course model)
         </div>
 
         <div class="card">
-            <div class="course-header">
-            <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#overview" role="tab" data-toggle="tab">Overview</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#content" role="tab" data-toggle="tab">Content</a>
-                </li>
-            </ul>
-        </div>
 
             <!-- Tab panes -->
-            <div class="card-body">
-                    <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="overview">
-                    <h5 class="card-title">{{ course_overview.Name }}</h5>
-                    <hr>
-                    <p>{{course_overview.Description}}</p>
-                    <hr>
-                    <table>
-                        <tr>
-                            <td>Subject</td>
-                            <td align="right">{{ course_overview.Subject }}</td>
-                        </tr>
-                        <tr>
-                            <td>Exam</td>
-                            <td align="right">{{ course_overview.Exam }}</td>
-                        </tr>
-                        <tr>
-                            <td>Cost (INR)</td>
-                            <td align="right">{{ course_overview.Cost }}</td>
-                        </tr>
-                        <tr>
-                            <td>Duration (months)</td>
-                            <td align="right">{{ course_overview.Duration }}</td>
-                        </tr>
-
-                      </table>
-                      <p class="card-text"><small class="text-muted">Published {{ course_overview.Published }}</small></p>
-                </div>
-                <div role="tabpanel" class="tab-pane fade" id="content">
+            <div class="card-body card-course-details-body">
+                <h3 class="Text-Centre">Curriculum For This Course</h3>
                         <div class="container">
                             <div id="accordion">
                                 {% for subject, subValue in course_detail.items %}
@@ -161,9 +147,7 @@ courses ( all courses ,course model)
                             </div>
                         </div>
 
-                </div>
             </div>
-        </div>
         </div>
 
         {% endif %}
