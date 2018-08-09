@@ -24,7 +24,7 @@ class Session(models.Model):
     video = models.FileField(upload_to=user_directory_path)
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
-
+    '''
     def save(self, *args, **kwargs):
         super(Session, self).save(*args, **kwargs)
 
@@ -38,4 +38,5 @@ class Session(models.Model):
             self.duration = 0
 
         return super(Session, self).save(*args, **kwargs)
+    '''
 
