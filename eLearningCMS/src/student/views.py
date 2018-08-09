@@ -30,10 +30,10 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        
         notifications = (notification.models.UserNotification.objects.filter(user=request.user.id))
+        unseenNotifications = len(notifications.filter(saw=0))
         # set total count of notifications
-        kwargs["notificationsCount"] = len(notifications)
+        kwargs["notificationsCount"] = unseenNotifications
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
             

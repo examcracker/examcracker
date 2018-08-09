@@ -80,7 +80,7 @@ courses ( all courses ,course model)
                             {% endif %}
                             {% else %}
                                 {% if course_overview.myCourse %}
-                                <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-primary btn-lg mx-2 px-2" role="button" aria-pressed="true">Edit Course</a>
+                                <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-primary btn-lg mx-2 px-2" role="button" aria-pressed="true">Edit</a>
                                 {% endif %}
 							{% endif %}
                             <hr>
@@ -100,7 +100,7 @@ courses ( all courses ,course model)
 
             <!-- Tab panes -->
             <div class="card-body card-course-details-body">
-                <h3 class="Text-Centre">Curriculum For This Course</h3>
+                <h3 class="Text-Centre">Contents</h3>
                         <div class="container">
                             <div id="accordion">
                                 {% for subject, subValue in course_detail.items %}
