@@ -15,6 +15,7 @@ import student
 import re
 import profiles
 import payments
+import cdn
 from collections import defaultdict
 from django.http import Http404
 from math import ceil
@@ -213,7 +214,12 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
-        kwargs["session_url"] = "sessions/" + str(sessionObj.provider_id) + "/" + str(sessionid) + "_"
+        if sessionObj.duration == 0:
+            raise Http404()
+
+        cdnSessionObj = cdn.models.cdnSession.objects.filter(session_id=sessionObj.id)[0]
+        kwargs["vimeo"] = str(cdnSessionObj.vimeo)
+        kwargs["title"] = "Session " + str(sessionObj.id)
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):

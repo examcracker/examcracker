@@ -24,19 +24,5 @@ class Session(models.Model):
     video = models.FileField(upload_to=user_directory_path)
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
-    '''
-    def save(self, *args, **kwargs):
-        super(Session, self).save(*args, **kwargs)
 
-        try:
-            response = ffmpy.FFprobe(inputs={os.path.join(settings.MEDIA_ROOT, self.video.name): None},
-                        global_options=['-v', 'error', '-show_entries', 'format=Duration', '-print_format', 'json'])
-            out = response.run(stdout=subprocess.PIPE)
-            decoded = json.loads(out[0].decode('utf-8'))
-            self.duration = int(float(decoded['format']['duration']))
-        except:
-            self.duration = 0
-
-        return super(Session, self).save(*args, **kwargs)
-    '''
 

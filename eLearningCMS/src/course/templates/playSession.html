@@ -11,7 +11,7 @@
     {% block container %}
 
 	{% block content %}
-	<video id="v" controls preload="auto" width="80%" height="80%"></video>
+	<iframe id="vimeo" width="100%" height="100%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 	<script src="{% static 'access/access.js' %}"></script>
 	<script type="text/javascript">
@@ -23,10 +23,14 @@
     xmlHttp.send(null);
 	
 	var accepted = (/True/).test(xmlHttp.responseText);
-	if (accepted)
-	  document.getElementById("v").src = "video source";
-	else
+	var appId = "131698";
+	if (accepted) {
+	  document.getElementById("vimeo").src = "https://player.vimeo.com/video/" + "{{vimeo}}" + "?badge=0&autopause=0&player_id=0&app_id=" + appId;
+	  document.getElementById("vimeo").title = "{{title}}";
+	}
+	else {
 	  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+	}
     }
     </script>
     {%  endblock %}
