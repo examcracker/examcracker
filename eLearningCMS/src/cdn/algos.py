@@ -21,7 +21,8 @@ WHITELISTED_DOMAINS = [
 
 def threadedPushVideo(sessionObj):
     vimeoclient = getClient()
-    uri = vimeoclient.upload(os.path.join(settings.MEDIA_ROOT, sessionObj.video.path))
+    fullPath = os.path.join(settings.MEDIA_ROOT, sessionObj.video.path)
+    uri = vimeoclient.upload(fullPath)
 
     vimeoclient.patch(uri, data = {
                             'name' : 'Session ' + str(sessionObj.id),
@@ -66,6 +67,8 @@ def threadedPushVideo(sessionObj):
             cdnSessionObj.ready = True
             cdnSessionObj.html = videodata['embed']['html']
             cdnSessionObj.save()
+
+    os.remove(fullPath)
 
 def pushVideo(sessionObj):
     t = Thread(target=threadedPushVideo, args=(sessionObj,))
