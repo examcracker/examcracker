@@ -16,7 +16,8 @@ def getClient():
 WHITELISTED_DOMAINS = [
     'gyaanhive.com',
     '3Idiots.pythonanywhere.com',
-    'localhost'
+    'localhost',
+    '127.0.0.1'
     ]
 
 def threadedPushVideo(sessionObj):
