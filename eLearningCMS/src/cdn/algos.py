@@ -27,7 +27,7 @@ def threadedPushVideo(sessionObj):
                             'name' : 'Session ' + str(sessionObj.id),
                             'description' : 'Session with Id ' + str(sessionObj.id),
                             'privacy' : {
-                                'view' : 'nobody',
+                                'view' : 'disable',
                                 'download' : "false",
                                 'add' : "false",
                                 'comments' : 'nobody',
