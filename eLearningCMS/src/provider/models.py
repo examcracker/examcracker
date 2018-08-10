@@ -6,7 +6,7 @@ from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 import subprocess
-import ffmpy
+#import ffmpy
 import json
 import os
 
