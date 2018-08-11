@@ -81,7 +81,7 @@ DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@gmail.com>'
 # Vimeo settings
 VIMEO_CLIENT_ID = '0dabe4d1dc86c61dabf843461f3d57029a6e9b9c'
 VIMEO_CLIENT_SECRET = 'RlQwRiXMayDSLIZbLZYRjlMjM1k45FS55PnW1WihX7emqzdWARm8CVf3RkwXYErJ1NcVWmnkZ6O2B9nvwOCuh/ORczcnsfl5XD0Mr3vMVxzarQwwm1DH4cVLFRXJ0qbB'
-VIMEO_ACCESS_TOKEN = '32a0fc521fc4f1d6fa106aebffb6d2ef'
+VIMEO_ACCESS_TOKEN = '69aaa4c6d5f05991df55ddf3d3955240'
 
 # Application definition
 
