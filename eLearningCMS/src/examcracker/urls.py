@@ -34,6 +34,7 @@ urlpatterns = [
     path('course/',include(course.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
+    path('listCourses/', views.listCourses.as_view(), name='listCourses'),
     path('', include(accounts.urls)),
 ]
 

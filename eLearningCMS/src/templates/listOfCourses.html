@@ -1,0 +1,18 @@
+{% extends "__ecBase.html" %}
+
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+ 
+{% block jumbotronBlock %}
+{% endblock jumbotronBlock %}
+
+{% block container %}
+<div class="container-fluid">
+    {% include "__baseCourseTiles.html" with allCourses=allCourses divId="listOfCourses" category="Popular Courses" provider_id=providerId tilesLimit=":100" %}
+</div>
+{% endblock container %}
+
+
