@@ -53,4 +53,11 @@ margin-right:-4px;
 .footer-copyright a:hover, .footer-copyright a:focus { color: #aaa; border: 0; }
 
   
-  
+
+.teacher-div
+{
+  border-radius: 15px; 
+  background: repeating-linear-gradient(#c1c1c1, #e1e1e1 59.9%, #fff 60.0%, #fff 100%);
+  padding-top: 1.5em;
+  padding-bottom: 3em;
+}

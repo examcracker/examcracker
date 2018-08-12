@@ -77,13 +77,14 @@ courses ( all courses ,course model)
 								 <input type="submit" name="cart" class="btn btn-primary" value="Add to Cart"></input>
 								{% endif %}
 							  </form>
+                                <hr>
                             {% endif %}
                             {% else %}
                                 {% if course_overview.myCourse %}
                                 <a href="{% url 'provider:edit_course' course_overview.id %}" class="btn btn-primary btn-lg mx-2 px-2" role="button" aria-pressed="true">Edit</a>
+                                <hr>
                                 {% endif %}
-							{% endif %}
-                            <hr>
+                            {% endif %}
                             <!-- Turquoise -->
                             {% if course_overview.myCourse and not user.is_staff %}
                             <div class="progress">
