@@ -9,16 +9,14 @@ courses ( all courses ,course model)
 
 {% block container %}
 <hr>
-<div class="container-fluid">
-        <p class="text-left mb-3"> Courses By Exams
-        <button class="btn btn-primary float-right">See all</button> </p>
-        {% include "__baseCourseTiles.html" with allCourses=allCourses divId="Exams" category="" provider_id=providerId tilesLimit=":4" %}
-</div>
-<hr>
+
 
 <div class="container-fluid">
         <p class="text-left mb-3"> Popular Courses
-        <button class="btn btn-primary float-right">See all</button> </p>
+                <a href="{% url 'listCourses' %}">
+                        <button class="btn btn-primary float-right">See all</button> 
+                </a>
+        </p>
         {% include "__baseCourseTiles.html" with allCourses=allCourses divId="Popular" category="" provider_id=providerId tilesLimit=":4" %}
 </div>
 <hr>

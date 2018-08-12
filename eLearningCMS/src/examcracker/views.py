@@ -45,6 +45,19 @@ class SearchResultsPage(generic.TemplateView):
             searchText = searchText+ ' Provider = ' +providerText
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
+
+class listCourses(generic.TemplateView):
+    template_name = "listOfCourses.html"
+    http_method_names = ['get']
+    
+    def get(self, request, *args, **kwargs):
+        courseList = getPublishedCourses()
+        providerObj = getProvider(request)
+        if providerObj:
+            kwargs["providerId"] = providerObj.id
+        kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
+        return super().get(request, *args, **kwargs)
+        
         
 # Home page will never post to itself. So removing the post method from Home page
 class HomePage(generic.TemplateView):

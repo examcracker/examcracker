@@ -19,8 +19,8 @@
 	<link href="{% static 'base/css/style.css' %}" rel="stylesheet">
 	
 			<!-- Custom styles for this site -->
-    {% block styles %}
- 	{% endblock styles %}
+	{% block styles %}
+	{% endblock styles %}
 	
 	<!-- Custom tags for the head tag -->
     {% block extrahead %}
@@ -62,7 +62,7 @@
 					<div class="input-group">
 					<input class="form-control" type="text" name="searchText" placeholder="Search Courses...">
 					<span class="input-group-append">
-						<button class="btn" type="button">
+						<button type="submit" class="btn" type="button">
 						<i class="fa fa-search"></i>
 						</button>
 					</span>
@@ -156,46 +156,47 @@
 {% block footer %}
 <!--- Footer -->
 <footer>
-	<div class="container-fluid padding">
-		<div class="row text-center">
-			<div class="col-md-4">
-				<img src="{% static 'ec/img/w3newbie.png' %}">
-				<hr class="light">
-				<p>Our company details here</p>
-				<p>Our company details here</p>
-				<p>Our company details here</p>
-			</div>
-			<div class="col-md-4">
-				<hr class="light">
-				<h5>Quick Links</h5>
-				<hr class="light">
-				<div class="footerRow row">
-					<div class="col-md-6 text-left">
-						<ul class="list-unstyled padding">
-							<li><a href="/about">About</a></li>
-							<li><a href="/contact">Contact</a></li>
-							<li><a href="#">Terms of Service</a></li>
-						</ul>
+		<div class="footer-top">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-3 footer-about wow fadeInUp">
+						<img class="logo-footer" src="{% static 'ec/img/logo.jpg' %}">
+						<p>
+							We are a young company always looking for new and creative ideas to provide seemless learning experience.
+						</p>
 					</div>
-					<div class="col-md-6 text-left">
-						<ul class="list-unstyled padding">
-							<li><a href="#">Privacy</a></li>
-							<li><a href="#">Support</a></li>
-						</ul>
+					<div class="col-md-4 footer-links offset-md-1 footer-contact wow fadeInDown">
+						<h3>Contact</h3>
+						<p><i class="fas fa-map-marker-alt"></i> Via Rossini 10, 10136 Turin Italy</p>
+						<p><i class="fas fa-phone"></i> Phone: (011) 333 12 68 347</p>
+						<p><i class="fas fa-envelope"></i> Email: <a href="mailto:support@gyaanhive.com">support@gyaanhive.com</a></p>
+					</div>
+					<div class="col-md-4 footer-links wow fadeInUp">
+						<h3>Links</h3>
+						<p><a href="#">Terms of Service</a></p>
+						<p><a href="#">Privacy</a></p>
+						<p><a href="#">Support</a></p>
+						<p><a href="#">Our Team</a></p>
 					</div>
 				</div>
 			</div>
-			<div class="col-md-4">
-				<hr class="light">
-				<h5>Locations</h5>
-				<hr class="light">
-				<p>Our company details here</p>
-				<p>Our company details here</p>
-				<p>Our company details here</p>
+		</div>
+		<div class="footer-bottom">
+			<div class="container">
+				<div class="row">
+					   <div class="col-md-6 footer-copyright">
+						&copy; GyaanHive 2018
+					</div>
+					   <div class="col-md-6 footer-social">
+						<a href="#"><i class="fab fa-facebook-f"></i></a> 
+						<a href="#"><i class="fab fa-twitter"></i></a> 
+						<a href="#"><i class="fab fa-google-plus-g"></i></a> 
+						<a href="#"><i class="fab fa-skype"></i></a>
+					</div>
+				   </div>
 			</div>
 		</div>
-	</div>
-</footer>
+	</footer>
 {% endblock footer %}
 
 {% block scripts %}
