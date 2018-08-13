@@ -88,6 +88,10 @@ class Course(models.Model):
     subjects = models.CharField(max_length=100)
     published = models.BooleanField(default=False)
     sessions = models.IntegerField(default=0)
+    picture = models.ImageField('Course picture',
+                                upload_to='course_pics/%Y-%m-%d/',
+                                null=True,
+                                blank=True)
 
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)

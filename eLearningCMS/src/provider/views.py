@@ -16,6 +16,7 @@ from django.forms.models import model_to_dict
 import notification
 import student
 from cdn import algos
+import os
 
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
@@ -197,6 +198,28 @@ class createCourse(coursePageBase):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
+
+        defaultPic = "course_pics/1.jpg"
+        currentPic = ""
+        # check if courseObj exists or not
+        if courseId != '':
+            currentPic = courseObj.picture.name
+        else:
+            currentPic = defaultPic
+            courseObj.picture = currentPic
+        # check if new picture received or not
+        pictureFileObj = request.FILES.get("course_pic",False)
+        pictureFileName = ""
+        if  not pictureFileObj:
+            pictureFileName = currentPic
+        else:
+            pictureFileName = pictureFileObj.name
+        # check if picture received is different from the current one
+        currentPic = os.path.basename(currentPic)
+        pictureFileName = os.path.basename(pictureFileName)
+        if pictureFileName != currentPic:
+            courseObj.picture = pictureFileObj
+        
         if (len(subjects) > 0):
             subj = subjects[0].split(':')[1]
             courseObj.subjects = subj
