@@ -15,6 +15,8 @@ import student
 #import pdb
 from django.forms.models import model_to_dict
 
+DELIMITER = ','
+SUBJECTS_DELIMITER = ';'
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
 
@@ -22,7 +24,7 @@ def strToBoolList(array):
   if not array or array == '':
     return []
   out = []
-  for ele in array.split(','):
+  for ele in array.split(DELIMITER):
     if not str2bool(ele):
       out.append(False)
     else:
@@ -32,7 +34,7 @@ def strToBoolList(array):
 def strToIntList(array):
   if not array or array == '':
     return []
-  return [int(x) for x in array.split(",")]
+  return [int(x) for x in array.split(DELIMITER)]
 
 #get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
@@ -52,7 +54,7 @@ def getAllChildCoursesbyExamsFromProvider(pId):
     return courseByExams
 
 def parseAndGetSubjectsArr(subjects):
-    return subjects.split(';')
+    return subjects.split(SUBJECTS_DELIMITER)
 
 
 def getCourseDetails(courseid,published=True):
@@ -60,7 +62,7 @@ def getCourseDetails(courseid,published=True):
     courseDetails = {}
     # take map of course name to course details
     if courseObj.exists():
-        childCourses = courseObj[0].child
+        childCourses = (courseObj[0].child).split(DELIMITER)
         for child in childCourses:
             childCourseObj = models.Course.objects.filter(id=child)[0]
             subjects = parseAndGetSubjectsArr(childCourseObj.subjects)

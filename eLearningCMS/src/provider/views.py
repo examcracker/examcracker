@@ -18,6 +18,12 @@ import student
 from cdn import algos
 import os
 
+def getDelimiter(subject=False):
+    if not subject:
+        return course.algos.DELIMITER
+    else :
+        return course.algos.SUBJECTS_DELIMITER
+
 def getProvider(request):
     providerObj = models.Provider.objects.filter(user_id=request.user.id)
     if providerObj.exists():
@@ -26,7 +32,7 @@ def getProvider(request):
       return providerObj
 
 def getSessionsBySubjects(providerId,subjects):
-    subjectarr = subjects.split(';')
+    subjectarr = subjects.split(getDelimiter(True))
     sessionObj = models.Session.objects.filter(provider_id=providerId)
     q_objects = Q()
     for sub in subjectarr:
@@ -123,8 +129,8 @@ def saveCourseContent(request,courseId):
                         publishedArr.append('0')
                     j=j+1
             
-            sessionsIdArrStr =  ','.join([str(x) for x in sessionsIdArr])
-            publishedArrStr =  ','.join([str(x) for x in publishedArr])
+            sessionsIdArrStr =  getDelimiter().join([str(x) for x in sessionsIdArr])
+            publishedArrStr =  getDelimiter().join([str(x) for x in publishedArr])
             chapterObj.sessions = sessionsIdArrStr
             chapterObj.published = publishedArrStr
             chapterObj.save()
@@ -154,7 +160,7 @@ class coursePageBase(showProviderHome):
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
-            kwargs["editCourseSubjects"] = courseObj.subjects.split(';')
+            kwargs["editCourseSubjects"] = courseObj.subjects.split(getDelimiter(True))
             kwargs["course_detail"] = course.algos.getCourseDetails(courseId, False)
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             linkCourseObj = course.models.LinkCourse.objects.filter(parent_id=courseId)
@@ -226,7 +232,7 @@ class createCourse(coursePageBase):
             i=1
             while(i<len(subjects)):
                 subj = subjects[i].split(':')[1]
-                courseObj.subjects = courseObj.subjects+";"+subj
+                courseObj.subjects = courseObj.subjects + getDelimiter(True) + subj
                 i=i+1
         courseObj.save()
         kwargs["isCourseContent"] = True
@@ -237,6 +243,7 @@ class createFromCourses(coursePageBase):
     http_method_names = ['post']
 
     def post(self, request,*args, **kwargs):
+        
         providerObj = getProvider(request)
         courseObjNew = course.models.Course()        
         courseObjNew.provider=providerObj
@@ -257,6 +264,7 @@ class createFromCourses(coursePageBase):
         courseObjNew.duration = courseObj.duration
         courseObjNew.exam = courseObj.exam
         courseObjNew.subjects = courseObj.subjects
+        courseObjNew.picture = courseObj.picture
         i=1
         while(i<len(cIDS)):
             cid = cIDS[i]
@@ -269,10 +277,11 @@ class createFromCourses(coursePageBase):
             courseObjNew.duration = courseObjNew.duration + courseObj.duration
             courseObjNew.exam = courseObj.exam
             if courseObj.subjects not in courseObjNew.subjects :
-                courseObjNew.subjects = courseObjNew.subjects + ";" + courseObj.subjects
+                courseObjNew.subjects = courseObjNew.subjects + getDelimiter() + courseObj.subjects
             i=i+1
         courseObjNew.save()
-        childOfParentStr = ','.join([str(x) for x in childOfParent])
+        
+        childOfParentStr = getDelimiter().join([str(x) for x in childOfParent])
         linkCourse.child = childOfParentStr
         linkCourse.save()
         # add sessions from all courses into new course
@@ -286,14 +295,15 @@ class publishCourse(coursePageBase):
     def post(self, request,*args, **kwargs):
         providerObj = getProvider(request)
         courseId = self.request.POST.get('courseId','')
-        # first save course and then publish
-        saveCourseContent(request,courseId)
-        courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
         courseObj = course.models.Course.objects.filter(id=courseId)[0]
         courseObj.published = True
         courseObj.save()
+
         # check if linked course, then return
         if not course.models.LinkCourse.objects.filter(parent_id=courseId).exists():
+            # first save course and then publish
+            saveCourseContent(request,courseId)
+            courseChapterObj = course.models.CourseChapter.objects.filter(course_id=courseId)
             for chapter in courseChapterObj:
                 publishedArr = course.algos.strToBoolList(chapter.published)
                 lectureCnt = len(publishedArr)
@@ -303,7 +313,7 @@ class publishCourse(coursePageBase):
                     publishedArr[i] = '1'
                     i = i + 1
 
-                publishedArrStr =  ','.join([str(x) for x in publishedArr])
+                publishedArrStr =  getDelimiter().join([str(x) for x in publishedArr])
                 chapter.published = publishedArrStr
                 chapter.save()
         kwargs["courseId"] = courseId
