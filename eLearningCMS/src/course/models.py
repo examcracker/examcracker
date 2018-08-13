@@ -76,7 +76,10 @@ EXAM_CHOICES = (
     ('GRE', 'GRE'),
     ('TOEFL', 'TOEFL')
 )
-    
+
+def course_directory_path(instance, filename):
+    return 'course_pics/{0}/{1}'.format(instance.provider.id, filename)
+
 class Course(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
@@ -88,10 +91,7 @@ class Course(models.Model):
     subjects = models.CharField(max_length=100)
     published = models.BooleanField(default=False)
     sessions = models.IntegerField(default=0)
-    picture = models.ImageField('Course picture',
-                                upload_to='course_pics/%Y-%m-%d/',
-                                null=True,
-                                blank=True)
+    picture = models.ImageField('Course picture', upload_to='course_directory_path', default='course_pics/1.jpg')
 
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
