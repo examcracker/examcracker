@@ -46,5 +46,5 @@ def create_profile_handler(sender, instance, created, **kwargs):
         typeofuser = 'provider'
 
     notification.models.notify(instance.id, notification.models.EMAIL_NOT_VERIFIED, notification.models.WARNING, instance.email)
-    sendVerificationMail(instance.email, typeofuser, profile.slug)
+    #sendVerificationMail(instance.email, typeofuser, profile.slug)
     logger.info('New user profile for {} created'.format(instance))

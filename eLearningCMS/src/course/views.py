@@ -137,6 +137,7 @@ class courseDetails(generic.TemplateView):
         courseOverviewMap["Cost"] = courseObj.cost
         courseOverviewMap["Duration"] = courseObj.duration
         courseOverviewMap["Published"] = courseObj.created
+        courseOverviewMap["picture"] = courseObj.picture
 
         kwargs["course_overview"] = courseOverviewMap
         kwargs['reviewSummary'] = reviewSummary

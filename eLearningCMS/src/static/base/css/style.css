@@ -2,7 +2,7 @@
 html,
 body,
 .view {
-  height: 100%; }
+  height: 90%; }
   
 /* centered columns styles */
 .row-centered {
@@ -52,7 +52,12 @@ margin-right:-4px;
 .footer-copyright a { color: #fff; border: 0; }
 .footer-copyright a:hover, .footer-copyright a:focus { color: #aaa; border: 0; }
 
-  
+.course-cards-div
+{
+  background: #fff;
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+}
 
 .teacher-div
 {

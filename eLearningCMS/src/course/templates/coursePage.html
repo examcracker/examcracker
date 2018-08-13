@@ -39,7 +39,7 @@ courses ( all courses ,course model)
             <div class="course-header">
                 <div class="row">
                     <div class="col">
-                        <img class="card-img-top" src="{% thumbnail 'course/IIT3.jpg' 560x315 %}" hspace="20" vspace="20" alt="Card image cap">
+                        <img class="card-img-top" src="{% thumbnail course_overview.picture 560x315 crop %}" hspace="20" vspace="20" alt="Card image cap">
                     </div>
                     <div class="col">
                         <div class="card-body card-course-details-body">
@@ -72,7 +72,6 @@ courses ( all courses ,course model)
 							  <form method="post" action="" enctype="multipart/form-data">
 							    {% csrf_token %}
 								<input type="submit" name="join" class="btn btn-primary" value="Join"></input>
-								<br>
 								{% if not course_overview.addedCourse %}
 								 <input type="submit" name="cart" class="btn btn-primary" value="Add to Cart"></input>
 								{% endif %}

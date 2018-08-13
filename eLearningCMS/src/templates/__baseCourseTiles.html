@@ -10,25 +10,7 @@
                     {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                         <a href="{% url 'course:coursePage' currentCourse.id %}">
                     {% endif %}
-                    {% if forloop.counter < 10 %}
-                        {% with y=forloop.counter|stringformat:"s" %}
-                        {% with imageName="course/"|add:y|add:".jpg" %}
-                        
-                            <img class="card-img-top" src="{% thumbnail imageName 200x180 %}" alt="Card image cap">
-
-                            {% endwith %}
-                        {% endwith %}
-
-                        {% else %}
-                        {% with y="5" %}
-
-                        {% with imageName="course/"|add:y|add:".jpg" %}
-                        
-                            <img class="card-img-top" src="{% thumbnail imageName 200x180 %}" alt="Card image cap">
-
-                            {% endwith %}
-                        {% endwith %}
-                        {% endif %}
+                    <img class="card-img-top" src="{% thumbnail currentCourse.picture 200x180 %}" alt="Card image cap">
                     {% if user.is_staff %}
                         </a> 
                     {% endif %}
