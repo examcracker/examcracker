@@ -8,20 +8,18 @@ courses ( all courses ,course model)
 {% load crispy_forms_tags %}
 
 {% block container %}
-<hr>
 
 
-<div class="container-fluid">
-        <p class="text-left mb-3"> Popular Courses
+<div class="container-fluid course-cards-div">
+        <h3 class="text-center" > Popular Courses
                 <a href="{% url 'listCourses' %}">
                         <button class="btn btn-primary float-right">See all</button> 
                 </a>
-        </p>
+        </h3>
         {% include "__baseCourseTiles.html" with allCourses=allCourses divId="Popular" category="" provider_id=providerId tilesLimit=":4" %}
 </div>
 <hr>
-
-<div class="container teacher-div">
+<div class="container-fluid teacher-div">
                 <h3 class="text-center" >Expert's associated with us</h3>
                 <p class="text-center">
                         A crew of experienced educators helm our vast and growing library. Hareness their experties, and get the<br> same award-wnining learning materials that are used by teachers in millions of classrooms.

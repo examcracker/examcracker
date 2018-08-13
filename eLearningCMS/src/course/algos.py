@@ -60,7 +60,7 @@ def getCourseDetails(courseid,published=True):
     courseDetails = {}
     # take map of course name to course details
     if courseObj.exists():
-        childCourses = courseObj[0].child
+        childCourses = courseObj[0].child.split(';')
         for child in childCourses:
             childCourseObj = models.Course.objects.filter(id=child)[0]
             subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
