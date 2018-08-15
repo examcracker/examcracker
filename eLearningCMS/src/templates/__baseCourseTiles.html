@@ -20,10 +20,10 @@
                                 <div class="col-xs-2 col-sm-2" align="left">
                                     <img id="providerPic" src="{% thumbnail currentCourse.profilePic|default:'default_profile.png' 25x25 crop %}" class="rounded-circle" alt="avatar">
                                 </div>
-                                <div class="col-xs-5 col-sm-5">
+                                <div class="single-col-text-5 col-xs-5 col-sm-5 padding-0">
                                         {{ currentCourse.provider_name }} 
                                 </div>
-                                <div class="col-xs-5 col-sm-5" align="right">
+                                <div class="single-col-text-5 col-xs-5 col-sm-5" align="right">
                                     <i class="fas fa-rupee-sign" aria-hidden="true"></i> 
                                     {{ currentCourse.cost }}
                                 </div>

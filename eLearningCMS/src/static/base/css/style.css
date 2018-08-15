@@ -68,3 +68,15 @@ margin-right:-4px;
 }
 
 .footer-dashboard-bottom { padding: 15px 0 17px 0; background: #e9ecef;}
+
+.single-col-text-5 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 41%;
+  font-size: 90%;
+}
+
+.padding-0{
+  padding-left:0.3em;
+}

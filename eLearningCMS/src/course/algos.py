@@ -222,8 +222,9 @@ def getCourseDetailsForCards(request, courseList):
     allCourses = []
     for item in courseList:
         courseDetails = model_to_dict(item)
+        providerObj = provider.models.Provider.objects.filter(id=item.provider_id)[0]
         courseDetails["provider_id"] = item.provider_id
-        userDetails = getUserNameAndPic(item.provider_id)
+        userDetails = getUserNameAndPic(providerObj.user_id)
         courseDetails["provider_name"] = userDetails['name']
         if 'profilePic' in userDetails: 
             courseDetails["profilePic"] = userDetails['profilePic']
