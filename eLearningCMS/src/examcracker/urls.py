@@ -13,8 +13,8 @@ import notification.urls
 from . import views
 
 # Personalized admin site settings like title and header
-admin.site.site_title = 'ExamCracker Site Admin'
-admin.site.site_header = 'ExamCracker Administration'
+admin.site.site_title = 'GyaanHive Site Admin'
+admin.site.site_header = 'GyaanHive Administration'
 
 urlpatterns = [
     url(r'^paypal/', include('paypal.standard.ipn.urls')),
