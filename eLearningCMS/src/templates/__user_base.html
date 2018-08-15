@@ -67,12 +67,14 @@
           </a>
         </li>
         {% if user.is_staff %}
+		{% if not not_approved %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">
             <a class="nav-link" href="{% url 'provider:create_course' %}">
                 <i class="fas fa-chalkboard fa-lg"></i>
               <span class="nav-link-text">Create Course</span>
             </a>
           </li>
+		 {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Students">
           <a class="nav-link" href="{% url 'provider:my_students' %}">
             <i class="fas fa-child fa-lg"></i>

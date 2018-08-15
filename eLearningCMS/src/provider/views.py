@@ -52,6 +52,10 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notificationsCount"] = unseenNotifications
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
+
+        providerObj = getProvider(request)
+        if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
+            kwargs["not_approved"] = True
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
