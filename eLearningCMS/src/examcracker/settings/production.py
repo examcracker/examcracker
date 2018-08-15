@@ -32,7 +32,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Must mention ALLOWED_HOSTS in production!
-# ALLOWED_HOSTS = ["examcracker.com"]
+# ALLOWED_HOSTS = ["gyaanhive.com"]
 
 # Cache the templates in memory for speed-up
 loaders = [
