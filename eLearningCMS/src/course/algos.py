@@ -12,7 +12,7 @@ from collections import defaultdict
 import provider
 import profiles
 import student
-#import pdb
+import payments
 from django.forms.models import model_to_dict
 
 DELIMITER = ','
@@ -177,6 +177,9 @@ def searchCourseByText(searchText,examText=None,providerText=None):
 def getPublishedCourses():
     return models.Course.objects.filter(published=1)
 
+def getCartCourses(studentObj):
+    cartCourseId = payments.models.Cart.objects.filter(student_id=studentObj).values('course_id')
+    return models.Course.objects.filter(Q(id__in=cartCourseId))
 # Returns all exams from our list. Exams list will grow
 def getExams():
     return models.EXAM_CHOICES

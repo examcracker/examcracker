@@ -5,6 +5,7 @@ from course.algos import *
 from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 from provider.views import *
+import student
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(generic.TemplateView):
@@ -72,6 +73,17 @@ class HomePage(generic.TemplateView):
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
         kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
+        studentObj = student.views.getStudent(request)
+        if studentObj:
+            cartCoursesList = getCartCourses(studentObj)
+            allCourses = []
+            tcost = 0
+            for item in cartCoursesList:
+                courseDetails = model_to_dict(item)
+                tcost = tcost + int(courseDetails["cost"])
+                allCourses.append(courseDetails)
+            kwargs["tcost"] = tcost
+            kwargs["cartCourses"] = allCourses
         return super().get(request, *args, **kwargs)
 
 class AboutPage(generic.TemplateView):

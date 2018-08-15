@@ -23,7 +23,11 @@ from math import ceil
 User = get_user_model()
 
 def getStudent(request):
-    return models.Student.objects.filter(user_id=request.user.id)[0]
+    studentObj = models.Student.objects.filter(user_id=request.user.id)
+    if studentObj.exists():
+        return studentObj[0]
+    else:
+        return studentObj
 
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'student_home.html'
@@ -262,3 +266,27 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
             profileObj.save()
 
         return super().get(request, *args, **kwargs)
+
+def add_to_cart(studentObj,courseId):
+    courseObj = course.models.Course.objects.filter(id=courseId)[0]
+    cartCourseObj = payments.models.Cart.objects.filter(course_id=courseId,student_id=studentObj)
+    if not cartCourseObj.exists()  :
+        cart = payments.models.Cart()
+        cart.student = studentObj
+        cart.course = courseObj
+        cart.save()
+
+class addToCart(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        courseid = id
+        studentObj = getStudent(request)
+        if studentObj:
+            add_to_cart(studentObj,courseid)
+        # check whether add to cart is done from 
+        url = "home"
+
+        # fill courses in cart here
+        return redirect(url)
+

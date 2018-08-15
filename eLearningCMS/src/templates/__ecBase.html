@@ -107,7 +107,32 @@
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'accounts:registerprovider' %}" aria-haspopup="true" aria-expanded="true"><button type="button" class="btn  btn-sm">Be Course Provider</button></a>
 			</li>
-			{% endif %}	
+			{% endif %}
+
+			{% if not user.is_authenticated  or not user.is_staff %}
+			<li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" id="cartItems" href="#" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-shopping-cart fa-lg" style="color:darkorange"></i>
+					{% if cartCourses|length > 0 %}
+					<span class="badge badge-pill badge-info">{{cartCourses|length}}</span>
+					{% endif %}
+				</a>
+				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="cartItems">
+					{% if cartCourses|length > 0 %}
+						<div class="dropdown-header">Courses</div>
+						{% for cartCourse in cartCourses %}
+						<a class="dropdown-item" href="{% url 'course:coursePage' cartCourse.id %}"> {{cartCourse.name}}  :  <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}</a>
+						{% endfor %}
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Sub Total : <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{tcost}}</a>
+						<div class="dropdown-divider"></div>
+						<button type="submit" class="btn btn-primary mx-2">Check out</button>			
+					{% else %}
+					<div class="dropdown-header">No courses</div>
+					{% endif %}
+				</div>
+			</li>
+			{% endif %}
 			</ul>
 		</div>
 	</div>

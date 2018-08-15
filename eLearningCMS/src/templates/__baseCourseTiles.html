@@ -38,7 +38,7 @@
                                     {% if user.is_staff and currentCourse.provider_id == provider_id  %}
                                         <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="far fa-edit"></i></a>
                                     {% elif not user.is_staff and not currentCourse.alreadyEnrolled %}
-                                        <a style='color:#1f1f1f;' href="{% url 'provider:edit_course' currentCourse.id %}"><i class="fa fa-shopping-cart"></i></a>
+                                        <a style='color:#1f1f1f;' href="{% url 'student:add_to_cart' currentCourse.id %}"><i class="fa fa-shopping-cart" title="Add to cart"></i></a>
                                     {% endif %}     
                                 </div>
                                 <div class="col-xs-8 col-sm-8" align="right">
