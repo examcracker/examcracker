@@ -13,6 +13,7 @@ import os
 
 class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    approved = models.BooleanField(default=False)
 
 def user_directory_path(instance, filename):
     return 'sessions/{0}/{1}'.format(instance.provider.id, filename)

@@ -127,13 +127,13 @@ onSubmit="if(!confirm('Do you want to publish this course ?')){return false;}"  
 										<div class="input-group-prepend">
 										<span class="input-group-text" id="inputGroupPrepend3">#</span>
 										</div>
-										<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 0 {% endif %}
+										<input type="number" class="form-control" value= {% if editCourse %} "{{ editCourse.duration }}" {% else %} 6 {% endif %}
 										name="courseDuration" id="cDuration" placeholder="Duration" aria-describedby="cDuration" required>
 									</div>
 									</div>
 									<div class="col-md-6 mb-3">
 										<label for="cCost">Cost (INR)</label>
-										<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 0 {% endif %} 
+										<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 10000 {% endif %}
 										name="courseCost" id="cCost" placeholder="Cost" required>
 									</div>
 								</div>

@@ -13,6 +13,7 @@ import datetime
 import profiles
 import json
 from django.forms.models import model_to_dict
+from django.conf import settings
 import notification
 import student
 from cdn import algos
@@ -148,15 +149,17 @@ class coursePageBase(showProviderHome):
     def get(self,request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
+        providerObj = getProvider(request)
+        if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
+            raise Http404()
+
         courseId = kwargs.pop('courseId', '')
         if courseId == '':
             courseId = self.request.POST.get("courseId", '')
-        providerObj = getProvider(request)
-        if courseId == '':
-            courseId = request.POST.get("courseId", '')
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
+
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
