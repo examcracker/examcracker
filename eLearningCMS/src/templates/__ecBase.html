@@ -121,7 +121,7 @@
 					{% if cartCourses|length > 0 %}
 						<div class="dropdown-header">Courses</div>
 						{% for cartCourse in cartCourses %}
-						<a class="dropdown-item" href="{% url 'course:coursePage' cartCourse.id %}"> {{cartCourse.name}}  :  <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}</a>
+						<a class="dropdown-item" href="{% url 'course:coursePage' cartCourse.id %}" style="font-size: 0.8 rem"> {{cartCourse.name}}  :  <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}</a> 
 						{% endfor %}
 						<div class="dropdown-divider"></div>
 						<a class="dropdown-item" href="#">Sub Total : <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{tcost}}</a>

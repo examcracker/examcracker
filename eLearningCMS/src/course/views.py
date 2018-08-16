@@ -20,6 +20,7 @@ from collections import defaultdict
 from django.http import Http404
 from math import ceil
 from django.contrib.auth import get_user_model
+from django.forms.models import model_to_dict
 
 User = get_user_model()
 
@@ -94,6 +95,18 @@ class courseDetails(generic.TemplateView):
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+
+                # fill cart items
+                cartCoursesList = course.algos.getCartCourses(studentObj)
+                allCourses = []
+                tcost = 0
+                for item in cartCoursesList:
+                    courseDetails = model_to_dict(item)
+                    tcost = tcost + int(courseDetails["cost"])
+                    allCourses.append(courseDetails)
+                kwargs["tcost"] = tcost
+                kwargs["cartCourses"] = allCourses
+
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True
@@ -159,10 +172,6 @@ class courseDetails(generic.TemplateView):
             query_dictionary.update({'id': courseid})
             url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
                                                 querystring=query_dictionary.urlencode())
-            return redirect(url)
-        elif "cart" in request.POST:
-            cart.save()
-            url = "payments:my_cart"
             return redirect(url)
 
 class playSession(LoginRequiredMixin, generic.TemplateView):

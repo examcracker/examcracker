@@ -19,7 +19,6 @@ import profiles
 import payments
 import notification
 from math import ceil
-
 User = get_user_model()
 
 def getStudent(request):
@@ -267,6 +266,17 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
 
         return super().get(request, *args, **kwargs)
 
+def get_referer_view(request, default=None):
+    # if the user typed the url directly in the browser's address bar
+    referer = request.META.get('HTTP_REFERER')
+    if not referer:
+        return default
+    # remove the protocol and split the url at the slashes
+    referer = re.sub('^https?:\/\/', '', referer).split('/')
+    # add the slash at the relative path's view and finished
+    referer = u'/' + u'/'.join(referer[1:])
+    return referer
+
 def add_to_cart(studentObj,courseId):
     courseObj = course.models.Course.objects.filter(id=courseId)[0]
     cartCourseObj = payments.models.Cart.objects.filter(course_id=courseId,student_id=studentObj)
@@ -280,13 +290,40 @@ class addToCart(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, id, *args, **kwargs):
+        refered_url =  get_referer_view(request)
+        if refered_url is None:
+            return redirect("home")
         courseid = id
         studentObj = getStudent(request)
         if studentObj:
             add_to_cart(studentObj,courseid)
-        # check whether add to cart is done from 
+        # check the source from where add to cart is called
+        if 'course' in refered_url and  'coursePage' in refered_url:
+            url = "course:coursePage"
+            return redirect(url,courseid)
         url = "home"
+        return redirect(url)
 
-        # fill courses in cart here
+def delete_from_cart(studentObj,courseId):
+    cartCourseObj = payments.models.Cart.objects.filter(course_id=courseId,student_id=studentObj)
+    if  cartCourseObj.exists():
+        cartCourseObj.delete()
+
+class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        refered_url =  get_referer_view(request)
+        if refered_url is None:
+            return redirect("home")
+        courseid = id
+        studentObj = getStudent(request)
+        if studentObj:
+            delete_from_cart(studentObj,courseid)
+        # check the source from where delete from cart is called
+        if 'course' in refered_url and  'coursePage' in refered_url:
+            url = "course:coursePage"
+            return redirect(url,courseid)      
+        url = "home"
         return redirect(url)
 
