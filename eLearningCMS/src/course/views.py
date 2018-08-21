@@ -228,6 +228,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         if sessionObj.duration == 0:
             raise Http404()
 
+        playlistObj = cdn.models.Playlist.objects.filter(course_id=courseChapterObj.course_id)
+        if len(playlistObj) == 0:
+            playlistObj = cdn.algos.createPlaylist(courseChapterObj.course_id)
+
         cdnSessionObj = cdn.models.cdnSession.objects.filter(session_id=sessionObj.id)[0]
         kwargs["vimeo"] = str(cdnSessionObj.vimeo)
         kwargs["title"] = "Session " + str(sessionObj.id)

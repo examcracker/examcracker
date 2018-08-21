@@ -7,11 +7,22 @@ import time
 import requests
 from . import models
 import provider
+import jwplatform
+import logging
+import course
+
+logger = logging.getLogger("project")
 
 # methods to go here
 
 def getClient():
     return vimeo.VimeoClient(token=settings.VIMEO_ACCESS_TOKEN, key=settings.VIMEO_CLIENT_ID, secret=settings.VIMEO_CLIENT_SECRET)
+
+def getJWClient():
+    return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
+
+def getCourse(courseid):
+    return course.models.Course.objects.filter(id=courseid)[0]
 
 WHITELISTED_DOMAINS = [
     'gyaanhive.com',
@@ -74,3 +85,20 @@ def threadedPushVideo(sessionObj):
 def pushVideo(sessionObj):
     t = Thread(target=threadedPushVideo, args=(sessionObj,))
     t.start()
+
+def createPlaylist(courseid, **kwargs):
+    client = getJWClient()
+
+    try:
+        kwargs["title"] = "Playlist for Course " + str(courseid)
+        response = client.channels.create(type='manual', **kwargs)
+
+        if response["status"] == "ok":
+            playlistObj = models.Playlist(course=getCourse(courseid))
+            playlistObj.jwid = response["channel"]["key"]
+            playlistObj.save()
+            return playlistObj
+
+    except jwplatform.errors.JWPlatformError as e:
+        logger.error("Encountered an error creating new channel.\n{}".format(e))
+        return None
