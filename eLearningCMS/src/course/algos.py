@@ -17,6 +17,7 @@ from django.forms.models import model_to_dict
 
 DELIMITER = ','
 SUBJECTS_DELIMITER = ';'
+
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
 
@@ -35,6 +36,37 @@ def strToIntList(array):
   if not array or array == '':
     return []
   return [int(x) for x in array.split(DELIMITER)]
+
+def intListToStr(array):
+  arrayLen = len(array)
+  if arrayLen == 0:
+    return ''
+
+  out = str(array[0])
+  i = 1
+  while i < arrayLen:
+    out = out + ','
+    out = out + str(array[i])
+    i = i + 1
+
+  return out
+
+def boolListToStr(array):
+  arrayLen = len(array)
+  if arrayLen == 0:
+    return ''
+
+  out = str(array[0])
+  i = 1
+  while i < arrayLen:
+    out = out + ','
+    if array[i]:
+      out = out + '1'
+    else:
+      out = out + '0'
+    i = i + 1
+
+  return out
 
 #get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
@@ -55,7 +87,6 @@ def getAllChildCoursesbyExamsFromProvider(pId):
 
 def parseAndGetSubjectsArr(subjects):
     return subjects.split(SUBJECTS_DELIMITER)
-
 
 def getCourseDetails(courseid,published=True):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
@@ -180,6 +211,7 @@ def getPublishedCourses():
 def getCartCourses(studentObj):
     cartCourseId = payments.models.Cart.objects.filter(student_id=studentObj).values('course_id')
     return models.Course.objects.filter(Q(id__in=cartCourseId))
+
 # Returns all exams from our list. Exams list will grow
 def getExams():
     return models.EXAM_CHOICES
@@ -236,3 +268,31 @@ def getCourseDetailsForCards(request, courseList):
         courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
         allCourses.append(courseDetails)
     return allCourses
+
+# get courses for a given session
+def getCoursesForSession(session_id):
+  rawStmt = 'SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_coursechapter WHERE sessions LIKE \'%,' + str(session_id) + ',%\' OR sessions LIKE \'' + str(session_id) + ',%\' OR sessions LIKE \'%,' + str(session_id) + '\' GROUP BY course_id)'
+  flatCourses = models.Course.objects.raw(rawStmt)
+
+  linkCourses = []
+  totalCourses = []
+
+  for f in flatCourses:
+    totalCourses.append(f.id)
+    finalStmt = 'SELECT * from course_course WHERE id IN (SELECT parent_id FROM course_linkcourse WHERE child LIKE \'%,' + str(f.id) + ',%\' OR child LIKE \'' + str(f.id) + ',%\' OR child LIKE \'%,' + str(f.id) + '\')'
+    courseObtained = models.Course.objects.raw(finalStmt)
+
+    for c in courseObtained:
+      if c.id in linkCourses:
+        continue
+      linkCourses.append(c.id)
+
+  for l in linkCourses:
+    totalCourses.append(l)
+
+  query = Q()
+  for course in totalCourses:
+    query = query | Q(id=course)
+
+  finalCourses = models.Course.objects.filter(query)
+  return finalCourses

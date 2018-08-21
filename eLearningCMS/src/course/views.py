@@ -202,18 +202,19 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             if len(enrolledCourse) == 0:
                 raise Http404()
 
-            enrolledCourseObj = enrolledCourse[0]
-            sessionsPlayed = course.algos.strToBoolList(enrolledCourseObj.sessions)
-            sessionAlreadyPlayed = False
-            for s in sessionsPlayed:
-                if sessionid == s:
-                    sessionAlreadyPlayed = True
-            if not sessionAlreadyPlayed:
-                if not enrolledCourseObj.sessions or enrolledCourseObj.sessions == '':
-                    enrolledCourseObj.sessions = str(sessionid)
-                else:
-                    enrolledCourseObj.sessions = enrolledCourseObj.sessions + "," + str(sessionid)
-                enrolledCourseObj.save()
+            coursesWithSession = algos.getCoursesForSession(sessionid)
+
+            for c in coursesWithSession:
+                enrolledCourseObj = models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=c.id)
+                if len(enrolledCourseObj) > 0:
+                    enrolledCourseObj = enrolledCourseObj[0]
+                    sessionsPlayed = algos.strToIntList(enrolledCourseObj.sessions)
+                    if sessionid in sessionsPlayed:
+                        continue
+
+                    sessionsPlayed.append(sessionid)
+                    enrolledCourseObj.sessions = algos.intListToStr(sessionsPlayed)
+                    enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         if request.user.is_staff:
