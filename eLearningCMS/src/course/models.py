@@ -118,7 +118,4 @@ class CourseReview(models.Model):
     rating = models.IntegerField(default=0)
     reviewed = models.DateTimeField(auto_now_add=True)
 
-class CoursePlaylist(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    jwid = models.CharField(max_length=10)
 
