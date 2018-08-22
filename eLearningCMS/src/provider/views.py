@@ -16,7 +16,6 @@ from django.forms.models import model_to_dict
 from django.conf import settings
 import notification
 import student
-from cdn import algos
 import os
 
 def getDelimiter(subject=False):
@@ -78,7 +77,6 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             if subject != '':
                 sessionObj.tags = subject
             sessionObj.save()
-            algos.pushVideo(sessionObj)
             videoForm.save()
             data = {'is_valid': True, 'videoId': sessionObj.id, 'videoName': sessionObj.name}
             return JsonResponse(data)
