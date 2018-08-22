@@ -7,7 +7,7 @@ class cdnSession(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete= models.CASCADE)
     ready = models.BooleanField(default=False)
     html = models.CharField(max_length=1000)
-    vimeo = models.IntegerField(default=0)
+    jwvideoid = models.CharField(max_length=10)
 
 class Playlist(models.Model):
     course = models.ForeignKey(course.models.Course, on_delete=models.CASCADE)
