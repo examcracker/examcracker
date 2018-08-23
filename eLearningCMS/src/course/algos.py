@@ -45,7 +45,7 @@ def intListToStr(array):
   out = str(array[0])
   i = 1
   while i < arrayLen:
-    out = out + ','
+    out = out + DELIMITER
     out = out + str(array[i])
     i = i + 1
 
@@ -59,7 +59,7 @@ def boolListToStr(array):
   out = str(array[0])
   i = 1
   while i < arrayLen:
-    out = out + ','
+    out = out + DELIMITER
     if array[i]:
       out = out + '1'
     else:
@@ -68,7 +68,25 @@ def boolListToStr(array):
 
   return out
 
-#get all courses for the provider
+# get all sessions for a course (does not work for link courses)
+def getAllSessionsForCourse(courseid):
+    chapters = models.CourseChapter.objects.filter(course_id=courseid)
+    sessions = []
+
+    for c in chapters:
+      sessionids = strToIntList(c.sessions)
+      published = strToBoolList(c.published)
+
+      i = 0
+      while i < len(sessionids):
+        if published[i] == True:
+          sessionObj = provider.models.Session.objects.filter(id=sessionids[i])[0]
+          sessions.append(sessionObj)
+        i = i + 1
+
+    return sessions
+
+# get all courses for the provider
 def getAllChildCoursesbyExamsFromProvider(pId):
     courseByExams = defaultdict(list)
     examsByProviders= models.Course.objects.filter(provider_id=pId)

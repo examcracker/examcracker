@@ -7,20 +7,21 @@ from django.urls import reverse
 from collections import OrderedDict
 from operator import itemgetter
 from django.http import QueryDict
-from . import models
-import course
-from course import algos
-import provider
-import student
-import re
-import profiles
-import payments
-import cdn
 from collections import defaultdict
 from django.http import Http404
 from math import ceil
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
+from . import models
+import course
+from course import algos
+import cdn
+import provider
+import student
+import re
+import profiles
+import payments
+
 
 User = get_user_model()
 
@@ -225,15 +226,19 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
+        '''
         if sessionObj.duration == 0:
             raise Http404()
+        '''
 
         playlistObj = cdn.models.Playlist.objects.filter(course_id=courseChapterObj.course_id)
         if len(playlistObj) == 0:
             playlistObj = cdn.algos.createPlaylist(courseChapterObj.course_id)
 
-        cdnSessionObj = cdn.models.cdnSession.objects.filter(session_id=sessionObj.id)[0]
-        kwargs["vimeo"] = str(cdnSessionObj.vimeo)
+        allSessionsInCourse = algos.getAllSessionsForCourse(courseChapterObj.course_id)
+
+        #cdnSessionObj = cdn.models.CdnSession.objects.filter(session_id=sessionObj.id)[0]
+        #kwargs["vimeo"] = str(cdnSessionObj.vimeo)
         kwargs["title"] = "Session " + str(sessionObj.id)
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

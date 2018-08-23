@@ -10,6 +10,7 @@ import student.urls
 import course.urls
 import access.urls
 import notification.urls
+import cdn.urls
 from . import views
 
 # Personalized admin site settings like title and header
@@ -31,6 +32,7 @@ urlpatterns = [
     path('student/',include(student.urls)),
     path('access/',include(access.urls)),
     path('notification/', include(notification.urls)),
+    path('cdn/', include(cdn.urls)),
     path('course/',include(course.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),

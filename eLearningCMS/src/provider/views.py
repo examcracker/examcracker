@@ -331,7 +331,6 @@ class publishCourse(coursePageBase):
         return super().get(request, *args, **kwargs)
 
 class editCourse(coursePageBase):
-
     http_method_names = ['get']
 
     def get(self, request, id, *args, **kwargs):
