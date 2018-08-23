@@ -45,7 +45,7 @@ def intListToStr(array):
   out = str(array[0])
   i = 1
   while i < arrayLen:
-    out = out + ','
+    out = out + DELIMITER
     out = out + str(array[i])
     i = i + 1
 
@@ -59,7 +59,7 @@ def boolListToStr(array):
   out = str(array[0])
   i = 1
   while i < arrayLen:
-    out = out + ','
+    out = out + DELIMITER
     if array[i]:
       out = out + '1'
     else:

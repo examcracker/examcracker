@@ -47,8 +47,7 @@ def create_profile_handler(sender, instance, created, **kwargs):
 
     try:
         sendVerificationMail(instance.email, typeofuser, profile.slug)
-        notification.models.notify(instance.id, notification.models.EMAIL_NOT_VERIFIED, notification.models.WARNING, instance.email)
     except:
         logger.error('Verification email could not be sent to {}.'.format(instance.email))
-
+    notification.models.notify(instance.id, notification.models.EMAIL_NOT_VERIFIED, notification.models.WARNING, instance.email)
     logger.info('New user profile for {} created'.format(instance))
