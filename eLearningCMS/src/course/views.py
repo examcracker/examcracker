@@ -233,13 +233,30 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         playlistObj = cdn.models.Playlist.objects.filter(course_id=courseChapterObj.course_id)
         if len(playlistObj) == 0:
-            playlistObj = cdn.algos.createPlaylist(courseChapterObj.course_id)
+            playlistObj = cdn.views.createPlaylist(courseChapterObj.course_id)
+        else:
+            playlistObj = playlistObj[0]
 
-        allSessionsInCourse = algos.getAllSessionsForCourse(courseChapterObj.course_id)
+        if playlistObj:
+            allSessionsInCourse = algos.getAllSessionsForCourse(courseChapterObj.course_id)
+            sessionCount = 0
+            sessionsInPlaylist = []
 
-        #cdnSessionObj = cdn.models.CdnSession.objects.filter(session_id=sessionObj.id)[0]
-        #kwargs["vimeo"] = str(cdnSessionObj.vimeo)
-        kwargs["title"] = "Session " + str(sessionObj.id)
+            for s in allSessionsInCourse:
+                cdnsessionObj = cdn.views.getCdnSessionForSession(s.id)
+                sessionPlaylistObj = cdn.models.SessionPlaylist.objects.filter(playlist_id=playlistObj.id).filter(cdnsession_id=cdnsessionObj.id)
+
+                if len(sessionPlaylistObj) == 0:
+                    sessionplaylistObj = cdn.views.insertSessionIntoPlaylist(playlistObj.id, cdnsessionObj.id, position=sessionCount)
+                    if sessionplaylistObj:
+                        sessionsInPlaylist.append(sessionplaylistObj)
+                        sessionCount = sessionCount + 1
+                else:
+                    sessionCount = sessionCount + 1
+                    sessionsInPlaylist.append(sessionPlaylistObj[0])
+
+            kwargs["playlist"] = sessionsInPlaylist
+
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):
