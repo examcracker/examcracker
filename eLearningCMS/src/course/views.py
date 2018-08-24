@@ -256,6 +256,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                     sessionsInPlaylist.append(sessionPlaylistObj[0])
 
             kwargs["playlist"] = sessionsInPlaylist
+            kwargs["videoid"] = cdn.views.getCdnSessionForSession(sessionid).jwvideoid
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
