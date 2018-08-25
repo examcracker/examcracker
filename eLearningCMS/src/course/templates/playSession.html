@@ -12,11 +12,27 @@
 
 	{% block content %}
 	<script src="{% static 'access/access.js' %}"></script>
-	<div style="position:relative; padding-bottom:56.25%; overflow:hidden;">
-	  <iframe id="jwplayer" width="75%" height="75%" frameborder="0" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
+
+	<div style="position:relative; padding-bottom:56.25%; padding-left:5.25%; padding-top:5.25%; overflow:hidden;">
+	  <iframe id="jwplayer" width="50%" height="50%" frameborder="30" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
+
+	  <div id="playlist" style="padding-left:56.25%;">
+	  {% for subj, subjdetails in coursedetails.items %}
+	    {% for s in subjdetails %}
+		  {% for chapid, chapdetails in s.items %}
+		    <a class="list-group-item">
+             <i style="padding-right:10px"></i>{{ chapdetails.name }}</a>
+		    {% for session in chapdetails.sessions %}
+			  <a href="{% url 'course:playSession' chapid session.id %}" class="list-group-item">
+                <i class="fa fa-play fa-fw" style="padding-right:10px"></i>{{ session.name }}</a>
+			{% endfor %}
+		  {% endfor %}
+		{% endfor %}
+	  {% endfor %}
+	  </div>
 	</div>
 
-	<script type="text/javascript">
+    <script type="text/javascript">
 	window.onload = function() {
 	var deviceJSON = getDeviceInfo();
 	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;

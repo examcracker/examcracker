@@ -106,7 +106,7 @@ def getAllChildCoursesbyExamsFromProvider(pId):
 def parseAndGetSubjectsArr(subjects):
     return subjects.split(SUBJECTS_DELIMITER)
 
-def getCourseDetails(courseid,published=True):
+def getCourseDetails(courseid, published=True):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     courseDetails = {}
     # take map of course name to course details
@@ -129,7 +129,7 @@ def getCourseDetails(courseid,published=True):
     return courseDetails
 
 # get course content
-def getCourseDetailsBySubject(courseid, subj,onlyPublished = True):
+def getCourseDetailsBySubject(courseid, subj, onlyPublished = True):
     courseDetailMap = []
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
     if len(chapters) > 0:
