@@ -1,67 +1,68 @@
-{% extends "__user_base.html" %}
+{% extends "__ecBase.html" %}
+
 {% load staticfiles %}
+{% load crispy_forms_tags %}
+{% load thumbnail %}
+{% block ImageSlider %}
+{% endblock ImageSlider %}
+ 
+{% block jumbotronBlock %}
+<form method="post" action=""> {% csrf_token %}
+<div class="container-fluid" >
+    <div class="row " style="background-color:mediumturquoise">
+        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-9">
+            <h4>Total <strong> ' {{cartCourses|length}} ' </strong> items in cart</h4>
+            </div>
+        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+        <button name="checkout" type="submit" class="btn btn-lg btn-dark">Checkout</button>
+        </div> 
+    </div>
+</div>
+{% endblock jumbotronBlock %}
 
-{% block active %}
-  <!-- Breadcrumbs-->
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item">
-      <a href="#">Dashboard</a>
-    </li>
-    <li class="breadcrumb-item active">My Cart</li>
-	</ol>
+{% block container %}
 
-	{% if not user.is_staff %}
-	  <form method="post" action="">
-	    <div class="form-group">
-	  		<div class="col-sm-offset-2 col-sm-10">
-			<button name="checkout" type="submit" class="btn btn-success">Checkout</button>
-			<button name="delete" type="submit" class="btn btn-success">Delete from Cart</button>
-			</div>
- 		</div>
-		<div class="container mt-4">
-		<h1 class="text-center mb-3">Courses in Cart</h1>
-        <div class="row">
-        <div class="card-deck">
-        {% for currentCourse in courses %}
-		        <input type="checkbox" name="courses[]" value="{{ currentCourse.id }}"</input>
-		        <div class="card mb-4" id ="courseCard"style="min-width: 14rem; max-width: 16rem;">
-                    {% if user.is_staff and currentCourse.provider_id == provider_id  %}
-                        <a href="{% url 'course:coursePage' currentCourse.id %}">
-                    {% endif %}
-                            <img class="card-img-top" src="http://placehold.it/800x600/f44242/fff" alt="Card image cap">
-                    {% if user.is_staff %}
-                        </a> 
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="text-center"><a href="{% url 'course:coursePage' currentCourse.id %}">{{ currentCourse.name }}</a></h5>
-                        <table>
-                        {% if currentCourse.provider__user__name %}
-                        <tr>
-                            <td>Provider: </td>
-                            <td align="right">{{ currentCourse.provider__user__name }}</td>
-                        </tr>
-                        {% endif %}
-                            <tr>
-                                <td>Exam: </td>
-                                <td align="right">{{ currentCourse.exam }}</td>
-                            </tr>
-                            <tr>
-                                <td>Cost (INR): </td>
-                                <td align="right">{{ currentCourse.cost }}</td>
-                            </tr>
-                            <tr>
-                                <td>Duration (months):  </td>
-                                <td align="right">{{ currentCourse.duration }}</td>
-                            </tr>
-                        </table> 
-                    </div>
-                </div>
-		{% endfor %}
-		</div>
-		</div>
-		</div>
-		{% csrf_token %}
-	  </form>
-	{% endif %}
+<div class="container-fluid">
+    {% if cartCourses|length > 0 %}
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Course Name</th>
+            <th scope="col">Provider</th>
+            <th scope="col">Price</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+        {% for cartCourse in cartCourses %}
+           <tr>
+            <th scope="row">{{forloop.counter}}</th>
+            <td><img id="coursePic" src="{% thumbnail cartCourse.picture|default:'default_profile.png' 50x50 crop %}" alt="avatar">
+                {{cartCourse.name}}</td>
+            <td>{{cartCourse.provider_name }}</td>
+            <td> <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}  </td>
+            <td><a href="{% url 'student:delete_from_cart' cartCourse.id %}" title="Remove from cart"><i class="fas fa-trash" style="color: black"></i></a></td>
+          </tr>
+          {% endfor %}
+            <tr>
+            <th scope="row"></th>
+            <td colspan="2">
+               <h4> Subtotal</h4></td>
+                <td><i class="fas fa-rupee-sign" aria-hidden="true"></i>  {{tcost}}</td>
+            </tr>          
+        </tbody>
+      </table>
     
-{% endblock active %}
+    {% else %}
+    <h5>No Courses in your cart</h5>
+    {% endif %}
+</div>
+<hr>
+</form>
+{%  endblock container %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock scripts %}

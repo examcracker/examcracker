@@ -14,6 +14,7 @@ from . import models
 import course
 import student
 import profiles
+from course.views import fillCartCourses
 
 def getStudent(request):
     return student.models.Student.objects.filter(user_id=request.user.id)[0]
@@ -77,41 +78,27 @@ def payment_process(request):
     form = PayPalPaymentsForm(initial=paypal_dict)
     return render(request, 'payment/process.html', {'form': form, 'courses': courseList})
 
-class Cart(LoginRequiredMixin, generic.TemplateView):
+class Cart(LoginRequiredMixin, fillCartCourses):
     template_name = 'my_cart.html'
     http_method_names = ['get', 'post']
 
     def get(self, request, *args, **kwargs):
         if request.user.is_staff:
             raise Http404()
-        studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-        courses = course.models.Course.objects.raw('SELECT * from course_course WHERE id IN (SELECT course_id from payments_cart WHERE student_id = ' + str(studentObj.id) + ')')
-        kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         if request.user.is_staff:
             raise Http404()
         studentObj = getStudent(request)
-        selectedCourses = request.POST.getlist('courses[]')
-        if len(selectedCourses) == 0:
-            return redirect("payments:my_cart")
-
-        if "delete" in request.POST:
-            for course in selectedCourses:
-                cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=course)[0]
-                cartObj.delete()
-            return redirect("payments:my_cart")
-        else:
-            coursesStr = ''
-            for course in selectedCourses:
-                cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=course)[0]
-                cartObj.checkout = True
-                cartObj.save()
-                coursesStr = coursesStr + " " + course
-
-            query_dictionary = QueryDict('', mutable=True)
-            query_dictionary.update({'id': coursesStr})
-            url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+        cartObjs = models.Cart.objects.filter(student_id=studentObj.id)
+        coursesStr = ''
+        for cartObj in cartObjs:
+            cartObj.checkout = True
+            cartObj.save()
+            coursesStr = coursesStr + " " + str(cartObj.course_id)
+        query_dictionary = QueryDict('', mutable=True)
+        query_dictionary.update({'id': coursesStr})
+        url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
                                                 querystring=query_dictionary.urlencode())
-            return redirect(url)
+        return redirect(url)

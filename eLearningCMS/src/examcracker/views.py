@@ -6,9 +6,10 @@ from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 from provider.views import *
 import student
+from course.views import fillCartCourses
 
 # search by exam , course , provider , substring or exact
-class SearchResultsPage(generic.TemplateView):
+class SearchResultsPage(fillCartCourses):
     template_name = "searchResults.html"
     http_method_names = ['get','post']
     
@@ -47,7 +48,7 @@ class SearchResultsPage(generic.TemplateView):
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
 
-class listCourses(generic.TemplateView):
+class listCourses(fillCartCourses):
     template_name = "listOfCourses.html"
     http_method_names = ['get']
     
@@ -61,7 +62,7 @@ class listCourses(generic.TemplateView):
         
         
 # Home page will never post to itself. So removing the post method from Home page
-class HomePage(generic.TemplateView):
+class HomePage(fillCartCourses):
     template_name = "home.html"
     http_method_names = ['get']
 
@@ -73,17 +74,6 @@ class HomePage(generic.TemplateView):
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
         kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
-        studentObj = student.views.getStudent(request)
-        if studentObj:
-            cartCoursesList = getCartCourses(studentObj)
-            allCourses = []
-            tcost = 0
-            for item in cartCoursesList:
-                courseDetails = model_to_dict(item)
-                tcost = tcost + int(courseDetails["cost"])
-                allCourses.append(courseDetails)
-            kwargs["tcost"] = tcost
-            kwargs["cartCourses"] = allCourses
         return super().get(request, *args, **kwargs)
 
 class AboutPage(generic.TemplateView):
