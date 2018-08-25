@@ -26,6 +26,25 @@ import payments
 User = get_user_model()
 
 # Create your views here.
+class fillCartCourses(generic.TemplateView):
+    http_method_names = ['get']
+    
+    def get(self, request, *args, **kwargs):
+        studentObj = student.views.getStudent(request)
+        if studentObj:
+            cartCoursesList = algos.getCartCourses(studentObj)
+            allCourses = []
+            tcost = 0
+            for item in cartCoursesList:
+                courseDetails = model_to_dict(item)
+                providerObj = provider.models.Provider.objects.filter(id=item.provider_id)[0]
+                userDetails = algos.getUserNameAndPic(providerObj.user_id)
+                courseDetails["provider_name"] = userDetails['name']
+                tcost = tcost + int(courseDetails["cost"])
+                allCourses.append(courseDetails)
+            kwargs["tcost"] = tcost
+            kwargs["cartCourses"] = allCourses
+        return super().get(request, *args, **kwargs)
 
 def getCourseReview(reviewSummary, userReviewList, courseid):
     reviewObj = course.models.CourseReview.objects.filter(course_id=courseid)
@@ -58,7 +77,7 @@ def getCourseReview(reviewSummary, userReviewList, courseid):
         reviewSummary['5Avg'] = str((int(reviewSummary['5']*100.0/len(reviewObj)))) + "%"
 
 
-class courseDetails(generic.TemplateView):
+class courseDetails(fillCartCourses):
     template_name = 'coursePage.html'
     http_method_names = ['get', 'post']
 
@@ -96,18 +115,6 @@ class courseDetails(generic.TemplateView):
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-
-                # fill cart items
-                cartCoursesList = course.algos.getCartCourses(studentObj)
-                allCourses = []
-                tcost = 0
-                for item in cartCoursesList:
-                    courseDetails = model_to_dict(item)
-                    tcost = tcost + int(courseDetails["cost"])
-                    allCourses.append(courseDetails)
-                kwargs["tcost"] = tcost
-                kwargs["cartCourses"] = allCourses
-
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True

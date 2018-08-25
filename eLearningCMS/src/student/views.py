@@ -305,9 +305,12 @@ class addToCart(LoginRequiredMixin, generic.TemplateView):
         return redirect(url)
 
 def delete_from_cart(studentObj,courseId):
-    cartCourseObj = payments.models.Cart.objects.filter(course_id=courseId,student_id=studentObj)
+    cartCourseObj = payments.models.Cart.objects.filter(student_id=studentObj)
+    cartCnt = len(cartCourseObj)
+    cartCourseObj = cartCourseObj.filter(course_id=courseId)
     if  cartCourseObj.exists():
         cartCourseObj.delete()
+    return cartCnt
 
 class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
@@ -318,12 +321,16 @@ class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
             return redirect("home")
         courseid = id
         studentObj = getStudent(request)
+        cartCnt = -1
         if studentObj:
-            delete_from_cart(studentObj,courseid)
+            cartCnt = delete_from_cart(studentObj,courseid)
         # check the source from where delete from cart is called
         if 'course' in refered_url and  'coursePage' in refered_url:
             url = "course:coursePage"
-            return redirect(url,courseid)      
-        url = "home"
+            return redirect(url,courseid)
+        elif 'payment' in refered_url and 'cart' in refered_url and cartCnt > 0:
+            url = "payments:my_cart"
+        else:
+            url = "home" 
         return redirect(url)
 
