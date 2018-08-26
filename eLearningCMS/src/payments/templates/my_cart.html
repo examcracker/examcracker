@@ -42,7 +42,7 @@
                 {{cartCourse.name}}</td>
             <td>{{cartCourse.provider_name }}</td>
             <td> <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}  </td>
-            <td><a href="{% url 'student:delete_from_cart' cartCourse.id %}" title="Remove from cart"><i class="fas fa-trash" style="color: black"></i></a></td>
+            <td><a href="{% url 'payments:delete_from_cart' cartCourse.id %}" title="Remove from cart"><i class="fas fa-trash" style="color: black"></i></a></td>
           </tr>
           {% endfor %}
             <tr>

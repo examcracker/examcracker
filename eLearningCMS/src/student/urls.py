@@ -11,7 +11,5 @@ urlpatterns = [
      path('courseDetails/<int:id>', views.courseDetails.as_view(), name="course_details"),
      path('videoDetails/<int:id>', views.sessionDetails.as_view(), name="video_details"),
      path('searchCourse', views.searchCourses.as_view(), name="search_courses"),
-     path('verifyEmail/<slug:slug>', views.VerifyEmail.as_view(), name='verify_email'),
-     path('addToCart/<int:id>', views.addToCart.as_view(), name='add_to_cart'),
-     path('deleteFromCart/<int:id>', views.deleteFromCart.as_view(), name='delete_from_cart'),
+     path('verifyEmail/<slug:slug>', views.VerifyEmail.as_view(), name='verify_email')
 ]

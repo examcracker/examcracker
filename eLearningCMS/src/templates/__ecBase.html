@@ -126,7 +126,7 @@
 								<td><img id="coursePic" src="{% thumbnail cartCourse.picture|default:'default_profile.png' 50x50 crop %}" alt="avatar">
 									{{cartCourse.name}}</td>
 								<td> <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}  </td>
-								<td><a href="{% url 'student:delete_from_cart' cartCourse.id %}" title="Remove from cart"><i class="fas fa-trash" style="color: black"></i></a></td>
+								<td><a href="{% url 'payments:delete_from_cart' cartCourse.id %}" title="Remove from cart"><i class="fas fa-trash" style="color: black"></i></a></td>
 							  </tr>
 							  {% endfor %}	
 							</tbody>
