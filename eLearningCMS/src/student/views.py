@@ -310,6 +310,7 @@ def delete_from_cart(studentObj,courseId):
     cartCourseObj = cartCourseObj.filter(course_id=courseId)
     if  cartCourseObj.exists():
         cartCourseObj.delete()
+        cartCnt = cartCnt-1
     return cartCnt
 
 class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
