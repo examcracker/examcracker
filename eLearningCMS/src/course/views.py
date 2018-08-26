@@ -239,7 +239,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         '''
 
         kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id)
-        kwargs["videoid"] = cdn.views.getCdnSessionForSession(sessionid).jwvideoid
+        signedUrl = cdn.views.getSignedUrl(cdn.views.getCdnSessionForSession(sessionid).jwvideoid)
+        kwargs["signedurl"] = signedUrl
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

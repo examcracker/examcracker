@@ -42,7 +42,7 @@
 	
 	var accepted = (/True/).test(xmlHttp.responseText);
 	if (accepted) {
-	  document.getElementById("jwplayer").src = "https://content.jwplatform.com/players/" + "{{videoid}}" + "-zRzB2xDB.html";
+	  document.getElementById("jwplayer").src = "{{ signedurl }}";
 	}
 	else {
 	  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
