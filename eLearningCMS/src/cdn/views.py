@@ -24,6 +24,36 @@ logger = logging.getLogger("project")
 # methods to go here
 IST_UTC = 3600*5 + 1800
 
+def getJWClient():
+    return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
+
+def getCourse(courseid):
+    return course.models.Course.objects.filter(id=courseid)[0]
+
+def getCdnSession(cdnsessionid):
+    return models.CdnSession.objects.filter(id=cdnsessionid)[0]
+
+def getCdnSessionForSession(sessionid):
+    return models.CdnSession.objects.filter(session_id=sessionid)[0]
+
+def getSignedUrl(jwid):
+    path = 'players/' + jwid + '-zRzB2xDB.html'
+    expiry = str(int(time.time()) + IST_UTC + 3600*6)
+    digest = hashlib.md5((path + ':' + expiry + ':' + settings.JWPLAYER_API_SECRET).encode()).hexdigest()
+    url = 'https://content.jwplatform.com/' + path + '?exp=' + expiry + '&sig=' + digest
+    return url
+
+def getVideoDuration(jwid):
+    jwplatform_client = getJWClient()
+    try:
+        response = jwplatform_client.videos.show(jwid)
+        duration = float(response["video"]["duration"])
+        return duration
+
+    except jwplatform.errors.JWPlatformError as e:
+        logger.error("Encountered an error querying for videos duration.\n{}".format(e))
+        return None
+
 def createVideoUploadURL():
     jwplatform_client = getJWClient()
     upload_url = ''
@@ -39,7 +69,7 @@ def createVideoUploadURL():
         )
 
     except jwplatform.errors.JWPlatformError as e:
-        logging.error("Encountered an error creating a video\n{}".format(e))
+        logger.error("Encountered an error creating a video\n{}".format(e))
 
     #import pdb; pdb.set_trace();
     #print("Url: ", upload_url)
@@ -73,21 +103,3 @@ def getUploadPaths(request, count, format=None):
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def getJWClient():
-    return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
-
-def getCourse(courseid):
-    return course.models.Course.objects.filter(id=courseid)[0]
-
-def getCdnSession(cdnsessionid):
-    return models.CdnSession.objects.filter(id=cdnsessionid)[0]
-
-def getCdnSessionForSession(sessionid):
-    return models.CdnSession.objects.filter(session_id=sessionid)[0]
-
-def getSignedUrl(jwid):
-    path = 'players/' + jwid + '-zRzB2xDB.html'
-    expiry = str(int(time.time()) + IST_UTC + 3600*6)
-    digest = hashlib.md5((path + ':' + expiry + ':' + settings.JWPLAYER_API_SECRET).encode()).hexdigest()
-    url = 'https://content.jwplatform.com/' + path + '?exp=' + expiry + '&sig=' + digest
-    return url
