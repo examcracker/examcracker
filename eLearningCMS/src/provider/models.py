@@ -23,6 +23,7 @@ class Session(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     uploaded = models.DateTimeField(auto_now_add=True)
     video = models.FileField(upload_to=user_directory_path)
+    videoKey = models.CharField(max_length=20)
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
 

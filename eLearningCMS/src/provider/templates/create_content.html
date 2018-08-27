@@ -31,7 +31,7 @@
                         </div>
                         <div id="c{{chapid}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
-                                <input id="fileupload{{chapid}}" type="file" name="video" multiple style="display: none;" data-url="{% url 'provider:upload_video' %}">
+                                <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}','fileupload{{chapid}}');"  name="video" multiple style="display: none;">
                                 <input type="hidden" value="{{chapid}}-{{courseName}}" name="lcids" />
                                 <div class="row">
                                     <input type="text" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" >
@@ -39,7 +39,7 @@
                                 </div>
                                 <div class="row">
                                     {% if not editContentDisable %}
-                                    <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,'{{ editCourse.id }}','{{ courseName }}')" class="btn-xs btn-primary float-right">Add Session</button></div>
+                                    <div class="col-auto mt-2 mb-2"><button type="button" onclick="document.getElementById('fileupload{{chapid}}').click();" class="btn-xs btn-primary float-right">Add Session</button></div>
                                     <div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,'{{ courseName }}')" class="btn-xs btn-default float-right">Select existing Session</button></div>
                                     {% endif %}
                                 </div>
@@ -87,15 +87,18 @@
 {% endfor %}
 </form>
 
+
     <div class="modal" id="modal-progress" tabindex="-2" role="dialog" aria-labelledby="uploadProgress" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-full">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modal-progress">Uploading...</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                    <div id="divFiles" class="files">
                     </div>
                 </div>
             </div>
@@ -139,6 +142,215 @@
 
 
 <script>
+
+    var fileIDMap = new Map();
+    var fileMapCounter = 0;
+
+    
+    function publishCourse(el) {
+        uploadLecture();
+
+        var clone = $("#contentForm").find("input").clone().attr('type','hidden')
+        clone.appendTo("#publishCourse");
+        $('#publishCourse').submit();
+    }
+    function saveCourse(el) {
+        uploadLecture();
+    }
+
+    function fileSelected(elmnt, courseid, coursename, fileId){
+        var files = document.getElementById(fileId).files;
+        for (var i=0;i<files.length;i++){
+            var file = files[i]
+            var goUpload = true;
+            var videoName = file.name;
+            if (!(/\.(mp4|mpeg|mpg|avi|asf)$/i).test(videoName)) {
+                alert(videoName + ' is not a valid video file. You must select valid video file');
+                goUpload = false;
+            }
+            if(goUpload){
+                fileMapCounter++;
+                fileIDMap.set(fileMapCounter.toString(), file);
+                var el = elmnt;
+                while (el.className != 'card-body') {
+                    // Increment the loop to the parent node
+                    el = el.parentNode;
+                }
+                
+                var id = el.children.length-4;
+                var cname = el.id;
+
+                var queryselect = coursename+';'+cname+';';
+                queryselect = '[id^="'+queryselect+'"]';
+                var query = document.querySelectorAll(queryselect)
+                if (query && query.length > 0) {
+                    var last = query[query.length- 1].id;
+                    id = last.split(";")[2];
+                    id = parseInt(id)+1;
+                }
+            
+                // temp video id just to get and set the actual value after upload
+                var videoId = fileMapCounter.toString() +"-"+ videoName;
+                var videoVal = -100;
+                var lectureid = coursename+';'+cname+';'+id;
+                var lecture = $('<hr><div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'""><input type="hidden" name ="lecPub['+cname+'][]" value="False"><input type="hidden" id="'+videoId+'" name ="lec['+cname+'][]" value="'+videoVal+'"><div class="col-xs-2 col-sm-2" id="lectureFound"><span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)" id="'+fileMapCounter+'"><i class="fa fa-trash"></i></button></span></div><div class="col-xs-3 col-sm-3" id="'+lectureid+'">Session '+id+'</div><div class="col-xs-7 col-sm-7">'+videoName+'</div></div>');
+                var lectureFatherid = "lecturesHere-"+cname;
+                var lectureFather = document.getElementById(lectureFatherid);
+                lecture.appendTo(lectureFather);
+                id = id+1;
+                var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+cname);
+                spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fas fa-video"></i>';
+                var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+cname);
+                spanBadgeChapterPublishedStatus.removeAttribute('hidden');
+                addWarningMessage();
+            }
+        }
+    }
+     
+    function uploadLecture(){
+        $("#modal-progress").modal("show");
+        $('#divFiles').html('');
+        var mapIter = fileIDMap.entries();
+        for (var i = 0; i < fileIDMap.size; i++) { //Progress bar and status label's for each file genarate dynamically
+            var fileId = i;
+            $("#divFiles").append('<div class="row">'+
+                ' <div class="col-md-12">' +
+                '<div class="progress-bar" id="progressbar_' + fileId + '" role="progressbar" style="width:0%"></div>' +
+                '</div>' + 
+                '</div>' +
+                '<div class="row">'+
+                '<div class="col-md-6">' +
+                    '<input type="button" class="btn btn-danger" id="cancel_' + fileId + '" value="cancel">' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                    '<p class="progress-status" id="status_' + fileId + '"></p>' +
+                '</div>' +
+                '</div>' +
+                '<div class="row">'+
+                '<div class="col-md-12">' +
+                    '<p id="notify_' + fileId + '"></p>' +
+                '</div>' +
+                '</div><hr>');
+        }
+
+        var coreapi = window.coreapi;
+        var client = new coreapi.Client();
+        fileMapCounter = fileIDMap.size;
+
+        var getUploadURLs = "http://127.0.0.1:8000/cdn/getUploadPaths/" + fileMapCounter.toString();
+        client.get(getUploadURLs)
+        .then(function (data) {
+            var urlList = data;
+            var mapIter = fileIDMap.entries();
+            for(index in urlList){
+                var uploadURL = urlList[index].url; 
+                var mapData = mapIter.next().value
+                var mapKey = mapData[0];
+                var file = mapData[1];
+                uploadSingleFile(file, index, uploadURL, mapKey);
+                
+            }
+        })
+        .catch(function (error) {
+            alert(error);
+        });
+    }
+
+
+    function uploadSingleFile(file, i, uploadURL, mapKey) {
+        var fileId = i;
+        var videoName = file.name;
+        var tempSessionId = mapKey.toString() +"-"+ videoName;
+        var ajax = new XMLHttpRequest();
+        //Progress Listener
+        ajax.upload.addEventListener("progress", function (e) {
+            var percent = Math.round((e.loaded / e.total) * 100);
+            var strProgress = percent + "%";
+            $("#status_" + fileId).text(strProgress + " uploaded, please wait...");
+            $('#progressbar_' + fileId).css({"width": strProgress});
+            $('#progressbar_' + fileId).text(strProgress);
+            $("#notify_" + fileId).text("Uploaded " + (e.loaded / 1048576).toFixed(2) + " MB of " + (e.total / 1048576).toFixed(2) + " MB ");
+        }, false);
+        //Load Listener
+        ajax.addEventListener("load", function (e) {
+            var responseXml = $.parseXML(event.target.responseText);
+            var xml = $(responseXml);
+            var uploadedKey = xml.find('video').attr("key");
+            document.getElementById(tempSessionId).value = uploadedKey + '?' + videoName;
+            //$('#'+tempSessionId).attr('id',uploadedKey + '?' + videoName);
+
+            /*
+            var codec = new window.coreapi.codecs.CoreJSONCodec()
+            var coreJSON = '{"_type":"document","_meta":{"url":"http://127.0.0.1:8000/cdn/schema/?format=corejson","title":"Pastebin API"},"createSession":{"create":{"_type":"link","url":"/cdn/createSession/{videoKey}/{sessionId}","action":"post","fields":[{"name":"sessionId","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}},{"name":"videoKey","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}}]}},"getUploadPaths":{"read":{"_type":"link","url":"/cdn/getUploadPaths/{count}","action":"get","fields":[{"name":"count","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}}]}}}';
+            window.schema = codec.decode(coreJSON)
+
+            var coreapi = window.coreapi;
+            var schema = window.schema;
+            
+            let auth = new coreapi.auth.SessionAuthentication({
+                csrfCookieName: 'csrftoken',
+                csrfHeaderName: 'X-CSRFToken'
+            })
+            var client = new coreapi.Client({auth: auth});
+
+            let action = ['createSession', 'create'];
+            let params = {"videoKey": uploadedKey, "sessionId": fileId};
+            client.action(schema, action, params).then(function(result) {
+                // On success, instantiate an authenticated client.
+                alert(result);
+                fileMapCounter = fileMapCounter-1;
+                if(fileMapCounter == 0){
+                    alert("All files uploaded successfully");
+                    $('#contentForm').submit();
+                }
+                
+            }).catch(function (error) {
+                fileMapCounter = fileMapCounter-1;
+                alert(error);
+                // Handle error case where eg. user provides incorrect credentials.
+            })*/
+
+            $("#status_" + fileId).text("Successfully uploaded the session");
+            $('#progressbar_' + fileId).css("width", "100%")
+
+            //Hide cancel button
+            var _cancel = $('#cancel_' + fileId);
+            _cancel.hide();
+
+            fileMapCounter = fileMapCounter-1;
+            if(fileMapCounter == 0){
+                alert("All files uploaded successfully");
+                $('#contentForm').submit();
+            }
+
+        }, false);
+        //Error Listener
+        ajax.addEventListener("error", function (e) {
+            $("#status_" + fileId).text("Upload Failed");
+            fileMapCounter = fileMapCounter-1;
+        }, false);
+        //Abort Listener
+        ajax.addEventListener("abort", function (e) {
+            $("#status_" + fileId).text("Upload Aborted");
+            fileMapCounter = fileMapCounter-1;
+        }, false);
+
+        ajax.open("POST", uploadURL); // Your API .net, php
+
+        var uploaderForm = new FormData(); // Create new FormData
+        uploaderForm.append("file", file); // append the next file for upload
+        ajax.send(uploaderForm);
+
+        //Cancel button
+        var _cancel = $('#cancel_' + fileId);
+        _cancel.show();
+
+        _cancel.on('click', function () {
+            ajax.abort();
+        })
+    }
+
+   
     $(function () {
   $('[data-toggle="tooltip"]').tooltip()
 })
@@ -204,7 +416,12 @@ function addWarningMessage() {
     }
     function deleteLecture(elmnt) {
         var l_elem = elmnt;
-         while (l_elem.className != 'row') {
+        var addedLectureId = elmnt.id;
+        if (addedLectureId){
+            fileIDMap.delete(addedLectureId);
+        }
+        
+        while (l_elem.className != 'row') {
             // Increment the loop to the parent node
             l_elem = l_elem.parentNode;
         }

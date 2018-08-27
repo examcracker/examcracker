@@ -20,6 +20,7 @@ admin.site.site_header = 'GyaanHive Administration'
 urlpatterns = [
     url(r'^paypal/', include('paypal.standard.ipn.urls')),
     url(r'^payment/', include('payments.urls')),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('', views.HomePage.as_view(), name='home'),
     path('about/', views.AboutPage.as_view(), name='about'),
     path('users/', include(profiles.urls)),

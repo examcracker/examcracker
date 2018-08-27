@@ -117,6 +117,9 @@ INSTALLED_APPS = (
     # django packages
     'snowpenguin.django.recaptcha2',
     'paypal.standard.ipn',
+
+    # django rest api packages
+	'rest_framework',
 )
 
 PAYPAL_RECEIVER_EMAIL = 'eexamcracker@gmail.com'

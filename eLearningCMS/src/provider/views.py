@@ -125,7 +125,19 @@ def saveCourseContent(request,courseId):
                 filePublishedArr = request.POST.getlist(lecPubVar)
                 j=0
                 while j < len(filesUploaded):
-                    sessionsIdArr.append(filesUploaded[j])
+                    sessionId = filesUploaded[j]
+                    try:
+                        filesUploaded[j] = int(filesUploaded[j])
+                    except:
+                        sessionObj = models.Session()
+                        sessionObj.provider = getProvider(request)
+                        argumentList = sessionId.split('?')
+                        sessionObj.videoKey = argumentList[0]
+                        sessionObj.name = argumentList[1]
+                        sessionObj.save()
+                        sessionId = str(sessionObj.id)
+
+                    sessionsIdArr.append(sessionId)
                     if course.algos.str2bool(filePublishedArr[j]):
                         publishedArr.append('1')
                     else:

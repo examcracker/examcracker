@@ -153,16 +153,7 @@ onSubmit="if(!confirm('Do you want to publish this course ?')){return false;}"  
 				</div>
 		</div>
 </div>
-<script src="{% static 'provider/js/createCourseContent.js' %}"></script>
 <script>
-function publishCourse(el) {
-	var clone = $("#contentForm").find("input").clone().attr('type','hidden')
-	clone.appendTo("#publishCourse");
-	$('#publishCourse').submit()
-}
-function saveCourse(el) {
-	$('#contentForm').submit();
-}
 
       function readURL(input,imgId) {
         if (input.files && input.files[0]) {
