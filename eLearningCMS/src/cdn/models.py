@@ -7,11 +7,3 @@ class CdnSession(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
     ready = models.BooleanField(default=False)
     jwvideoid = models.CharField(max_length=10)
-
-class Playlist(models.Model):
-    course = models.ForeignKey(course.models.Course, on_delete=models.CASCADE)
-    jwid = models.CharField(max_length=10)
-
-class SessionPlaylist(models.Model):
-    cdnsession = models.ForeignKey(CdnSession, on_delete=models.CASCADE)
-    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)

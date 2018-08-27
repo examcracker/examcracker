@@ -15,9 +15,8 @@ import course
 import student
 import profiles
 from course.views import fillCartCourses
-
-def getStudent(request):
-    return student.models.Student.objects.filter(user_id=request.user.id)[0]
+from student.views import getStudent
+import re
 
 @csrf_exempt
 def payment_done(request):
@@ -39,7 +38,7 @@ def payment_canceled(request):
     cartObjs = models.Cart.objects.filter(student_id=studentObj.id).filter(checkout=True)
 
     for obj in cartObjs:
-        obj.checkout = False;
+        obj.checkout = False
         obj.save()
 
     return render(request, 'payment/canceled.html')
@@ -101,4 +100,73 @@ class Cart(LoginRequiredMixin, fillCartCourses):
         query_dictionary.update({'id': coursesStr})
         url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
                                                 querystring=query_dictionary.urlencode())
+        return redirect(url)
+
+def get_referer_view(request, default=None):
+    # if the user typed the url directly in the browser's address bar
+    referer = request.META.get('HTTP_REFERER')
+    if not referer:
+        return default
+    # remove the protocol and split the url at the slashes
+    referer = re.sub('^https?:\/\/', '', referer).split('/')
+    # add the slash at the relative path's view and finished
+    referer = u'/' + u'/'.join(referer[1:])
+    return referer
+
+def add_to_cart(studentObj,courseId):
+    courseObj = course.models.Course.objects.filter(id=courseId)[0]
+    cartCourseObj = models.Cart.objects.filter(course_id=courseId,student_id=studentObj)
+    if not cartCourseObj.exists()  :
+        cart = models.Cart()
+        cart.student = studentObj
+        cart.course = courseObj
+        cart.save()
+
+class addToCart(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        refered_url =  get_referer_view(request)
+        if refered_url is None:
+            return redirect("home")
+        courseid = id
+        studentObj = getStudent(request)
+        if studentObj:
+            add_to_cart(studentObj,courseid)
+        # check the source from where add to cart is called
+        if 'course' in refered_url and  'coursePage' in refered_url:
+            url = "course:coursePage"
+            return redirect(url,courseid)
+        url = "home"
+        return redirect(url)
+
+def delete_from_cart(studentObj,courseId):
+    cartCourseObj = models.Cart.objects.filter(student_id=studentObj)
+    cartCnt = len(cartCourseObj)
+    cartCourseObj = cartCourseObj.filter(course_id=courseId)
+    if  cartCourseObj.exists():
+        cartCourseObj.delete()
+        cartCnt = cartCnt-1
+    return cartCnt
+
+class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, id, *args, **kwargs):
+        refered_url =  get_referer_view(request)
+        if refered_url is None:
+            return redirect("home")
+        courseid = id
+        studentObj = getStudent(request)
+        cartCnt = -1
+        if studentObj:
+            cartCnt = delete_from_cart(studentObj,courseid)
+        # check the source from where delete from cart is called
+        if 'course' in refered_url and  'coursePage' in refered_url:
+            url = "course:coursePage"
+            return redirect(url,courseid)
+        elif 'payment' in refered_url and 'cart' in refered_url and cartCnt > 0:
+            url = "payments:my_cart"
+        else:
+            url = "home" 
         return redirect(url)
