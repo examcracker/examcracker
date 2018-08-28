@@ -273,7 +273,7 @@
         }, false);
         //Load Listener
         ajax.addEventListener("load", function (e) {
-            var responseXml = $.parseXML(event.target.responseText);
+            var responseXml = $.parseXML(e.target.responseText);
             var xml = $(responseXml);
             var uploadedKey = xml.find('video').attr("key");
             document.getElementById(tempSessionId).value = uploadedKey + '?' + videoName;
