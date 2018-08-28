@@ -14,10 +14,10 @@ from . import models
 import course
 import student
 import profiles
-from course.views import fillCartCourses
+from course.views import getCartCourses,fillCartCourses
 from student.views import getStudent
 import re
-
+# Try kghoshnitk@gmail.com and sane password
 @csrf_exempt
 def payment_done(request):
     studentObj = getStudent(request)
@@ -43,39 +43,30 @@ def payment_canceled(request):
 
     return render(request, 'payment/canceled.html')
 
-def payment_process(request):
-    studentObj = getStudent(request)
-    host = request.get_host()
-    courses = urllib.parse.unquote(request.GET['id'])
-    courselist = str.split(courses, " ")
+class payment_process(LoginRequiredMixin,generic.TemplateView):
+    template_name = 'payment/process.html'
+    http_method_names = ['get']
 
-    totalCost = 0
-    courseList = []
+    def get(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
+        host = request.get_host()
+        totalCost,allCourses = getCartCourses(request)
+        kwargs["tcost"] = totalCost
+        kwargs["cartCourses"] = allCourses
+        paypal_dict = {
+            'business': settings.PAYPAL_RECEIVER_EMAIL ,
+            'amount': totalCost,
+            'item_name': "Courses Enrolled",
+            'invoice': "Invoice for " + str(request.user.name),
+            'currency_code': 'USD',
+            'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
+            'return_url': 'http://{}{}'.format(host, reverse('payments:done')),
+            'cancel_return': 'http://{}{}'.format(host, reverse('payments:canceled')),
+            }
 
-    for c in courselist:
-        try:
-            c = int(c)
-        except:
-            continue
-        courseObj = course.models.Course.objects.filter(id=c)[0]
-        courseList.append(courseObj)
-        totalCost = totalCost + courseObj.cost
-
-        cartObj = models.Cart.objects.filter(student_id=studentObj.id).filter(course_id=courseObj.id)
-
-    paypal_dict = {
-        'business': settings.PAYPAL_RECEIVER_EMAIL ,
-        'amount': totalCost,
-        'item_name': "Courses Enrolled",
-        'invoice': "Invoice for " + str(request.user.name),
-        'currency_code': 'USD',
-        'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
-        'return_url': 'http://{}{}'.format(host, reverse('payments:done')),
-        'cancel_return': 'http://{}{}'.format(host, reverse('payments:canceled')),
-    }
-
-    form = PayPalPaymentsForm(initial=paypal_dict)
-    return render(request, 'payment/process.html', {'form': form, 'courses': courseList})
+        form = PayPalPaymentsForm(initial=paypal_dict)
+        kwargs["form"] = form
+        return super().get(request, *args, **kwargs)
 
 class Cart(LoginRequiredMixin, fillCartCourses):
     template_name = 'my_cart.html'
@@ -95,11 +86,12 @@ class Cart(LoginRequiredMixin, fillCartCourses):
         for cartObj in cartObjs:
             cartObj.checkout = True
             cartObj.save()
-            coursesStr = coursesStr + " " + str(cartObj.course_id)
-        query_dictionary = QueryDict('', mutable=True)
-        query_dictionary.update({'id': coursesStr})
-        url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
-                                                querystring=query_dictionary.urlencode())
+            #coursesStr = coursesStr + " " + str(cartObj.course_id)
+        #query_dictionary = QueryDict('', mutable=True)
+        #query_dictionary.update({'id': coursesStr})
+        #url = '{base_url}?{querystring}'.format(base_url=reverse("payments:process"),
+        #                                        querystring=query_dictionary.urlencode())
+        url = "payments:process"
         return redirect(url)
 
 def get_referer_view(request, default=None):

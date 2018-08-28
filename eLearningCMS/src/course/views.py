@@ -25,25 +25,29 @@ import payments
 
 User = get_user_model()
 
+def getCartCourses(request):
+    studentObj = student.views.getStudent(request)
+    allCourses = []
+    tcost = 0
+    if studentObj:
+        cartCoursesList = algos.getCartCourses(studentObj)
+        for item in cartCoursesList:
+            courseDetails = model_to_dict(item)
+            providerObj = provider.models.Provider.objects.filter(id=item.provider_id)[0]
+            userDetails = algos.getUserNameAndPic(providerObj.user_id)
+            courseDetails["provider_name"] = userDetails['name']
+            tcost = tcost + int(courseDetails["cost"])
+            allCourses.append(courseDetails)
+    return tcost,allCourses
+
 # Create your views here.
 class fillCartCourses(generic.TemplateView):
     http_method_names = ['get']
     
     def get(self, request, *args, **kwargs):
-        studentObj = student.views.getStudent(request)
-        if studentObj:
-            cartCoursesList = algos.getCartCourses(studentObj)
-            allCourses = []
-            tcost = 0
-            for item in cartCoursesList:
-                courseDetails = model_to_dict(item)
-                providerObj = provider.models.Provider.objects.filter(id=item.provider_id)[0]
-                userDetails = algos.getUserNameAndPic(providerObj.user_id)
-                courseDetails["provider_name"] = userDetails['name']
-                tcost = tcost + int(courseDetails["cost"])
-                allCourses.append(courseDetails)
-            kwargs["tcost"] = tcost
-            kwargs["cartCourses"] = allCourses
+        tcost,allCourses = getCartCourses(request)
+        kwargs["tcost"] = tcost
+        kwargs["cartCourses"] = allCourses
         return super().get(request, *args, **kwargs)
 
 def getCourseReview(reviewSummary, userReviewList, courseid):

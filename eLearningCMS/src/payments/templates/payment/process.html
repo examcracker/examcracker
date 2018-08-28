@@ -1,31 +1,83 @@
 {% extends "__ecBase.html" %}
 
+{% load staticfiles %}
 {% load crispy_forms_tags %}
-
+{% load thumbnail %}
 {% block ImageSlider %}
 {% endblock ImageSlider %}
-
+ 
 {% block jumbotronBlock %}
+
+<div class="container-fluid" >
+    <div class="row " style="background-color:darkcyan">
+        <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-9">
+            <h5><strong> ' {{cartCourses|length}} ' </strong> items to checkout</h5>
+            </div>
+        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
+            <a class="btn btn-lg btn-dark mx-1 my-1" href="{% url 'payments:my_cart' %}">Back to Cart</a>
+        </div> 
+    </div>
+</div>
 {% endblock jumbotronBlock %}
 
 {% block container %}
 
-{% block content %}
-<div class="text-center">
- <h3>Pay using PayPal</h3>
-</div>
-<div class="text-center">
- {{ form.render }}
-</div>
-{% endblock %}
+<div class="container-fluid">
+    <div class="row">
+    <div class="col-5">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Course Name</th>
+            <th scope="col">Provider</th>
+            <th scope="col">Price</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+        {% for cartCourse in cartCourses %}
+           <tr>
+            <th scope="row">{{forloop.counter}}</th>
+            <td><img id="coursePic" src="{% thumbnail cartCourse.picture|default:'default_profile.png' 50x50 crop %}" alt="avatar">
+                {{cartCourse.name}}</td>
+            <td>{{cartCourse.provider_name }}</td>
+            <td> <i class="fas fa-rupee-sign" aria-hidden="true"></i> {{cartCourse.cost}}  </td>
+          </tr>
+          {% endfor %}
+            <tr>
+            <th scope="row"></th>
+            <td colspan="2">
+               <h4> Total</h4></td>
+                <td><i class="fas fa-rupee-sign" aria-hidden="true"></i>  {{tcost}}</td>
+            </tr>          
+        </tbody>
+      </table>
+    </div>
+      <!-- PayPal form-->
+      <div class="col-1">
+            
+      </div>
+      <div class="col-6">
+          <div class="card text-center">
+              <div class="card-header">
+                  <img src="{% static 'ec/img/paypal.png' %}" style="width: 50%; height: 50%">
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Pay with PayPal</h5>
+                <p class="card-text">The most secured mode of online transaction.</p>
+                {{ form.render }}
+              </div>
+            </div>
 
-{% block active %}
-  <!-- Breadcrumbs-->
-  <ol class="breadcrumb">
-  </ol>
+      </div>
+      </div>
+</div>
+<hr>
 
-	{% include "__baseCourseTiles.html" with allCourses=courses divId="CheckedOutCourses" category="Checked Out Courses" tilesLimit=":50" %}
-									
-    
-{% endblock active %}
-{% endblock container %}
+{%  endblock container %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock scripts %}

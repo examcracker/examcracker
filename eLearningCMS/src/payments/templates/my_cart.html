@@ -9,9 +9,9 @@
 {% block jumbotronBlock %}
 <form method="post" action=""> {% csrf_token %}
 <div class="container-fluid" >
-    <div class="row " style="background-color:mediumturquoise">
+    <div class="row " style="background-color:darkcyan">
         <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-9">
-            <h4>Total <strong> ' {{cartCourses|length}} ' </strong> items in cart</h4>
+            <h5>Total <strong> ' {{cartCourses|length}} ' </strong> items in cart</h5>
             </div>
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3">
         <button name="checkout" type="submit" class="btn btn-lg btn-dark">Checkout</button>
@@ -48,7 +48,7 @@
             <tr>
             <th scope="row"></th>
             <td colspan="2">
-               <h4> Subtotal</h4></td>
+               <h4> Total</h4></td>
                 <td><i class="fas fa-rupee-sign" aria-hidden="true"></i>  {{tcost}}</td>
             </tr>          
         </tbody>
