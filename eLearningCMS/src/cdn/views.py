@@ -48,7 +48,7 @@ def getSignedUrl(jwid):
 def getVideoDuration(jwid):
     jwplatform_client = getJWClient()
     try:
-        response = jwplatform_client.videos.show(jwid)
+        response = jwplatform_client.videos.show(video_key=jwid)
         duration = float(response["video"]["duration"])
         return duration
 

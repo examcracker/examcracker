@@ -6,7 +6,6 @@ from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 import subprocess
-#import ffmpy
 import json
 import os
 
@@ -23,7 +22,8 @@ class Session(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     uploaded = models.DateTimeField(auto_now_add=True)
     video = models.FileField(upload_to=user_directory_path)
-    videoKey = models.CharField(max_length=20)
+    ready = models.BooleanField(default=False)
+    videoKey = models.CharField(max_length=20, default='')
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
 

@@ -17,6 +17,8 @@ from django.conf import settings
 import notification
 import student
 import os
+from examcracker import thread
+import cdn
 
 def getDelimiter(subject=False):
     if not subject:
@@ -84,6 +86,23 @@ class uploadVideo(LoginRequiredMixin, generic.TemplateView):
             data = {'is_valid': False}
             return JsonResponse(data)
 
+class SessionDurationFetch(thread.CallBackObject):
+    def __init__(self, sessionObj):
+        super().__init__()
+        self.sessionObj = sessionObj
+
+    def execute(self):
+        self.sessionObj.duration = cdn.views.getVideoDuration(self.sessionObj.videoKey)
+
+    def terminate(self):
+        if self.sessionObj.duration is None:
+            return False
+        if self.sessionObj.duration == 0:
+            return False
+        self.sessionObj.ready = True
+        self.sessionObj.save()
+        return True
+
 def saveCourseContent(request,courseId):
     if 'lcids' not in request.POST:
         return
@@ -117,6 +136,7 @@ def saveCourseContent(request,courseId):
             # first get and save files into provider_session db
             sessionsIdArr = []
             publishedArr = []
+
             # get session ids here
             lcVar = 'lec['+str(cpid[0])+'][]'
             lecPubVar = 'lecPub['+str(cpid[0])+'][]'
@@ -137,6 +157,11 @@ def saveCourseContent(request,courseId):
                         sessionObj.save()
                         sessionId = str(sessionObj.id)
 
+                        # create thread to compute duration
+                        callbackObj = SessionDurationFetch(sessionObj)
+                        t = thread.AppThread(callbackObj, True, 120)
+                        t.start()
+
                     sessionsIdArr.append(sessionId)
                     if course.algos.str2bool(filePublishedArr[j]):
                         publishedArr.append('1')
@@ -144,8 +169,8 @@ def saveCourseContent(request,courseId):
                         publishedArr.append('0')
                     j=j+1
             
-            sessionsIdArrStr =  getDelimiter().join([str(x) for x in sessionsIdArr])
-            publishedArrStr =  getDelimiter().join([str(x) for x in publishedArr])
+            sessionsIdArrStr = getDelimiter().join([str(x) for x in sessionsIdArr])
+            publishedArrStr = getDelimiter().join([str(x) for x in publishedArr])
             chapterObj.sessions = sessionsIdArrStr
             chapterObj.published = publishedArrStr
             chapterObj.save()
