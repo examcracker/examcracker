@@ -148,14 +148,18 @@
 
     
     function publishCourse(el) {
+        // first upload all lectures , then publish
         uploadLecture();
-
+        // Save course content and publish course
         var clone = $("#contentForm").find("input").clone().attr('type','hidden')
         clone.appendTo("#publishCourse");
         $('#publishCourse').submit();
     }
     function saveCourse(el) {
+        // first upload all lectures , then Save course to DB
         uploadLecture();
+        // save course content
+        $('#contentForm').submit();
     }
 
     function fileSelected(elmnt, courseid, coursename){
@@ -210,7 +214,7 @@
      
     function uploadLecture(){
         if(fileIDMap.size == 0){
-            $('#contentForm').submit();
+            return;
         }
         else{
             $("#modal-progress").modal("show");
