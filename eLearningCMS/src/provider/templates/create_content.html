@@ -31,7 +31,7 @@
                         </div>
                         <div id="c{{chapid}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
-                                <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}','fileupload{{chapid}}');"  name="video" multiple style="display: none;">
+                                <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}');"  name="video" multiple style="display: none;">
                                 <input type="hidden" value="{{chapid}}-{{courseName}}" name="lcids" />
                                 <div class="row">
                                     <input type="text" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" >
@@ -158,7 +158,8 @@
         uploadLecture();
     }
 
-    function fileSelected(elmnt, courseid, coursename, fileId){
+    function fileSelected(elmnt, courseid, coursename){
+        var fileId = elmnt.id;
         var files = document.getElementById(fileId).files;
         for (var i=0;i<files.length;i++){
             var file = files[i]
@@ -208,52 +209,57 @@
     }
      
     function uploadLecture(){
-        $("#modal-progress").modal("show");
-        $('#divFiles').html('');
-        var mapIter = fileIDMap.entries();
-        for (var i = 0; i < fileIDMap.size; i++) { //Progress bar and status label's for each file genarate dynamically
-            var fileId = i;
-            $("#divFiles").append('<div class="row">'+
-                ' <div class="col-md-12">' +
-                '<div class="progress-bar" id="progressbar_' + fileId + '" role="progressbar" style="width:0%"></div>' +
-                '</div>' + 
-                '</div>' +
-                '<div class="row">'+
-                '<div class="col-md-6">' +
-                    '<input type="button" class="btn btn-danger" id="cancel_' + fileId + '" value="cancel">' +
-                '</div>' +
-                '<div class="col-md-6">' +
-                    '<p class="progress-status" id="status_' + fileId + '"></p>' +
-                '</div>' +
-                '</div>' +
-                '<div class="row">'+
-                '<div class="col-md-12">' +
-                    '<p id="notify_' + fileId + '"></p>' +
-                '</div>' +
-                '</div><hr>');
+        if(fileIDMap.size == 0){
+            $('#contentForm').submit();
         }
-
-        var coreapi = window.coreapi;
-        var client = new coreapi.Client();
-        fileMapCounter = fileIDMap.size;
-
-        var getUploadURLs = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/getUploadPaths/" + fileMapCounter.toString();
-        client.get(getUploadURLs)
-        .then(function (data) {
-            var urlList = data;
+        else{
+            $("#modal-progress").modal("show");
+            $('#divFiles').html('');
             var mapIter = fileIDMap.entries();
-            for(index in urlList){
-                var uploadURL = urlList[index].url; 
-                var mapData = mapIter.next().value
-                var mapKey = mapData[0];
-                var file = mapData[1];
-                uploadSingleFile(file, index, uploadURL, mapKey);
-                
+            for (var i = 0; i < fileIDMap.size; i++) { //Progress bar and status label's for each file genarate dynamically
+                var fileId = i;
+                $("#divFiles").append('<div class="row">'+
+                    ' <div class="col-md-12">' +
+                    '<div class="progress-bar" id="progressbar_' + fileId + '" role="progressbar" style="width:0%"></div>' +
+                    '</div>' + 
+                    '</div>' +
+                    '<div class="row">'+
+                    '<div class="col-md-6">' +
+                        '<input type="button" class="btn btn-danger" id="cancel_' + fileId + '" value="cancel">' +
+                    '</div>' +
+                    '<div class="col-md-6">' +
+                        '<p class="progress-status" id="status_' + fileId + '"></p>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="row">'+
+                    '<div class="col-md-12">' +
+                        '<p id="notify_' + fileId + '"></p>' +
+                    '</div>' +
+                    '</div><hr>');
             }
-        })
-        .catch(function (error) {
-            alert(error);
-        });
+
+            var coreapi = window.coreapi;
+            var client = new coreapi.Client();
+            fileMapCounter = fileIDMap.size;
+
+            var getUploadURLs = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/getUploadPaths/" + fileMapCounter.toString();
+            client.get(getUploadURLs)
+            .then(function (data) {
+                var urlList = data;
+                var mapIter = fileIDMap.entries();
+                for(index in urlList){
+                    var uploadURL = urlList[index].url; 
+                    var mapData = mapIter.next().value
+                    var mapKey = mapData[0];
+                    var file = mapData[1];
+                    uploadSingleFile(file, index, uploadURL, mapKey);
+                    
+                }
+            })
+            .catch(function (error) {
+                alert(error);
+            });
+        }
     }
 
 
@@ -277,39 +283,9 @@
             var xml = $(responseXml);
             var uploadedKey = xml.find('video').attr("key");
             document.getElementById(tempSessionId).value = uploadedKey + '?' + videoName;
-            //$('#'+tempSessionId).attr('id',uploadedKey + '?' + videoName);
 
-            /*
-            var codec = new window.coreapi.codecs.CoreJSONCodec()
-            var coreJSON = '{"_type":"document","_meta":{"url":"http://127.0.0.1:8000/cdn/schema/?format=corejson","title":"Pastebin API"},"createSession":{"create":{"_type":"link","url":"/cdn/createSession/{videoKey}/{sessionId}","action":"post","fields":[{"name":"sessionId","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}},{"name":"videoKey","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}}]}},"getUploadPaths":{"read":{"_type":"link","url":"/cdn/getUploadPaths/{count}","action":"get","fields":[{"name":"count","required":true,"location":"path","schema":{"title":"","_type":"string","description":""}}]}}}';
-            window.schema = codec.decode(coreJSON)
-
-            var coreapi = window.coreapi;
-            var schema = window.schema;
-            
-            let auth = new coreapi.auth.SessionAuthentication({
-                csrfCookieName: 'csrftoken',
-                csrfHeaderName: 'X-CSRFToken'
-            })
-            var client = new coreapi.Client({auth: auth});
-
-            let action = ['createSession', 'create'];
-            let params = {"videoKey": uploadedKey, "sessionId": fileId};
-            client.action(schema, action, params).then(function(result) {
-                // On success, instantiate an authenticated client.
-                alert(result);
-                fileMapCounter = fileMapCounter-1;
-                if(fileMapCounter == 0){
-                    alert("All files uploaded successfully");
-                    $('#contentForm').submit();
-                }
+            fileIDMap.delete(mapKey);
                 
-            }).catch(function (error) {
-                fileMapCounter = fileMapCounter-1;
-                alert(error);
-                // Handle error case where eg. user provides incorrect credentials.
-            })*/
-
             $("#status_" + fileId).text("Successfully uploaded the session");
             $('#progressbar_' + fileId).css("width", "100%")
 
@@ -385,7 +361,7 @@ function addWarningMessage() {
         var id = chapCnt;
         var lcidval = id + '-' + subject;
         var lectureFatherId = 'lecturesHere-'+id;
-        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
+        var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" onchange=\"fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}')\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
         var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link mr-3" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button><span class="badge badge-secondary" id="span-badge-sessionCnt-'+id+'">0 <i class="fas fa-video"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-'+id+'" hidden><i class="fa fa-exclamation-triangle"></i></span></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
         //var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
         myChapter.appendTo(fatherOfChapter);
@@ -455,66 +431,6 @@ function addWarningMessage() {
          var id = el.children.length-4;
          var cname = el.id;
          $("#fileupload"+cname).click();
-         $("#fileupload"+cname).fileupload({
-            dataType: 'json',
-            add: function (e, data) {
-                var goUpload = true;
-                var uploadFile = data.files[0];
-                if (!(/\.(mp4|mpeg|mpg|avi|asf)$/i).test(uploadFile.name)) {
-                    alert(uploadFile.name + ' is not a valid video file. You must select valid video file');
-                    goUpload = false;
-                }
-                /*if (uploadFile.size > 0) {
-                    alert('Invalid file size');
-                    goUpload = false;
-                }*/
-                if (goUpload == true) {
-                    data.submit();
-                }
-            },
-            formData: [
-                    { name: "coid", value: courseid},
-                    { name: "csrfmiddlewaretoken", value: "{{ csrf_token }}"}
-                ],
-            sequentialUploads: true,  /* 1. SEND THE FILES ONE BY ONE */
-            start: function (e) {  /* 2. WHEN THE UPLOADING PROCESS STARTS, SHOW THE MODAL */
-                $("#modal-progress").modal("show");
-            },
-            stop: function (e) {  /* 3. WHEN THE UPLOADING PROCESS FINALIZE, HIDE THE MODAL */
-                $(".progress-bar").css({"width": "0%"});
-                $("#modal-progress").modal("hide");
-            },
-            progressall: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
-                var progress = parseInt(data.loaded / data.total * 100, 10);
-                var strProgress = progress + "%";
-                $(".progress-bar").css({"width": strProgress});
-                $(".progress-bar").text(strProgress);
-            },
-            done: function (e, data) {
-                if (data.result.is_valid) {
-                    var queryselect = coursename+';'+cname+';';
-                    queryselect = '[id^="'+queryselect+'"]';
-                    var query = document.querySelectorAll(queryselect)
-                    if (query && query.length > 0) {
-                        var last = query[query.length- 1].id;
-                        id = last.split(";")[2];
-                        id = parseInt(id)+1;
-                    }
-                    var lectureid = coursename+';'+cname+';'+id;
-                    var lecture = $('<hr><div class="row" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="cp'+cname+'lc'+id+'""><input type="hidden" name ="lecPub['+cname+'][]" value="False"><input type="hidden" name ="lec['+cname+'][]" value="'+data.result.videoId+'"><div class="col-xs-2 col-sm-2" id="lectureFound"><span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span></div><div class="col-xs-3 col-sm-3" id="'+lectureid+'">Session '+id+'</div><div class="col-xs-7 col-sm-7">'+data.result.videoName+'</div></div>');
-                    var lectureFatherid = "lecturesHere-"+cname;
-                    var lectureFather = document.getElementById(lectureFatherid);
-                    lecture.appendTo(lectureFather);
-                    id = id+1;
-                    var spanBadgeSessionCnt = document.getElementById('span-badge-sessionCnt-'+cname);
-                    spanBadgeSessionCnt.innerHTML = query.length+1 + ' <i class="fas fa-video"></i>';
-                    var spanBadgeChapterPublishedStatus = document.getElementById('span-badge-publishedStatus-'+cname);
-                    spanBadgeChapterPublishedStatus.removeAttribute('hidden');
-                    addWarningMessage();
-                }
-            }
-    });
-
     }
     
     var gElm;
