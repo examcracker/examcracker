@@ -31,7 +31,7 @@
                         </div>
                         <div id="c{{chapid}}" class="collapse">
                             <div class="card-body" id="{{chapid}}">
-                                <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}');"  name="video" multiple style="display: none;">
+                                <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ courseName }}');"  name="video" multiple style="display: none;">
                                 <input type="hidden" value="{{chapid}}-{{courseName}}" name="lcids" />
                                 <div class="row">
                                     <input type="text" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" >
