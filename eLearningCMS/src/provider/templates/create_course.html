@@ -27,8 +27,7 @@
 {% if not editContentDisable %}
 <button class="btn btn-outline-info btn-lg mx-2 px-2" aria-pressed="true" onclick="saveCourse(this)">Save</button>
 {% endif %}
-<form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse" 
-onSubmit="if(!confirm('Do you want to publish this course ?')){return false;}"  method="post" enctype="multipart/form-data"> {% csrf_token %}
+<form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse"  method="post" enctype="multipart/form-data"> {% csrf_token %}
 	<button class="btn btn-outline-dark btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
 </form>
 {% endif %}
