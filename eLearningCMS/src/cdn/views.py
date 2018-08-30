@@ -24,7 +24,7 @@ import time
 logger = logging.getLogger("project")
 
 # methods to go here
-IST_UTC = 3600*5 + 1800
+EXPIRY_BANDWIDTH = 3600*5
 
 def getJWClient():
     return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
@@ -40,7 +40,7 @@ def getCdnSessionForSession(sessionid):
 
 def getSignedUrl(jwid):
     path = 'players/' + jwid + '-zRzB2xDB.html'
-    expiry = str(int(time.time()) + IST_UTC + 3600*6)
+    expiry = str(int(time.time()) + EXPIRY_BANDWIDTH)
     digest = hashlib.md5((path + ':' + expiry + ':' + settings.JWPLAYER_API_SECRET).encode()).hexdigest()
     url = 'https://content.jwplatform.com/' + path + '?exp=' + expiry + '&sig=' + digest
     return url
