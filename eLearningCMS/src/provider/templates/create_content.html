@@ -145,7 +145,7 @@
 
     var fileIDMap = new Map();
     var fileMapCounter = 0;
-
+    var uploadFail = 0;
     function OnlySaveOrPublish(publish) {
         if (publish) {
             // Save course content and publish course
@@ -309,9 +309,16 @@
 
             fileMapCounter = fileMapCounter-1;
             if(fileMapCounter == 0){
-                alert("All files uploaded successfully");
+                //alert("All files uploaded successfully");   
+                var warningdiv = document.getElementById('addWarningMessage');
+                if (!uploadFail) {
+                    $("#modal-progress").modal("hide");
+                    var warningElem = $('<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sessions Upload Status : </strong> All Files upload successfully</div>');
+                } else {
+                    var warningElem = $('<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sessions Upload Status : </strong> Some Files failed to upload.</div>');
+                }
+                warningElem.appendTo(warningdiv);
                 OnlySaveOrPublish(publish);
-                //$('#contentForm').submit();
             }
 
         }, false);
@@ -319,6 +326,7 @@
         ajax.addEventListener("error", function (e) {
             $("#status_" + fileId).text("Upload Failed");
             fileMapCounter = fileMapCounter-1;
+            uploadFail = 1;
         }, false);
         //Abort Listener
         ajax.addEventListener("abort", function (e) {
