@@ -233,7 +233,6 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             if courseObj.provider_id != providerObj.id:
-                kwargs["wrong_provider"] = True
                 raise Http404()
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
@@ -241,10 +240,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         if sessionObj.duration == 0:
             raise Http404()
 
-
         kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id)
-        signedUrl = cdn.views.getSignedUrl(sessionObj.videoKey)
-        kwargs["signedurl"] = signedUrl
+        kwargs["signedurl"] = cdn.views.getSignedUrl(sessionObj.videoKey)
+        kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+        kwargs["session"] = sessionObj
+        kwargs["chapter"] = courseChapterObj
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

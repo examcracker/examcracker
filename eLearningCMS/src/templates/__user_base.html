@@ -9,12 +9,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   <!-- Bootstrap core CSS-->
-  
+
   <!-- <link href="{% static 'userDashBoard/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet"> -->
   <!-- Custom fonts for this template-->
   <link href="{% static 'userDashBoard/vendor/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
-  
+
   <!-- Custom styles for this template-->
   <link href="{% static 'userDashBoard/css/sb-admin.css' %}" rel="stylesheet">
   <link href="{% static 'base/css/style.css' %}" rel="stylesheet">
@@ -25,7 +26,7 @@
   <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
   <script src="{% static 'fileUploader/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
   <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
-  
+
   <script src="{% static 'fontawesome/js/all.js' %}"></script>
 	<link href="/static/base/css/cardslider.css" rel="stylesheet">
 	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -46,7 +47,7 @@
     <div class="collapse navbar-collapse" id="navbarResponsive">
       <ul class="navbar-nav navbar-sidenav bg-sidebar-custom" id="exampleAccordion">
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
-          <a class="nav-link" 
+          <a class="nav-link"
             href="{% if user.is_staff %}
                     {% url 'provider:provider_home' %}
                   {% else %}
@@ -57,7 +58,7 @@
           </a>
         </li>
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Courses">
-          <a class="nav-link" 
+          <a class="nav-link"
           href="{% if user.is_staff %}
                   {% url 'provider:view_courses' %}
                 {% else %}
@@ -84,7 +85,7 @@
         </li>
         {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Profile">
-          <a class="nav-link" 
+          <a class="nav-link"
           href="{% if user.is_staff %}
                   {% url 'provider:my_profile' %}
                 {% else %}
@@ -239,5 +240,5 @@
 <script src="{% static 'userDashBoard/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'userDashBoard/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
   <script src="{% static 'userDashBoard/js/sb-admin.min.js' %}"></script>
-  
+
 </html>

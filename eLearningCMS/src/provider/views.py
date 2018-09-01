@@ -153,7 +153,7 @@ def saveCourseContent(request,courseId):
                         sessionObj.provider = getProvider(request)
                         argumentList = sessionId.split('?')
                         sessionObj.videoKey = argumentList[0]
-                        sessionObj.name = argumentList[1]
+                        sessionObj.name = os.path.splitext(argumentList[1])[0]
                         sessionObj.save()
                         sessionId = str(sessionObj.id)
 

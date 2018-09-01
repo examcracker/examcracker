@@ -146,16 +146,28 @@
     var fileIDMap = new Map();
     var fileMapCounter = 0;
 
+    function OnlySaveOrPublish(publish) {
+        if (publish) {
+            // Save course content and publish course
+            var clone = $("#contentForm").find("input").clone().attr('type','hidden')
+            clone.appendTo("#publishCourse");
+            $('#publishCourse').submit();
+        }
+        else {
+            $('#contentForm').submit();
+        }
+    }
     
     function publishCourse(el) {
-        uploadLecture();
-
-        var clone = $("#contentForm").find("input").clone().attr('type','hidden')
-        clone.appendTo("#publishCourse");
-        $('#publishCourse').submit();
+        // first upload all lectures , then publish
+        if(!confirm('Do you want to publish this course ?')){
+            return false;
+        }
+        uploadLecture(1);
     }
     function saveCourse(el) {
-        uploadLecture();
+        // first upload all lectures , then Save course to DB
+        uploadLecture(0);
     }
 
     function fileSelected(elmnt, courseid, coursename){
@@ -208,9 +220,10 @@
         }
     }
      
-    function uploadLecture(){
+    function uploadLecture(publish){
         if(fileIDMap.size == 0){
-            $('#contentForm').submit();
+            OnlySaveOrPublish(publish);
+            return;
         }
         else{
             $("#modal-progress").modal("show");
@@ -254,7 +267,7 @@
                     var mapData = mapIter.next().value
                     var mapKey = mapData[0];
                     var file = mapData[1];
-                    uploadSingleFile(file, index, uploadURL, mapKey);
+                    uploadSingleFile(file, index, uploadURL, mapKey,publish);
                     
                 }
             })
@@ -264,8 +277,7 @@
         }
     }
 
-
-    function uploadSingleFile(file, i, uploadURL, mapKey) {
+    function uploadSingleFile(file, i, uploadURL, mapKey,publish) {
         var fileId = i;
         var videoName = file.name;
         var tempSessionId = mapKey.toString() +"-"+ videoName;
@@ -298,7 +310,8 @@
             fileMapCounter = fileMapCounter-1;
             if(fileMapCounter == 0){
                 alert("All files uploaded successfully");
-                $('#contentForm').submit();
+                OnlySaveOrPublish(publish);
+                //$('#contentForm').submit();
             }
 
         }, false);
