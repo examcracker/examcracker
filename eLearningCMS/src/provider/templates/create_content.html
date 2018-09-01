@@ -145,6 +145,7 @@
 
     var fileIDMap = new Map();
     var fileMapCounter = 0;
+    var failedUpload = false;
 
     function OnlySaveOrPublish(publish) {
         if (publish) {
@@ -226,31 +227,29 @@
             return;
         }
         else{
+            failedUpload = false;
             $("#modal-progress").modal("show");
             $('#divFiles').html('');
             var mapIter = fileIDMap.entries();
             for (var i = 0; i < fileIDMap.size; i++) { //Progress bar and status label's for each file genarate dynamically
                 var fileId = i;
-                $("#divFiles").append('<div class="row">'+
-                    '<div class="col-md-12">' +
+                $("#divFiles").append('<div>'+
+                    '<div>' +
+                    '<p id="fileName_' + fileId + '"></p>' +
+                    '</div>' +
                     '<div class="progress">' +
                     '<div class="progress-bar bg-info" id="progressbar_' + fileId + '" style="width:0%"></div>' +
                     '</div>' + 
                     '</div>' + 
-                    '</div>' +
                     '<div class="row">'+
-                    '<div class="col-md-6">' +
-                        '<input type="button" class="btn btn-danger" id="cancel_' + fileId + '" value="cancel">' +
-                    '</div>' +
-                    '<div class="col-md-6">' +
-                        '<p class="progress-status" id="status_' + fileId + '"></p>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="row">'+
-                    '<div class="col-md-12">' +
+                    '<div class="col-md-9">' +
                         '<p id="notify_' + fileId + '"></p>' +
                     '</div>' +
-                    '</div><hr>');
+                    '<div class="col-md-3">' +
+                        '<input type="button" class="btn btn-outline-danger btn-sm" id="cancel_' + fileId + '" value="cancel">' +
+                    '</div>' +
+                    '</div>' +
+                    '<hr>');
             }
 
             var coreapi = window.coreapi;
@@ -282,11 +281,11 @@
         var videoName = file.name;
         var tempSessionId = mapKey.toString() +"-"+ videoName;
         var ajax = new XMLHttpRequest();
+        $('#fileName_' + fileId).text(videoName);
         //Progress Listener
         ajax.upload.addEventListener("progress", function (e) {
             var percent = Math.round((e.loaded / e.total) * 100);
             var strProgress = percent + "%";
-            $("#status_" + fileId).text(strProgress + " uploaded, please wait...");
             $('#progressbar_' + fileId).css({"width": strProgress});
             $('#progressbar_' + fileId).text(strProgress);
             $("#notify_" + fileId).text("Uploaded " + (e.loaded / 1048576).toFixed(2) + " MB of " + (e.total / 1048576).toFixed(2) + " MB ");
@@ -300,7 +299,7 @@
 
             fileIDMap.delete(mapKey);
                 
-            $("#status_" + fileId).text("Successfully uploaded the session");
+            $("#notify_" + fileId).text("Session uploaded successfully");
             $('#progressbar_' + fileId).css("width", "100%")
 
             //Hide cancel button
@@ -309,21 +308,26 @@
 
             fileMapCounter = fileMapCounter-1;
             if(fileMapCounter == 0){
-                alert("All files uploaded successfully");
                 OnlySaveOrPublish(publish);
-                //$('#contentForm').submit();
+                if(failedUpload){
+                }
+                else{
+                    $("#modal-progress").modal("hide");
+                }
             }
 
         }, false);
         //Error Listener
         ajax.addEventListener("error", function (e) {
-            $("#status_" + fileId).text("Upload Failed");
+            $("#notify_" + fileId).text("Upload Failed");
             fileMapCounter = fileMapCounter-1;
+            failedUpload = true;
         }, false);
         //Abort Listener
         ajax.addEventListener("abort", function (e) {
-            $("#status_" + fileId).text("Upload Aborted");
+            $("#notify_" + fileId).text("Upload Aborted");
             fileMapCounter = fileMapCounter-1;
+            failedUpload = true;
         }, false);
 
         ajax.open("POST", uploadURL); // Your API .net, php
