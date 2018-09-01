@@ -1,7 +1,7 @@
 function getBrowser() {
 	var userAgent = navigator.userAgent;
 	var brwoser = '';
-	 
+
 	if (userAgent.indexOf('Opera') != -1) {
 	     browser = 'Opera';
     }
@@ -28,7 +28,7 @@ function getBrowser() {
     }
 	return browser;
 	}
-	
+
 	function getOS() {
 	var clientStrings = [
             {s:'Windows 10', r:/(Windows 10.0|Windows NT 10.0)/},
@@ -58,7 +58,7 @@ function getBrowser() {
             {s:'OS/2', r:/OS\/2/},
             {s:'Search Bot', r:/(nuhk|Googlebot|Yammybot|Openbot|Slurp|MSNBot|Ask Jeeves\/Teoma|ia_archiver)/}
         ];
-	
+
 	for (var id in clientStrings) {
         var cs = clientStrings[id];
         if (cs.r.test(navigator.userAgent)) {
@@ -67,13 +67,14 @@ function getBrowser() {
 	}
 	return '';
 	}
-	
+
 	function getDeviceInfo() {
 	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", "http://ipinfo.io/json", false);
+	var infoURL = window.location.protocol + "//ipinfo.io/json"
+    xmlHttp.open("GET", infoURL, false);
     xmlHttp.send(null);
 	locationResponse = JSON.parse(xmlHttp.responseText);
-    
+
 	// Create JSON object for the device
 	var deviceInfo = new Object();
 	deviceInfo.loc = locationResponse.loc;
