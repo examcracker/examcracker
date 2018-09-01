@@ -308,12 +308,16 @@
 
             fileMapCounter = fileMapCounter-1;
             if(fileMapCounter == 0){
-                OnlySaveOrPublish(publish);
-                if(failedUpload){
-                }
-                else{
+                //alert("All files uploaded successfully");   
+                var warningdiv = document.getElementById('addWarningMessage');
+                if (!failedUpload) {
                     $("#modal-progress").modal("hide");
+                    var warningElem = $('<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sessions Upload Status : </strong> All Files upload successfully</div>');
+                } else {
+                    var warningElem = $('<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>Sessions Upload Status : </strong> Some Files failed to upload.</div>');
                 }
+                warningElem.appendTo(warningdiv);
+                OnlySaveOrPublish(publish);
             }
 
         }, false);
