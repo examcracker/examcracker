@@ -219,8 +219,10 @@
             for (var i = 0; i < fileIDMap.size; i++) { //Progress bar and status label's for each file genarate dynamically
                 var fileId = i;
                 $("#divFiles").append('<div class="row">'+
-                    ' <div class="col-md-12">' +
-                    '<div class="progress-bar" id="progressbar_' + fileId + '" role="progressbar" style="width:0%"></div>' +
+                    '<div class="col-md-12">' +
+                    '<div class="progress">' +
+                    '<div class="progress-bar bg-info" id="progressbar_' + fileId + '" style="width:0%"></div>' +
+                    '</div>' + 
                     '</div>' + 
                     '</div>' +
                     '<div class="row">'+
