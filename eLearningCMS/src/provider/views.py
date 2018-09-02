@@ -154,6 +154,7 @@ def saveCourseContent(request,courseId):
                         argumentList = sessionId.split('?')
                         sessionObj.videoKey = argumentList[0]
                         sessionObj.name = os.path.splitext(argumentList[1])[0]
+                        sessionObj.tags = chapterObj.subject
                         sessionObj.save()
                         sessionId = str(sessionObj.id)
 

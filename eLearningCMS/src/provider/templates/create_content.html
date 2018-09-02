@@ -147,7 +147,7 @@
     var fileMapCounter = 0;
     var failedUpload = false;
 
-    function OnlySaveOrPublish(publish) {
+    function OnlySaveOrPublish(publish) {     
         if (publish) {
             // Save course content and publish course
             var clone = $("#contentForm").find("input").clone().attr('type','hidden')
@@ -222,6 +222,9 @@
     }
      
     function uploadLecture(publish){
+        document.getElementById("previewCourseButton").style.pointerEvents="none";
+        document.getElementById("saveCourseButton").disabled = true;
+        document.getElementById("publishCourseButton").disabled = true;
         if(fileIDMap.size == 0){
             OnlySaveOrPublish(publish);
             return;

@@ -22,13 +22,13 @@
 </ol>
 </div>
 {% if editCourse %}
-<a href="{% url 'course:coursePage' editCourse.id %}" class="btn btn-outline-secondary btn-lg mx-2 px-2" role="button" aria-pressed="true">Preview</a>
+<a href="{% url 'course:coursePage' editCourse.id %}" id="previewCourseButton" class="btn btn-outline-secondary btn-lg mx-2 px-2" role="button" aria-pressed="true">Preview</a>
 
 {% if not editContentDisable %}
-<button class="btn btn-outline-info btn-lg mx-2 px-2" aria-pressed="true" onclick="saveCourse(this)">Save</button>
+<button class="btn btn-outline-info btn-lg mx-2 px-2" id="saveCourseButton" aria-pressed="true" onclick="saveCourse(this)">Save</button>
 {% endif %}
 <form class="form-inline" action="{% url 'provider:publish_course' %}" id="publishCourse"  method="post" enctype="multipart/form-data"> {% csrf_token %}
-	<button class="btn btn-outline-dark btn-lg float-right" type="button" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
+	<button class="btn btn-outline-dark btn-lg float-right" type="button" id="publishCourseButton" onclick="publishCourse(this)" {% if not editCourse %} disabled {% endif %} >Publish</button>
 </form>
 {% endif %}
 </nav>
