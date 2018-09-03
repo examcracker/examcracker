@@ -78,6 +78,8 @@ def createVideoUploadURL():
     return upload_url
 
 @api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
 def getUploadPaths(request, count, format=None):
     urlList = []
     for _ in range(int(count)):
