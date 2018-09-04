@@ -74,6 +74,13 @@ class HomePage(fillCartCourses):
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
         kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
+        allProviders = getProviders()
+        allProvidersDetails = []
+        for provider in allProviders:
+            allProvidersDetails.append(getUserNameAndPic(provider.id))
+
+        kwargs["allProviders"] = allProvidersDetails
+
         return super().get(request, *args, **kwargs)
 
 class AboutPage(generic.TemplateView):

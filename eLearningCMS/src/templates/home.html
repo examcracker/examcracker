@@ -5,6 +5,7 @@ courses ( all courses ,course model)
 {% extends "__ecBase.html" %}
 
 {% load staticfiles %}
+{% load thumbnail %}
 {% load crispy_forms_tags %}
 
 {% block container %}
@@ -20,45 +21,23 @@ courses ( all courses ,course model)
 </div>
 <hr>
 <div class="container-fluid teacher-div">
-                <h3 class="text-center" >Expert's associated with us</h3>
-                <p class="text-center">
-                        A crew of experienced educators helm our vast and growing library. Hareness their experties, and get the<br> same award-wnining learning materials that are used by teachers in millions of classrooms.
-                </p>
-                        <div class="row row-centered">
-                                        <div class="col-md-3" align="centre">
-                                        <div class="img">
-                                                <img class="rounded-circle" src="{% static 'ec/img/t1.png' 120x120 %}">
-                                                <div class="caption center-block">Priya Tyagi</div>
-                                                                <div class="caption center-block"><small> CAT faculty</small></div>
-                                                        </div>
+        <h3 class="text-center" >Expert's associated with us</h3>
+        <p class="text-center">
+                A crew of experienced educators helm our vast and growing library. Hareness their experties, and get the<br> same award-wnining learning materials that are used by teachers in millions of classrooms.
+        </p>
+                <div class="row row-centered">
+                        {% for userDetails in allProviders|slice:'4'%}
+                        <div class="col-md" align="centre">
+                                <div class="img">
+                                        <img class="rounded-circle" src="{% thumbnail userDetails.profilePic|default:'default_profile.png' 120x120 crop %}">
+                                        <div class="caption center-block">{{ userDetails.name }}</div>
                                 </div>
-        
-                                        <div class="col-md-3" align="centre">
-                                                        <div class="img">
-                                                                <img class="rounded-circle" src="{% static 'ec/img/t2.jpg' 120x120 %}">
-                                                                <div class="caption center-block">Ramesh Prajapati</div>
-                                                                <div class="caption center-block"><small> IAS faculty</small></div>
-                                                        </div>
-                                                </div>
-                                                <div class="col-md-3" align="centre">
-                                                                <div class="img">
-                                                                        <img class="rounded-circle" src="{% static 'ec/img/t3.jpg' 120x120 %}">
-                                                                        <div class="caption center-block">Sonam Kapoor</div>
-                                                                        <div class="caption center-block"><small> IAS faculty</small></div>
-                                                                </div>
-                                                        </div>
-        
-        
-                                        <div class="col-md-3" align="centre">
-                                                        <div class="img">
-                                                                <img class="rounded-circle" src="{%static 'ec/img/t1.png' 120x120 %}">
-                                                                <div class="caption center-block">Anjali Singh</div>
-                                                                <div class="caption center-block"><small> IIT faculty</small></div>
-                                                        </div>
-                                                        </div>
                         </div>
+                        {% endfor %}
+
+                                
                 </div>
-        </div>
+</div>
 {%  endblock container %}
 
 
