@@ -118,6 +118,7 @@ courses ( all courses ,course model)
                                  <div class="card">
                                    <div class="card-header">
                                         <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}">{{ value.name }}</a>
+                                        <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
                                    </div>
                                    <div id="{{ value.name }}:{{ subject }}" class="collapse">
                                      <div class="card-body">
