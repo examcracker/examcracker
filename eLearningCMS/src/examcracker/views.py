@@ -22,7 +22,7 @@ class SearchResultsPage(fillCartCourses):
         if providerObj:
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = getExams()
-        kwargs["providers"] = getProviders()
+        kwargs["providers"] = getProviders(True)
         kwargs["searchResult"] = getCourseDetailsForCards(request, courseList)
         kwargs["searchText"] = searchText
         return super().get(request, *args, **kwargs)
@@ -36,7 +36,7 @@ class SearchResultsPage(fillCartCourses):
             return redirect(reverse_lazy('home'))
         courseList = searchCourseByText(searchText,examText,providerText)
         kwargs["exams"] = getExams()
-        kwargs["providers"] = getProviders()
+        kwargs["providers"] = getProviders(True)
         kwargs["searchResult"] = getCourseDetailsForCards(request, courseList)
         providerObj = getProvider(request)
         if providerObj:
@@ -74,7 +74,7 @@ class HomePage(fillCartCourses):
             kwargs["providerId"] = providerObj.id
         kwargs["exams"] = examsList
         kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
-        allProviders = getProviders()
+        allProviders = getProviders(True)
         allProvidersDetails = []
         for provider in allProviders:
             allProvidersDetails.append(getUserNameAndPic(provider.id))

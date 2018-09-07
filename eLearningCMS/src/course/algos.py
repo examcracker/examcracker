@@ -202,7 +202,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
     
     # get all courses and providers, then apply filter queries on them
     courseList = models.Course.objects.filter(published=1)
-    allProviders = getProviders()
+    allProviders = getProviders(True)
 
     if examText is not None:
         courseList = courseList.filter(Q(exam__icontains=examText))
@@ -235,9 +235,13 @@ def getExams():
     return models.EXAM_CHOICES
     #return models.Course.objects.values('exam').annotate(Count('exam')).order_by('exam')
 
-def getProviders():
+def getProviders(havingPublishedCourses = False):
     User = get_user_model()
-    return User.objects.filter(is_staff=1)
+    providerObjs = User.objects.filter(is_staff=1)
+    if havingPublishedCourses == True:
+        providerList = models.Course.objects.filter(published=1).values('provider_id')
+        providerObjs = providerObjs.filter(id__in=providerList)
+    return providerObjs
 
 def getUserNameAndPic(user_id):
     userDetails = {}
