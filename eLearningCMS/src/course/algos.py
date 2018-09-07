@@ -239,8 +239,9 @@ def getProviders(havingPublishedCourses = False):
     User = get_user_model()
     providerObjs = User.objects.filter(is_staff=1)
     if havingPublishedCourses == True:
-        providerList = models.Course.objects.filter(published=1).values('provider_id')
-        providerObjs = providerObjs.filter(id__in=providerList)
+        providerIds = models.Course.objects.filter(published=1).values('provider_id')
+        providerUserIds = provider.models.Provider.objects.filter(Q(id__in = providerIds)).values('user_id')
+        providerObjs = providerObjs.filter(Q(id__in = providerUserIds))
     return providerObjs
 
 def getUserNameAndPic(user_id):
