@@ -32,7 +32,10 @@
 {% block topHeader %}
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark sticky-top">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'ec/img/logo.jpg' %}"></a> 
+		<a class="navbar-brand" href="{% url 'home' %}">
+				<img src="{% static 'ec/img/GyaanHive.png' %}" alt="logo"/>
+				
+		</a> 
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
 			data-target = "#navbarResponsive">
 		<span class="navbar-toggler-icon"></span>
@@ -198,7 +201,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-md-3 footer-about wow fadeInUp">
-						<img class="logo-footer" src="{% static 'ec/img/logo.jpg' %}">
+						<img class="logo-footer" src="{% static 'ec/img/GyaanHive.png' %}">
 						<p>
 							We are a young company always looking for new and creative ideas to provide seemless learning experience.
 						</p>
