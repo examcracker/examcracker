@@ -157,8 +157,11 @@ class deleteFromCart(LoginRequiredMixin, generic.TemplateView):
         if 'course' in refered_url and  'coursePage' in refered_url:
             url = "course:coursePage"
             return redirect(url,courseid)
-        elif 'payment' in refered_url and 'cart' in refered_url and cartCnt > 0:
-            url = "payments:my_cart"
+        elif 'payment' in refered_url and cartCnt > 0:
+            if 'cart' in refered_url:
+                url = "payments:my_cart"
+            elif 'process' in refered_url:
+                url = "payments:process"
         else:
             url = "home" 
         return redirect(url)
