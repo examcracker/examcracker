@@ -7,6 +7,8 @@ from django.urls import reverse,reverse_lazy
 from provider.views import *
 import student
 from course.views import fillCartCourses
+from profiles.signals import sendMail
+from django.http import JsonResponse
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(fillCartCourses):
@@ -64,7 +66,7 @@ class listCourses(fillCartCourses):
 # Home page will never post to itself. So removing the post method from Home page
 class HomePage(fillCartCourses):
     template_name = "home.html"
-    http_method_names = ['get']
+    http_method_names = ['get','post']
 
     def get(self, request, *args, **kwargs):
         examsList = getExams()
@@ -80,8 +82,25 @@ class HomePage(fillCartCourses):
             allProvidersDetails.append(getUserNameAndPic(provider.id))
 
         kwargs["allProviders"] = allProvidersDetails
-
         return super().get(request, *args, **kwargs)
+    
+    def post(self, request):
+        name = self.request.POST.get('name')
+        email = self.request.POST.get('email')
+        phone = self.request.POST.get('phone')
+        message = self.request.POST.get('message')
+        try:
+            emailSub = 'Query from '+ name
+            emailBody = 'Hello GyaanHive,\n'
+            emailBody = emailBody + 'Name : ' + name + '\n'
+            emailBody = emailBody + 'Phone : ' + phone + '\n'
+            emailBody = emailBody + 'Email : ' + email + '\n'
+            emailBody = emailBody + 'Message : ' + message + '\n'
+            sendMail(settings.EMAIL_HOST_USER,emailSub,emailBody)
+            data = {'result':'success'}
+        except:
+            data = {'result':'failure'}
+        return JsonResponse(data)
 
 class AboutPage(generic.TemplateView):
     template_name = "about.html"

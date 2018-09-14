@@ -15,14 +15,12 @@ def getHost():
         return 'localhost:8000'
     return settings.ALLOWED_HOSTS[0]
 
-def sendVerificationMail(email, typeofuser, code):
-    link = 'http://{}/{}/verifyEmail/{}'.format(getHost(), typeofuser, code)
-
+def sendMail(toEmail, emailSubj,emailBody):
     msg = MIMEMultipart()
     msg['From'] = settings.EMAIL_HOST_USER
-    msg['To'] = email
-    msg['Subject'] = 'Welcome to GyaanHive'
-    body = 'Verify your email using the link ' + link
+    msg['To'] = toEmail
+    msg['Subject'] = emailSubj
+    body = emailBody
     msg.attach(MIMEText(body, 'plain'))
 
     server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
@@ -30,8 +28,12 @@ def sendVerificationMail(email, typeofuser, code):
     server.starttls()
     server.ehlo()
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    server.sendmail(settings.EMAIL_HOST_USER, email, msg.as_string())
+    server.sendmail(settings.EMAIL_HOST_USER, toEmail, msg.as_string())
 
+def sendVerificationMail(email, typeofuser, code):
+    link = 'http://{}/{}/verifyEmail/{}'.format(getHost(), typeofuser, code)
+    body = 'Verify your email using the link ' + link
+    sendMail(email,'Welcome to GyaanHive',body)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_profile_handler(sender, instance, created, **kwargs):
