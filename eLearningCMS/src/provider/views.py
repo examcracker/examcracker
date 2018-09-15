@@ -42,6 +42,32 @@ def getSessionsBySubjects(providerId,subjects):
     sessionObj = sessionObj.filter(q_objects)
     return sessionObj
 
+def getProviderStats(providerId):
+    coursesObj = course.models.Course.objects.filter(Q(provider_id=providerId) & Q(published=1))
+    sessionObj = models.Session.objects.filter(provider_id=providerId)
+    providerStatsInfo = {}
+    courses = []
+    courses.append(['Courses', 'Students per course'])
+    providerStatsInfo['totalCourses'] = len(coursesObj)
+    providerStatsInfo['totalSessions'] = len(sessionObj)
+    totalStudents = 0
+    totalRevenue = 0
+    for courseObj in coursesObj:
+        courseStat = []
+        courseStat.append(courseObj.name)
+        studentsPerCourse = len(course.models.EnrolledCourse.objects.filter(course_id=courseObj.id))
+        totalStudents += studentsPerCourse
+        totalRevenue += int(studentsPerCourse*courseObj.cost)
+        courseStat.append(studentsPerCourse)
+        courses.append(courseStat)
+    
+    providerStatsInfo['totalStudents'] = totalStudents
+    providerStatsInfo['totalRevenue'] = totalRevenue
+    providerStatsInfo['totalSessionPlayed'] = 5000
+
+    providerStatsInfo['piechartArray'] = courses
+    return providerStatsInfo
+
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'provider_home.html'
     http_method_names = ['get']
@@ -57,6 +83,9 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         providerObj = getProvider(request)
         if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
             kwargs["not_approved"] = True
+        else:
+            kwargs["statsInfo"] = getProviderStats(providerObj.id)
+
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
