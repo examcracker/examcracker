@@ -133,8 +133,6 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, userid, *args, **kwargs):
         # check logged in user is same as the one giving the authorize url
-        pdb.set_trace()
-        pdb.set_trace()
         if userid != request.user.id:
             raise Http404()
 
@@ -172,7 +170,6 @@ class challengeAccept(generic.TemplateView):
 
     def get(self, request, challengeBytes, deviceinfo, *args, **kwargs):
         devices = models.UserDevice.objects.filter(challenge=challengeBytes)
-        pdb.set_trace()
         if len(devices) == 0:
             return HttpResponse(False)
 
