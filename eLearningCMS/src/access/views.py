@@ -18,7 +18,7 @@ import time
 import profiles
 import notification
 from . import models
-
+from django_user_agents.utils import get_user_agent    
 User = get_user_model()
 
 # Create your views here.
@@ -26,9 +26,17 @@ User = get_user_model()
 def same(d1, d2):
     o1 = json.loads(d1)
     o2 = json.loads(d2)
-    c1 = str.split(o1['loc'], ",")
-    c2 = str.split(o2['loc'], ",")
-    if o1['browser'] == o2['browser'] and o1['os'] == o2['os'] and int(float(c1[0])) == int(float(c2[0])) and int(float(c1[1])) == int(float(c2[1])):
+    #c1 = str.split(o1['loc'], ",")
+    #c2 = str.split(o2['loc'], ",")
+    #if o1['browser'] == o2['browser'] and o1['os'] == o2['os'] and int(float(c1[0])) == int(float(c2[0])) and int(float(c1[1])) == int(float(c2[1])):
+    if o1['browser'] == o2['browser'] and \
+       o1['browser_version'] == o2['browser_version'] and \
+       o1['os'] == o2['os'] and \
+       o1['os_version'] == o2['os_version'] and \
+       o1['device_type'] == o2['device_type'] and \
+       o1['device_family'] == o2['device_family'] and \
+       o1['device_brand'] == o2['device_brand'] and \
+       o1['device_model'] == o2['device_model']:
         return True
     return False
 
@@ -64,16 +72,39 @@ def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
     server.sendmail(settings.EMAIL_HOST_USER, userObj.email, msg.as_string())
     
-    
+def parse_user_agents(request):
+    user_agent = get_user_agent(request)
+    data = {}
+    data["os"] = user_agent.os.family
+    data["os_version"] = user_agent.os.version_string
+    data["browser"] = user_agent.browser.family
+    data["browser_version"] = user_agent.browser.version_string
+    device_type = ''
+    if user_agent.is_mobile:
+        device_type = 'mobile'
+    elif user_agent.is_pc:
+        device_type='pc'
+    elif user_agent.is_tablet:
+        device_type='tablet'
+    elif user_agent.is_bot:
+        device_type='bot'
+    data["device_type"] = device_type
+    data["device_family"] = user_agent.device.family
+    data["device_brand"] = user_agent.device.brand
+    data["device_model"] = user_agent.device.model
+    json_data = json.dumps(data)
+    return json_data
+
 class allowDevice(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, userid, deviceinfo, *args, **kwargs):
         devices = models.UserDevice.objects.filter(user_id=userid)
+        device_data = parse_user_agents(request)
         if len(devices) == 0:
             userObj = User.objects.filter(id=userid)[0]
             deviceObj = models.UserDevice(user=userObj)
-            deviceObj.device = deviceinfo
+            deviceObj.device = device_data
             deviceObj.save()
             return HttpResponse(True)
 
@@ -81,19 +112,19 @@ class allowDevice(generic.TemplateView):
         if deviceObj.device:
             deviceList = str.split(deviceObj.device, "--")
             for device in deviceList:
-                if same(device, deviceinfo) == True:
+                if same(device, device_data) == True:
                     return HttpResponse(True)
 
         userObj = User.objects.filter(id=userid)[0]
         if not deviceObj.device or len(deviceList) < 3:
             if not deviceObj.device:
-                deviceObj.device = deviceinfo
+                deviceObj.device = device_data
             else:
-                deviceObj.device = deviceObj.device + "--" + deviceinfo
+                deviceObj.device = deviceObj.device + "--" + device_data
             deviceObj.save()
             return HttpResponse(True)
 
-        sendAuthenticationEmail(deviceObj, deviceinfo, userObj)
+        sendAuthenticationEmail(deviceObj, device_data, userObj)
         return HttpResponse(False)
 
 class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
@@ -102,6 +133,8 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, userid, *args, **kwargs):
         # check logged in user is same as the one giving the authorize url
+        pdb.set_trace()
+        pdb.set_trace()
         if userid != request.user.id:
             raise Http404()
 
@@ -139,6 +172,7 @@ class challengeAccept(generic.TemplateView):
 
     def get(self, request, challengeBytes, deviceinfo, *args, **kwargs):
         devices = models.UserDevice.objects.filter(challenge=challengeBytes)
+        pdb.set_trace()
         if len(devices) == 0:
             return HttpResponse(False)
 

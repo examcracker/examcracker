@@ -117,6 +117,7 @@ INSTALLED_APPS = (
     # django packages
     'snowpenguin.django.recaptcha2',
     'paypal.standard.ipn',
+    'django_user_agents',
 
     # django rest api packages
 	'rest_framework',
@@ -133,7 +134,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        # other middlewares...
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
+
+# Cache backend is optional, but recommended to speed up user agent parsing
 
 ROOT_URLCONF = 'examcracker.urls'
 

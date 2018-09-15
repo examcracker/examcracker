@@ -50,7 +50,8 @@
 
     <script type="text/javascript">
 	window.onload = function() {
-	var deviceJSON = getDeviceInfo();
+	//var deviceJSON = getDeviceInfo();
+	var deviceJSON = "dummyString";
 	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open("GET", url, false);
