@@ -48,8 +48,8 @@ def getProviderStats(providerId):
     providerStatsInfo = {}
     courses = []
     courses.append(['Courses', 'Students per course'])
-    providerStatsInfo['totalCourses'] = len(coursesObj)
-    providerStatsInfo['totalSessions'] = len(sessionObj)
+    providerStatsInfo['totalCourses'] = '{:,}'.format(len(coursesObj))
+    providerStatsInfo['totalSessions'] = '{:,}'.format(len(sessionObj))
     totalStudents = 0
     totalRevenue = 0
     for courseObj in coursesObj:
@@ -61,9 +61,9 @@ def getProviderStats(providerId):
         courseStat.append(studentsPerCourse)
         courses.append(courseStat)
     
-    providerStatsInfo['totalStudents'] = totalStudents
-    providerStatsInfo['totalRevenue'] = totalRevenue
-    providerStatsInfo['totalSessionPlayed'] = 5000
+    providerStatsInfo['totalStudents'] = '{:,}'.format(totalStudents)
+    providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
+    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(5000)
 
     providerStatsInfo['piechartArray'] = courses
     return providerStatsInfo
