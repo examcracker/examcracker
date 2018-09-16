@@ -69,6 +69,23 @@ def boolListToStr(array):
   return out
 
 # get all sessions for a course (does not work for link courses)
+def getAllSessionsIdsForCourse(courseid):
+    chapters = models.CourseChapter.objects.filter(course_id=courseid)
+    sessions = []
+
+    for c in chapters:
+      sessionids = strToIntList(c.sessions)
+      published = strToBoolList(c.published)
+
+      i = 0
+      while i < len(sessionids):
+        if published[i] == True:
+          sessions.append(sessionids[i])
+        i = i + 1
+
+    return sessions
+
+# get all sessions for a course (does not work for link courses)
 def getAllSessionsForCourse(courseid):
     chapters = models.CourseChapter.objects.filter(course_id=courseid)
     sessions = []
