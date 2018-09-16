@@ -18,17 +18,24 @@ import time
 import profiles
 import notification
 from . import models
-from django_user_agents.utils import get_user_agent    
+from django_user_agents.utils import get_user_agent 
+import hashlib
+
 User = get_user_model()
 
 # Create your views here.
 
 def same(d1, d2):
-    o1 = json.loads(d1)
-    o2 = json.loads(d2)
+    data1_md5 = hashlib.md5(d1.encode()).hexdigest()
+    data2_md5 = hashlib.md5(d2.encode()).hexdigest()
+    if data1_md5 == data2_md5:
+        return True
+    #o1 = json.loads(d1)
+    #o2 = json.loads(d2)
     #c1 = str.split(o1['loc'], ",")
     #c2 = str.split(o2['loc'], ",")
     #if o1['browser'] == o2['browser'] and o1['os'] == o2['os'] and int(float(c1[0])) == int(float(c2[0])) and int(float(c1[1])) == int(float(c2[1])):
+    '''
     if o1['browser'] == o2['browser'] and \
        o1['browser_version'] == o2['browser_version'] and \
        o1['os'] == o2['os'] and \
@@ -38,7 +45,9 @@ def same(d1, d2):
        o1['device_brand'] == o2['device_brand'] and \
        o1['device_model'] == o2['device_model']:
         return True
+    '''
     return False
+
 
 def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
     key = get_random_bytes(16)
@@ -92,7 +101,15 @@ def parse_user_agents(request):
     data["device_family"] = user_agent.device.family
     data["device_brand"] = user_agent.device.brand
     data["device_model"] = user_agent.device.model
-    json_data = json.dumps(data)
+    #json_data = json.dumps(data)
+    return data
+
+def mergeAndGetDeviceInfo(request,deviceinfo):
+    data1 = {}
+    data1 = parse_user_agents(request)
+    data2 = json.loads(deviceinfo)
+    data1.update(data2)
+    json_data = json.dumps(data1)
     return json_data
 
 class allowDevice(generic.TemplateView):
@@ -100,14 +117,13 @@ class allowDevice(generic.TemplateView):
 
     def get(self, request, userid, deviceinfo, *args, **kwargs):
         devices = models.UserDevice.objects.filter(user_id=userid)
-        device_data = parse_user_agents(request)
+        device_data = mergeAndGetDeviceInfo(request,deviceinfo)
         if len(devices) == 0:
             userObj = User.objects.filter(id=userid)[0]
             deviceObj = models.UserDevice(user=userObj)
             deviceObj.device = device_data
             deviceObj.save()
             return HttpResponse(True)
-
         deviceObj = devices[0]
         if deviceObj.device:
             deviceList = str.split(deviceObj.device, "--")
@@ -172,17 +188,19 @@ class challengeAccept(generic.TemplateView):
         devices = models.UserDevice.objects.filter(challenge=challengeBytes)
         if len(devices) == 0:
             return HttpResponse(False)
-
+        
+        device_data = mergeAndGetDeviceInfo(request,deviceinfo)
+        
         deviceObj = devices[0]
 
-        if not same(json.loads(deviceObj.candidate)['device'], deviceinfo):
+        if not same(json.loads(deviceObj.candidate)['device'], device_data):
             return HttpResponse(False)
 
         registered = str.split(deviceObj.device, "--")
 
         registered[0] = registered[1]
         registered[1] = registered[2]
-        registered[2] = deviceinfo
+        registered[2] = device_data
 
         deviceStr = registered[0] + "--" + registered[1] + "--" + registered[2]
         deviceObj.device = deviceStr

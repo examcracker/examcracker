@@ -1,3 +1,201 @@
+var fontsArr = ["Abadi MT Condensed Light",
+"Albertus Extra Bold",
+"Albertus Medium  ",
+"Antique Olive ",
+"Arial ",
+"Arial Black ",
+"Arial MT ",
+"Arial Narrow ",
+"Bazooka ",
+"Book Antiqua ",
+"Bookman Old Style ",
+"Boulder ",
+"Calisto MT ",
+"Calligrapher ",
+"Century Gothic ",
+"Century Schoolbook ",
+"Cezanne ",
+"CG Omega ",
+"CG Times ",
+"Charlesworth ",
+"Chaucer ",
+"Clarendon Condensed ",
+"Comic Sans MS ",
+"Copperplate Gothic Bold ",
+"Copperplate Gothic Light ",
+"Cornerstone ",
+"Coronet ",
+"Courier ",
+"Courier New ",
+"Cuckoo ",
+"Dauphin ",
+"Denmark ",
+"Fransiscan ",
+"Garamond ",
+"Geneva ",
+"Haettenschweiler ",
+"Heather ",
+"Helvetica ",
+"Herald ",
+"Impact ",
+"Jester ",
+"Letter Gothic ",
+"Lithograph ",
+"Lithograph Light ",
+"Long Island ",
+"Lucida Console ",
+"Lucida Handwriting ",
+"Lucida Sans ",
+"Lucida Sans Unicode ",
+"Marigold ",
+"Market ",
+"Matisse ITC ",
+"MS LineDraw ",
+"News GothicMT ",
+"OCR A Extended ",
+"Old Century ",
+"Pegasus ",
+"Pickwick ",
+"Poster ",
+"Pythagoras ",
+"Sceptre ",
+"Sherwood ",
+"Signboard ",
+"Socket ",
+"Steamer ",
+"Storybook ",
+"Subway ",
+"Tahoma ",
+"Technical ",
+"Teletype ",
+"Tempus Sans ITC ",
+"Times ",
+"Times New Roman ",
+"Times New Roman PS ",
+"Trebuchet MS ",
+"Tristan ",
+"Tubular ",
+"Unicorn ",
+"Univers ",
+"Univers Condensed ",
+"Vagabond ",
+"Verdana ",
+"Westminster",
+"Allegro ",
+"Amazone BT ",
+"AmerType Md BT ",
+"Arrus BT ",
+"Aurora Cn BT ",
+"AvantGarde Bk BT ",
+"AvantGarde Md BT ",
+"BankGothic Md BT ",
+"Benguiat Bk BT ",
+"BernhardFashion BT ",
+"BernhardMod BT ",
+"BinnerD ",
+"Bremen Bd BT ",
+"CaslonOpnface BT ",
+"Charter Bd BT ",
+"Charter BT ",
+"ChelthmITC Bk BT ",
+"CloisterBlack BT ",
+"CopperplGoth Bd BT ",
+"English 111 Vivace BT ",
+"EngraversGothic BT ",
+"Exotc350 Bd BT ",
+"Freefrm721 Blk BT ",
+"FrnkGothITC Bk BT ",
+"Futura Bk BT ",
+"Futura Lt BT ",
+"Futura Md BT ",
+"Futura ZBlk BT ",
+"FuturaBlack BT ",
+"Galliard BT ",
+"Geometr231 BT ",
+"Geometr231 Hv BT ",
+"Geometr231 Lt BT ",
+"GeoSlab 703 Lt BT ",
+"GeoSlab 703 XBd BT ",
+"GoudyHandtooled BT ",
+"GoudyOLSt BT ",
+"Humanst521 BT ",
+"Humanst 521 Cn BT ",
+"Humanst521 Lt BT ",
+"Incised901 Bd BT ",
+"Incised901 BT ",
+"Incised901 Lt BT ",
+"Informal011 BT ",
+"Kabel Bk BT ",
+"Kabel Ult BT ",
+"Kaufmann Bd BT ",
+"Kaufmann BT ",
+"Korinna BT ",
+"Lydian BT ",
+"Monotype Corsiva ",
+"NewsGoth BT ",
+"Onyx BT ",
+"OzHandicraft BT ",
+"PosterBodoni BT ",
+"PTBarnum BT ",
+"Ribbon131 Bd BT ",
+"Serifa BT ",
+"Serifa Th BT ",
+"ShelleyVolante BT ",
+"Souvenir Lt BT ",
+"Staccato222 BT ",
+"Swis721 BlkEx BT ",
+"Swiss911 XCm BT ",
+"TypoUpright BT ",
+"ZapfEllipt BT ",
+"ZapfHumnst BT ",
+"ZapfHumnst Dm BT ",
+"Zurich BlkEx BT ",
+"Zurich Ex BT"];
+
+(function (document) {
+        var width;
+        var body = document.body;
+      
+        var container = document.createElement('span');
+        container.innerHTML = Array(100).join('wi');
+        container.style.cssText = [
+          'position:absolute',
+          'width:auto',
+          'font-size:128px',
+          'left:-99999px'
+        ].join(' !important;');
+      
+        var getWidth = function (fontFamily) {
+          container.style.fontFamily = fontFamily;
+      
+          body.appendChild(container);
+          width = container.clientWidth;
+          body.removeChild(container);
+      
+          return width;
+        };
+      
+        // Pre compute the widths of monospace, serif & sans-serif
+        // to improve performance.
+        var monoWidth  = getWidth('monospace');
+        var serifWidth = getWidth('serif');
+        var sansWidth  = getWidth('sans-serif');
+      
+        window.isFontAvailable = function (font) {
+          return monoWidth !== getWidth(font + ',monospace') ||
+            sansWidth !== getWidth(font + ',sans-serif') ||
+            serifWidth !== getWidth(font + ',serif');
+        };
+      })(document);
+
+function getFontsInstalled() {
+        var myMap = new Object();
+        for (var i = 0; i < fontsArr.length; i++) {
+                myMap[fontsArr[i]] = isFontAvailable(fontsArr[i]);
+        }
+        jsonStr = JSON.stringify(myMap)
+        return jsonStr;
+}
 function getBrowser() {
 	var userAgent = navigator.userAgent;
 	var brwoser = '';
