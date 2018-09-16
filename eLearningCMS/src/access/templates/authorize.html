@@ -21,7 +21,7 @@
 	<script src="{% static 'access/access.js' %}"></script>
 	<script type="text/javascript">
 	window.onload = function() {
-	var deviceJSON = getDeviceInfo();
+	var deviceJSON = getFontsInstalled();
 	var challengeBytes = encodeURIComponent("{{challenge}}")
 	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/challenge/" + challengeBytes + "/" + deviceJSON;
 	var xmlHttp = new XMLHttpRequest();

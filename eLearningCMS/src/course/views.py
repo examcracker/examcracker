@@ -21,6 +21,7 @@ import student
 import re
 import profiles
 import payments
+import json
 
 
 User = get_user_model()
@@ -190,6 +191,26 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
     template_name = 'playSession.html'
 
+    def updateSessionStats(self, userId, sessionid):
+        # updating the playing session stats
+        sessionStatsObj = models.SessionStats.objects.filter(session_id=sessionid)
+        statsDict = {}
+        if len(sessionStatsObj) == 0:
+            sessionStatsObj = models.SessionStats()
+            sessionStatsObj.session = provider.models.Session.objects.filter(id=sessionid)[0]
+        else:
+            sessionStatsObj = sessionStatsObj[0]
+            statsDict = json.loads(sessionStatsObj.stats)
+        
+        sessionStudentId = str(userId)
+        if sessionStudentId in statsDict:
+            statsDict[sessionStudentId] += 1
+        else:
+            statsDict[sessionStudentId] = 1
+        
+        sessionStatsObj.stats = json.dumps(statsDict)
+        sessionStatsObj.save()
+
     def get(self, request, chapterid, sessionid, *args, **kwargs):
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
 
@@ -214,6 +235,9 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             if len(enrolledCourse) == 0:
                 raise Http404()
 
+            # updating the playing session stats
+            self.updateSessionStats(request.user.id, sessionid)
+                
             coursesWithSession = algos.getCoursesForSession(sessionid)
 
             for c in coursesWithSession:

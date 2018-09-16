@@ -13,7 +13,8 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4">
-        <div class="card text-white"  style="background: #93a806;">
+        <div class="card text-white clickableCard"  style="background: #93a806;">
+            <a href="{% url 'provider:my_students' %}"></a>
             <div class="card-body">
                 <div class="row">
                 <div class="col-md-5">
@@ -33,8 +34,9 @@
       </div>
       <div class="col-md-4">
 
-          <div class="card text-white bg-info">
-              <div class="card-body">
+          <div class="card text-white bg-info clickableCard">
+            <a href="{% url 'provider:view_courses' %}"></a>
+            <div class="card-body">
                   <div class="row">
                       <div class="col-md-5">
                           <h1 class="text-center display-2">
@@ -52,8 +54,9 @@
           </div>
           </div>
           <div class="col-md-4">
-          <div class="card text-white bg-success">
-              <div class="card-body">
+          <div class="card text-white bg-success clickableCard">
+            <a href="{% url 'provider:my_students' %}"></a>
+            <div class="card-body">
                   <div class="row">
                   <div class="col-md-5">
                   <h1 class="text-center display-2">
@@ -76,7 +79,8 @@
 
   <div class="row">
       <div class="col-md-6">
-        <div class="card text-white" style="background: #BC8989;">
+        <div class="card text-white clickableCard" style="background: #BC8989;">
+            <a href="{% url 'provider:my_students' %}"></a>
             <div class="card-body">
                 <h2 class=" card-title text-center" >Students distribution per course</h2> 
                 <div id="chart_div">
@@ -87,7 +91,8 @@
 
     <div class="col-md-6" align="right">
         <div style="padding-right: 10px; padding-left: 30px; padding-top: 30px">
-            <div class="card text-white" style="background: #a37c27;">
+            <div class="card text-white clickableCard" style="background: #a37c27;">
+                <a href="{% url 'provider:my_students' %}"></a>
                 <div class="card-body">
                     <div class="row">
                     <div class="col-md-5">
@@ -99,7 +104,7 @@
                         <h1 class="text-center display-4">
                             {{ statsInfo.totalSessionPlayed }}
                         </h1>
-                        <p class="text-center">Session played </p>
+                        <p class="text-center">Total sessions played </p>
                     </div>
                   </div>
                   </div>
@@ -131,6 +136,12 @@
 </div>
 
 <script type="text/javascript">
+
+    $(".clickableCard").click(function() {
+        window.location = $(this).find("a").attr("href"); 
+        return false;
+      });
+
   // Load the Visualization API and the corechart package.
   google.charts.load('current', {'packages':['corechart']});
 
@@ -151,9 +162,10 @@ var options = {
                 'backgroundColor': '#BC8989',
                 'height': 400,
                 'pieHole': 0.6,
-                'chartArea': {'left':'10','top':'20' ,'width': '100%', 'height': '80%'},
-                'legend': {textStyle: {color: 'white'}, 'position': 'bottom'}
-                };
+                'chartArea': {'left':'10','top':'10' ,'width': '100%', 'height': '80%'},
+                'legend': {textStyle: {color: 'white'}, 'position': 'bottom'},
+                is3D: true
+            };
 
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.PieChart(document.getElementById('chart_div'));

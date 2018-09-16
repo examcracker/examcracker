@@ -63,7 +63,18 @@ def getProviderStats(providerId):
     
     providerStatsInfo['totalStudents'] = '{:,}'.format(totalStudents)
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
-    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(5000)
+
+    totalSessionPlayed = 0
+    #import pdb
+    #pdb.set_trace()
+    for session in sessionObj:
+        sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
+        if(len(sessionStatsObj) > 0):
+            statsDict = json.loads(sessionStatsObj[0].stats)
+            for key in statsDict:
+                totalSessionPlayed += statsDict[key]
+
+    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(totalSessionPlayed)
 
     providerStatsInfo['piechartArray'] = courses
     return providerStatsInfo
@@ -472,26 +483,49 @@ class myStudents(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
-        coursesObj = course.models.Course.objects.filter(provider_id=providerObj.id)
-        courses = []
-        courses.append(['Courses', 'Students per course'])
-        for courseObj in coursesObj:
-            courseStat = []
-            courseStat.append(courseObj.name)
-            studentsPerCourse = len(course.models.EnrolledCourse.objects.filter(course_id=courseObj.id))
-            courseStat.append(studentsPerCourse)
-            courses.append(courseStat)
+        coursesObj = course.models.Course.objects.filter(Q(provider_id=providerObj.id) & Q(published=1))
         courseDictMap = {}
-        courseDictArray = []
-        courseDictMap["myCourse"] = True
-        courseDict = {}
-        courseDict['name'] = "Students distribution per course"
-        courseDict['chartTitleeee'] = ""
-        courseDict['piechartArray'] = courses
-        courseDict['progressbarShow'] = False
-        courseDictArray.append(courseDict)
-        courseDictMap["outertemplateArray"] = courseDictArray
-        kwargs["course_overview"] = courseDictMap
+        for courseObj in coursesObj:
+            studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
+            if len(studentsObj) == 0:
+                continue
+
+            sessionIDList = course.algos.getAllSessionsIdsForCourse(courseObj.id)
+
+            sessionStatsList = []
+            for sessionID in sessionIDList:
+                sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
+                if(len(sessionStatsObj) > 0):
+                    statsDict = json.loads(sessionStatsObj[0].stats)
+                    sessionStatsList.append(statsDict)
+
+            studentList = []
+            for studentItem in studentsObj:
+                studentInfo = {}
+                studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
+                studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
+                studentInfo['enrolled_date'] = studentItem.enrolled
+
+                totalSessionWatched = 0
+                totalPlayedCount = 0
+                for statsItem in sessionStatsList:
+                    studentId = str(studentItem.student_id)
+                    if studentId in statsItem:
+                        totalSessionWatched += 1
+                        totalPlayedCount += statsItem[studentId]
+
+                studentInfo['totalSessions'] = len(sessionIDList)
+                studentInfo['totalSessionWatched'] = totalSessionWatched
+                studentInfo['totalPlayedCount'] = totalPlayedCount
+                if(len(sessionIDList) > 0):
+                    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
+                else:
+                    studentInfo['CourseCompleted'] = 'NA'
+
+                studentList.append(studentInfo)
+
+            courseDictMap[courseObj.name] = studentList
+        kwargs["course_stats"] = courseDictMap
         return super().get(request, *args, **kwargs)
 
 class liveCapture(showProviderHome):

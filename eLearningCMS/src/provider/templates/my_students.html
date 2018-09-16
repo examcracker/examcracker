@@ -9,8 +9,35 @@
     </li>
     <li class="breadcrumb-item active">My Students</li>
   </ol>
-  <script type="text/javascript" src="{% static 'progress/js/charts/loader.js' %}"></script>
-  {% if course_overview.myCourse%}
-  {% include "piechart.html" with datatoload=course_overview %}
-  {% endif %}
+  
+    {% for key, values in course_stats.items %}
+    <h6>{{ key }} </h6> 
+    <table id="example" class="table table-striped table-bordered" style="width:100%">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Session Completed</th>
+            <th>Play Count</th>
+            <th>Progress</th>
+            <th>Total Sessions</th>
+            <th>Joined on</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in values %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.totalSessionWatched }}</td>
+            <td>{{ item.totalPlayedCount }}</td>
+            <td>{{ item.CourseCompleted }}</td>
+            <td>{{ item.totalSessions }}</td>
+            <td>{{ item.enrolled_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    
+    </table>
+    <hr>
+    {% endfor %}
+
 {% endblock active %}
