@@ -1,0 +1,124 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+
+<script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+  <!-- Breadcrumbs-->
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Live Capture</li>
+  </ol>
+  
+  <div class="container">
+       <style>
+	   .collapsible {
+        background-color: #777;
+        color: white;
+        cursor: pointer;
+		padding: 18px;
+        border: none;
+        text-align: left;
+        outline: none;
+        }
+	   .content {
+        padding: 0 18px;
+        display: none;
+        background-color: #f1f1f1;
+       }
+      </style>
+	  {% for course in mycourses %}
+       <button class="collapsible">{{ course.name }}</button>
+       <div class="content">
+	      {% for sub, subDetails in course.details.items %}
+		  <button class="collapsible">{{ sub }}</button>
+		  <div class="content">
+		    {% for subject in subDetails %}
+		    {% for chapId, chapDetails in subject.items %}
+            <label class="container">{{ chapDetails.name }}
+            <input id="{{chapId}}" type="radio" checked="checked" name="radio">
+            <span class="checkmark"></span>
+            </label>
+			{% endfor %}
+			{% endfor %}
+		  </div>
+		  <br>
+		  {% endfor %}
+       </div>
+	   <br>
+	   {% endfor %}
+	  </div>
+	  
+	 <video id="video" class="videostream" autoplay></video>
+     <p>
+	 <button id="capture-button">Start Recording</button>
+     <button id="stop-button">Stop Recording</button>
+	 </p>
+
+
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+
+const constraints = {video: true, audio: true};
+
+const captureVideoButton = document.getElementById('capture-button');
+
+var videoBlob;
+
+captureVideoButton.onclick = function() {
+  navigator.mediaDevices.getUserMedia(constraints).
+    then(handleSuccess).catch(handleError);
+};
+
+function handleSuccess(stream) {
+  video.srcObject = stream;
+  video.muted = true;
+  recorder = new RecordRTCPromisesHandler(stream, {mimeType: 'video/webm', bitsPerSecond: 128000});
+  recorder.startRecording().then(function() {console.info('Recording video ...');});
+  recorder.stream = stream;
+}
+
+document.getElementById('stop-button').onclick = handleStop;
+
+function handleStop() {
+  video.srcObject.getTracks().forEach(function(track) {track.stop();});
+  recorder.stopRecording().then(function() {console.info('stopRecording success');
+            videoBlob = recorder.getBlob();
+            video.muted = false;
+			console.log(videoBlob);
+			save();
+  });
+}
+
+function save(){
+  var a = document.createElement("a");
+  document.body.appendChild(a);
+  a.style = "display: none";
+  var url = window.URL.createObjectURL(videoBlob);
+  a.href = url;
+  a.download = "video.webm";
+  a.click();
+  window.URL.revokeObjectURL(url);
+  return false;
+}
+ 
+</script>
+
+{% endblock active %}

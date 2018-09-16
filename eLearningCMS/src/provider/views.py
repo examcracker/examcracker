@@ -463,7 +463,6 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
 
         return super().get(request, *args, **kwargs)
 
-
 class myStudents(showProviderHome):
     template_name = "my_students.html"
     http_method_names = ['get']
@@ -493,4 +492,27 @@ class myStudents(showProviderHome):
         courseDictArray.append(courseDict)
         courseDictMap["outertemplateArray"] = courseDictArray
         kwargs["course_overview"] = courseDictMap
+        return super().get(request, *args, **kwargs)
+
+class liveCapture(showProviderHome):
+    template_name = "live_capture.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        providerObj = getProvider(request)
+        mycourses = course.models.Course.objects.raw('SELECT * from course_course WHERE provider_id = ' + str(providerObj.id) + \
+                                                     ' AND id NOT IN (SELECT parent_id from course_linkcourse)')
+
+        courseDict = []
+        for c in mycourses:
+            courseDetails = course.algos.getCourseDetails(c.id, False)
+            courseInfo = {}
+            courseInfo['name'] = c.name
+            courseInfo['details'] = courseDetails
+            courseDict.append(courseInfo)
+
+        kwargs['mycourses'] = courseDict
         return super().get(request, *args, **kwargs)
