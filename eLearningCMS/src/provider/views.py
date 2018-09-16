@@ -63,7 +63,18 @@ def getProviderStats(providerId):
     
     providerStatsInfo['totalStudents'] = '{:,}'.format(totalStudents)
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
-    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(5000)
+
+    totalSessionPlayed = 0
+    #import pdb
+    #pdb.set_trace()
+    for session in sessionObj:
+        sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
+        if(len(sessionStatsObj) > 0):
+            statsDict = json.loads(sessionStatsObj[0].stats)
+            for key in statsDict:
+                totalSessionPlayed += statsDict[key]
+
+    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(totalSessionPlayed)
 
     providerStatsInfo['piechartArray'] = courses
     return providerStatsInfo

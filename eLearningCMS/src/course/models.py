@@ -99,6 +99,10 @@ class EnrolledCourse(models.Model):
     enrolled = models.DateTimeField(auto_now_add=True)
     sessions = models.CharField(max_length=10000, blank=True)
 
+class SessionStats(models.Model):
+    session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
+    stats = models.CharField(max_length=10000, blank=True)
+
 class CourseChapter(models.Model):
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
