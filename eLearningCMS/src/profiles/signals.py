@@ -30,8 +30,8 @@ def sendMail(toEmail, emailSubj,emailBody):
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
     server.sendmail(settings.EMAIL_HOST_USER, toEmail, msg.as_string())
 
-def sendVerificationMail(email, typeofuser, code):
-    link = 'http://{}/{}/verifyEmail/{}'.format(getHost(), typeofuser, code)
+def sendVerificationMail(httpProtocol,email, typeofuser, code):
+    link = '{}://{}/{}/verifyEmail/{}'.format(httpProtocol,getHost(), typeofuser, code)
     body = 'Verify your email using the link ' + link
     sendMail(email,'Welcome to GyaanHive',body)
 
@@ -48,7 +48,7 @@ def create_profile_handler(sender, instance, created, **kwargs):
         typeofuser = 'provider'
 
     try:
-        sendVerificationMail(instance.email, typeofuser, profile.slug)
+        sendVerificationMail('http',instance.email, typeofuser, profile.slug)
     except:
         logger.error('Verification email could not be sent to {}.'.format(instance.email))
     notification.models.notify(instance.id, notification.models.EMAIL_NOT_VERIFIED, notification.models.WARNING, instance.email)

@@ -59,9 +59,9 @@ class payment_process(LoginRequiredMixin,generic.TemplateView):
             'item_name': "Courses Enrolled",
             'invoice': "Invoice for " + str(request.user.name),
             'currency_code': 'USD',
-            'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
-            'return_url': 'http://{}{}'.format(host, reverse('payments:done')),
-            'cancel_return': 'http://{}{}'.format(host, reverse('payments:canceled')),
+            'notify_url': '{}://{}{}'.format(request.scheme,host, reverse('paypal-ipn')),
+            'return_url': '{}://{}{}'.format(request.scheme,host, reverse('payments:done')),
+            'cancel_return': '{}://{}{}'.format(request.scheme,host, reverse('payments:canceled')),
             }
 
         form = PayPalPaymentsForm(initial=paypal_dict)
@@ -100,7 +100,8 @@ def get_referer_view(request, default=None):
     if not referer:
         return default
     # remove the protocol and split the url at the slashes
-    referer = re.sub('^https?:\/\/', '', referer).split('/')
+    httpProtocol = request.scheme
+    referer = re.sub('^'+httpProtocol+'?:\/\/', '', referer).split('/')
     # add the slash at the relative path's view and finished
     referer = u'/' + u'/'.join(referer[1:])
     return referer

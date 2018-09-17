@@ -49,7 +49,7 @@ def same(d1, d2):
     return False
 
 
-def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
+def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     key = get_random_bytes(16)
     cipher_aes = AES.new(key, AES.MODE_GCM)
 
@@ -66,7 +66,7 @@ def sendAuthenticationEmail(deviceObj, deviceInfo, userObj):
     queryArg = {}
     queryArg['cipher'] = base64.b64encode(ciphertext).decode()
 
-    link = 'http://{}/access/authorize/{}?{}'.format(profiles.signals.getHost(), userObj.id, urllib.parse.urlencode(queryArg))
+    link = '{}://{}/access/authorize/{}?{}'.format(httpProtocol,profiles.signals.getHost(), userObj.id, urllib.parse.urlencode(queryArg))
     msg = MIMEMultipart()
     msg['From'] = settings.EMAIL_HOST_USER
     msg['To'] = userObj.email
@@ -140,7 +140,7 @@ class allowDevice(generic.TemplateView):
             deviceObj.save()
             return HttpResponse(True)
 
-        sendAuthenticationEmail(deviceObj, device_data, userObj)
+        sendAuthenticationEmail(request.scheme,deviceObj, device_data, userObj)
         return HttpResponse(False)
 
 class authorizeDevice(LoginRequiredMixin, generic.TemplateView):

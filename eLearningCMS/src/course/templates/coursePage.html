@@ -73,9 +73,9 @@ courses ( all courses ,course model)
 							    {% csrf_token %}
 								<input type="submit" name="join" class="btn btn-primary" value="Join"></input>
 								{% if not course_overview.addedCourse %}
-								<a class="btn btn-primary"  href="{% url 'student:add_to_cart' course_overview.id %}">Add to Cart</a>
+								<a class="btn btn-primary"  href="{% url 'payments:add_to_cart' course_overview.id %}">Add to Cart</a>
                                 {% else %}
-                                <a class="btn btn-primary"  href="{% url 'student:delete_from_cart' course_overview.id %}">Delete from Cart</a>
+                                <a class="btn btn-primary"  href="{% url 'payments:delete_from_cart' course_overview.id %}">Delete from Cart</a>
 								{% endif %}
 							  </form>
                                 <hr>
