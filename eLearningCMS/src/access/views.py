@@ -52,6 +52,7 @@ def same(d1, d2):
 def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     key = get_random_bytes(16)
     cipher_aes = AES.new(key, AES.MODE_GCM)
+    # sending deviceInfo hash to reduce length of Authentication mail
     deviceInfoHash = hashlib.md5(deviceInfo.encode()).hexdigest()
     deviceDict = {}
     deviceDict['device'] = deviceInfoHash
@@ -192,8 +193,11 @@ class challengeAccept(generic.TemplateView):
         device_data = mergeAndGetDeviceInfo(request,deviceinfo)
         
         deviceObj = devices[0]
-
-        if not same(json.loads(deviceObj.candidate)['device'], device_data):
+        d1 = json.loads(deviceObj.candidate)['device']
+        d2 = data2_md5 = hashlib.md5(device_data.encode()).hexdigest()
+        #if not same(json.loads(deviceObj.candidate)['device'], device_data):
+        #    return HttpResponse(False)
+        if d1 != d2:
             return HttpResponse(False)
 
         registered = str.split(deviceObj.device, "--")
