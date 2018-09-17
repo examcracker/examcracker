@@ -52,9 +52,9 @@ def same(d1, d2):
 def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     key = get_random_bytes(16)
     cipher_aes = AES.new(key, AES.MODE_GCM)
-
+    deviceInfoHash = hashlib.md5(deviceInfo.encode()).hexdigest()
     deviceDict = {}
-    deviceDict['device'] = deviceInfo
+    deviceDict['device'] = deviceInfoHash
     deviceDict['user'] = userObj.id
     text = json.dumps(deviceDict)
     ciphertext = cipher_aes.encrypt(text.encode())
