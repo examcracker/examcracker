@@ -44,7 +44,7 @@ INTERNAL_IPS = [
     '0.0.0.1',
 ]
 
-ALLOWED_HOSTS = ['gyaanhive.com']
+ALLOWED_HOSTS = ['www.gyaanhive.com']
 
 # Log everything to the logs directory at the top
 LOGFILE_ROOT = BASE_DIR.parent / 'logs'
