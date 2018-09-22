@@ -104,33 +104,45 @@ courses ( all courses ,course model)
             <div class="card-body card-course-details-body">
                 <h3 class="Text-Centre">Contents</h3>
                         <div class="container">
-                            <div id="accordion">
+                            <div class="panel-group" id="accordion">
                                 {% for subject, subValue in course_detail.items %}
-                                <div class="card">
-                                <div class="card-header">
-                                    <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ subject }}">{{ subject }}</a>
+                                <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h5 class="panel-title">
+                                    <a role="button" data-toggle="collapse"  aria-expanded="false" data-parent="#accordion" href="#{{ subject }}">
+                                        <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                        <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                        {{ subject }}
+                                    </a>
+                                    </h5>
                                 </div>
-                                <div id="{{ subject }}" class="collapse">
-                                <div class="card-body">
+                                <div id="{{ subject }}" class="panel-collapse collapse in">
+                                <div class="panel-body">
 
                                 {% for item in subValue %}
                                 {% for chapId, value in item.items %}
-                                 <div class="card">
-                                   <div class="card-header">
-                                        <a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}">{{ value.name }}</a>
-                                        <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
-                                   </div>
+                                 <div class="panel">
+                                   <div class="panel-heading">
+                                    <h6 class="panel-title">
+                                        <a role="button" data-toggle="collapse" aria-expanded="false" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}">
+                                            <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                            <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                            {{ value.name }}
+                                            <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
+                                        </a>
+                                    </h6>
+                                </div>
                                    <div id="{{ value.name }}:{{ subject }}" class="collapse">
-                                     <div class="card-body">
+                                     <div class="panel-child-body">
                                         <div class="list-group">
                                             {% for session in value.sessions %}
                                             {% if course_overview.myCourse %}
-                                                <a href="{% url 'course:playSession' chapId session.id %}" class="list-group-item">
+                                                <a href="{% url 'course:playSession' chapId session.id %}" class="box-no-border list-group-item">
                                                     <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
                                                     {{ session.name }}
                                                 </a>
                                             {% else %}
-                                                <div class="list-group-item">
+                                                <div class="box-no-border list-group-item">
                                                     <i class="fa fa-lock fa-fw" style="padding-right:10px"></i>
                                                     {{ session.name }}
                                                 </div>

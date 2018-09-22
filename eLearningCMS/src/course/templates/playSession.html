@@ -20,30 +20,60 @@
 				<div class="jwplayerDiv">
 				<iframe id="jwplayer" width="720" height="405" frameborder="30" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
 				</div>
+
+				<!-- <div class="jwplayerDiv_test" style="display:none">
+					<iframe id="jwplayer_test" width="0" height="0" frameborder="0" src="https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
+				</div> -->
 			</div>
 			<div class="col-4">
 				<h2>Contents</h2>
+				<div class="container">
+				<div class="panel-group" id="accordion">
 				{% for subj, subjdetails in coursedetails.items %}
-					<div class="card">
-						<div class="card-header">
-								<a class="card-link" data-toggle="collapse" data-parent="#accordion" href="#{{ subj }}">{{ subj }}</a>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h5 class="panel-title">
+								<a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
+									<span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+									<span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+									{{ subj }}
+								</a>
+							</h5>
 						</div>
 						<div id="{{ subj }}" class="collapse show">
-						<div class="card-body">
+						<div class="panel-body">
 					{% for s in subjdetails %}
 					{% for chapid, chapdetails in s.items %}
-						<a class="list-group-item">
-								<i style="padding-right:10px"></i><b>{{ chapdetails.name }}</b></a>
+
+					<div class="panel">
+							<div class="panel-heading">
+							 <h6 class="panel-title">
+								 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
+									 <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+									 <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+									 {{ chapdetails.name }}
+								 </a>
+							 </h6>
+						 </div>
+						<div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
+							<div class="panel-child-body">
+								<div class="list-group">
 						{% for session in chapdetails.sessions %}
-						<a href="{% url 'course:playSession' chapid session.id %}" class="list-group-item">
-										<i class="fa fa-play fa-fw" style="padding-right:10px"></i>{{ session.name }}</a>
+						<a href="{% url 'course:playSession' chapid session.id %}" class="box-no-border list-group-item">
+						<i class="fa fa-play fa-fw" style="padding-right:10px"></i>{{ session.name }}</a>
+						{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
 					{% endfor %}
 					{% endfor %}
-				{% endfor %}
-			</div>
+				</div>
+				</div>
 		</div>
-</div>
 				{% endfor %}
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

@@ -17,15 +17,15 @@
                     <div class="card-body" style='background-color:#fcfcfc;' >
                         <div class="container">
                             <div class="row">
-                                <div class="col-xs-2 col-sm-2" align="left">
+                                <div class="col-xs-4 col-sm-4 padding-0" align="left">
                                     <img id="providerPic" src="{% thumbnail currentCourse.profilePic|default:'default_profile.png' 25x25 crop %}" class="rounded-circle" alt="avatar">
                                 </div>
-                                <div class="single-col-text-5 col-xs-5 col-sm-5 padding-0">
-                                        {{ currentCourse.provider_name }} 
-                                </div>
-                                <div class="single-col-text-5 col-xs-5 col-sm-5" align="right">
+                                <div class="single-col-text-8 col-xs-8 col-sm-8 padding-0" align="right">
                                     <i class="fas fa-rupee-sign" aria-hidden="true"></i> 
                                     {{ currentCourse.cost }}
+                                </div>
+                                <div class="small-text-single-line padding-bottom-0">
+                                    {{ currentCourse.provider_name }} 
                                 </div>
                             </div>
                                 <div align="centre">
