@@ -39,9 +39,7 @@ BOT = 'bot'
 # input : plain text,key,IV
 # return: encrypted text , key , IV
 def encrypt(clear_text,key=None,iv=None):
-    tag_string = (str(clear_text) +
-                  (AES.block_size -
-                   len(str(clear_text)) % AES.block_size) * "\0")      
+    tag_string = clear_text
     cipher_aes = ''
     if key == None and iv == None:
         key = get_random_bytes(AES.block_size)
@@ -194,7 +192,7 @@ class allowDevice(generic.TemplateView):
             deviceObj.cookieTime = cookieValue['time']
             deviceObj.save()
             resp = HttpResponse(True)
-            resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+            resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
             sendNotificationEmail(userObj.email,device_data)
             return resp
 
@@ -212,7 +210,7 @@ class allowDevice(generic.TemplateView):
             if deviceList[i] == deviceDetected:
                 if settings.USER_AUTH_COOKIE in request.COOKIES.keys():
                     # cookie found, then validate
-                    cookieValue = request.COOKIES.get(settings.USER_AUTH_COOKIE)
+                    cookieValue = request.get_signed_cookie(settings.USER_AUTH_COOKIE)
                     isValid,isExpired = verifyCookie(cookieValue,userid,deviceDetected,deviceObj,cookieTimeList[i])
                     # check cookie validity and set new cookie if required here
                     resp = HttpResponse(isValid)
@@ -222,7 +220,7 @@ class allowDevice(generic.TemplateView):
                         cookieTimeList[i] = cookieValue['time']
                         ciphertext = encrypt(json.dumps(cookieValue),key,iv)
                         deviceObj.cookieTime = "--".join(cookieTimeList)
-                        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+                        resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
                         deviceObj.save()
                     return resp
                 elif deviceObj.miss <= settings.NUMBER_OF_COOKIE_MISS:
@@ -235,7 +233,7 @@ class allowDevice(generic.TemplateView):
                     ciphertext = encrypt(json.dumps(cookieValue),key,iv)
                     resp = HttpResponse(True)
                     deviceObj.cookieTime = "--".join(cookieTimeList)
-                    resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+                    resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
                     deviceObj.save()
                     sendNotificationEmail(userObj.email,device_data)
                     return resp
@@ -264,7 +262,7 @@ class allowDevice(generic.TemplateView):
         deviceObj.cookieTime = deviceObj.cookieTime + '--' + cookieValue['time']
         ciphertext = encrypt(json.dumps(cookieValue),key,iv)
         resp = HttpResponse(True)
-        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+        resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
         deviceObj.save()
         sendNotificationEmail(userObj.email,device_data)
         return resp
@@ -356,7 +354,7 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
         kwargs["device_type"] = device_data['device_type']
         kwargs["browser"] = device_data['browser']
         resp = super().get(request, userid, *args, **kwargs)
-        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+        resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
         sendNotificationEmail(userObj.email,device_data)
         return resp
 
