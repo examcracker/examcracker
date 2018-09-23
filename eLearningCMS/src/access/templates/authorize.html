@@ -14,14 +14,21 @@
 	{% block content %}
 	<div class="container">
         <div class="text-center" style="height:80%">
-            <h1><font id="para"></font></h1>
+            <h1><font id="para" style="color: green">
+				{% if device_type %}
+				Your device is successfully authorized on your {{device_type }} and browser {{browser}}
+				{% endif %}
+			</font></h1>
         </div>
     </div>
 
 	<script src="{% static 'access/access.js' %}"></script>
 	<script type="text/javascript">
+	/*
 	window.onload = function() {
+		
 	var deviceJSON = getFontsInstalled();
+	var deviceJSON = "DUMMY STRING";
 	var challengeBytes = encodeURIComponent("{{challenge}}")
 	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/challenge/" + challengeBytes + "/" + deviceJSON;
 	var xmlHttp = new XMLHttpRequest();
@@ -37,7 +44,7 @@
 	  document.getElementById("para").innerHTML = "Your device could not be authorized";
 	  document.getElementById("para").color = "red";
 	}
-	}
+	}*/
 	</script>
 	{%  endblock %}
 	{%  endblock container %}

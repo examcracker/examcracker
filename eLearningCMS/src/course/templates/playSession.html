@@ -94,10 +94,11 @@
   	var t3 = navigator.plugins[i].description;
 	}*/
 	//var deviceJSON = getDeviceInfo();
-	var width = screen.width;
-	var height = screen.height;
+	//var width = screen.width;
+	//var height = screen.height;
 	// Adding system fonts in device info. We will add more data 
-	var deviceJSON = getFontsInstalled();
+	//var deviceJSON = getFontsInstalled();
+	var deviceJSON = "DUMMYSTRING";
 	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open("GET", url, false);

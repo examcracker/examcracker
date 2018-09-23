@@ -198,3 +198,12 @@ LOGIN_REDIRECT_URL = reverse_lazy("home")
 LOGIN_URL = reverse_lazy("accounts:login")
 
 THUMBNAIL_EXTENSION = 'png'     # Or any extn for your thumbnails
+
+# Cookie Settings
+USER_AUTH_COOKIE_UPDATE_IN_DAYS = 3
+USER_AUTH_COOKIE_AGE = 3*24*60*60
+USER_AUTH_COOKIE = 'GHUSERAUTH'
+USER_AUTH_COOKIE_DEFAULT_VALUE = 'unenrolleduser'
+NUMBER_ALLOWED_DEVICES = 2
+NUMBER_OF_COOKIE_MISS = 3
+

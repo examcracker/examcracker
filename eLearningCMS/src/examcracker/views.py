@@ -80,9 +80,12 @@ class HomePage(fillCartCourses):
         allProvidersDetails = []
         for provider in allProviders:
             allProvidersDetails.append(getUserNameAndPic(provider.id))
-
         kwargs["allProviders"] = allProvidersDetails
-        return super().get(request, *args, **kwargs)
+        resp = super().get(request, *args, **kwargs)
+        # set cookie with some default value
+        if settings.USER_AUTH_COOKIE not in request.COOKIES.keys():
+            resp.set_cookie(settings.USER_AUTH_COOKIE, settings.USER_AUTH_COOKIE_DEFAULT_VALUE,max_age=settings.USER_AUTH_COOKIE_AGE)
+        return resp
     
     def post(self, request):
         name = self.request.POST.get('name')

@@ -21,34 +21,85 @@ from . import models
 from django_user_agents.utils import get_user_agent 
 import hashlib
 
+from datetime import timedelta
+from datetime import datetime
+
+from profiles.signals import sendMail
 User = get_user_model()
+datetimeFormat = '%d/%m/%Y %H:%M:%S'
+# device types 
+MOBILE = 'mobile'
+PC = 'pc'
+TABLET = 'tablet'
+BOT = 'bot'
 
 # Create your views here.
 
-def same(d1, d2):
-    data1_md5 = hashlib.md5(d1.encode()).hexdigest()
-    data2_md5 = hashlib.md5(d2.encode()).hexdigest()
-    if data1_md5 == data2_md5:
-        return True
-    #o1 = json.loads(d1)
-    #o2 = json.loads(d2)
-    #c1 = str.split(o1['loc'], ",")
-    #c2 = str.split(o2['loc'], ",")
-    #if o1['browser'] == o2['browser'] and o1['os'] == o2['os'] and int(float(c1[0])) == int(float(c2[0])) and int(float(c1[1])) == int(float(c2[1])):
-    '''
-    if o1['browser'] == o2['browser'] and \
-       o1['browser_version'] == o2['browser_version'] and \
-       o1['os'] == o2['os'] and \
-       o1['os_version'] == o2['os_version'] and \
-       o1['device_type'] == o2['device_type'] and \
-       o1['device_family'] == o2['device_family'] and \
-       o1['device_brand'] == o2['device_brand'] and \
-       o1['device_model'] == o2['device_model']:
-        return True
-    '''
-    return False
+# encrypt
+# input : plain text,key,IV
+# return: encrypted text , key , IV
+def encrypt(clear_text,key=None,iv=None):
+    tag_string = (str(clear_text) +
+                  (AES.block_size -
+                   len(str(clear_text)) % AES.block_size) * "\0")      
+    cipher_aes = ''
+    if key == None and iv == None:
+        key = get_random_bytes(AES.block_size)
+        cipher_aes = AES.new(key, AES.MODE_GCM)
+        iv = cipher_aes.nonce
+    else:
+        cipher_aes = AES.new(key, AES.MODE_GCM,iv)
+    cipher_text = base64.b64encode(cipher_aes.encrypt(tag_string.encode()))
+    return cipher_text.decode(),key,iv
 
+# decrypt function
+# input : encryptedText , key , IV
+# return: plainText
+def decrypt (encryptText,key,iv):
+    miss = len(str(encryptText)) % AES.block_size
+    dec_secret = AES.new(key, AES.MODE_GCM, iv)
+    raw_decrypted = dec_secret.decrypt(base64.b64decode(encryptText.encode()))
+    plaintext = raw_decrypted.decode().rstrip("\0")
+    return plaintext
 
+# return cookie value as dictionary
+def createNewCookieValue(userId,deviceInfo):
+    cookieDic = {}
+    cookieDic['user'] = userId
+    cookieDic['time'] = datetime.now().strftime(datetimeFormat)
+    cookieDic['device_type'] = deviceInfo['device_type']
+    cookieDic['browser'] = deviceInfo['browser']
+    return cookieDic
+
+def sendNotificationEmail(email,deviceInfo):
+    return
+    emailSubj = 'New Device has been added'
+    emailBody = """
+    Dear Student,
+    Login from your device  """+ deviceInfo['device_type'] + """ and browser """ + deviceInfo['browser'] + """ has been added.
+    Kindly note that a student is allowed to access
+    only 2 devices.
+    Thanks
+    GyaanHive Team
+    """
+    sendMail(email, emailSubj,emailBody)
+
+def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
+    key = base64.b64decode(str.split(deviceObj.key, "::")[0])
+    iv = base64.b64decode(str.split(deviceObj.key, "::")[1])
+    data = createNewCookieValue(userObj.id,deviceInfo)
+    text = json.dumps(data)
+    ciphertext = encrypt(text,key,iv)
+    deviceObj.authTime = calendar.timegm(time.gmtime())
+    deviceObj.save()
+    queryArg = {}
+    queryArg['cipher'] = ciphertext
+    link = '{}://{}/access/authorize/{}?{}'.format(httpProtocol,profiles.signals.getHost(), userObj.id,urllib.parse.urlencode(queryArg))
+    body = 'Authorize your device using the link ' + link
+    print (link)
+    #sendMail(userObj.email, 'GyaanHive Authorize Device',body)
+
+'''
 def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     key = get_random_bytes(16)
     cipher_aes = AES.new(key, AES.MODE_GCM)
@@ -81,69 +132,143 @@ def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     server.ehlo()
     server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
     server.sendmail(settings.EMAIL_HOST_USER, userObj.email, msg.as_string())
-    
+'''    
 def parse_user_agents(request):
     user_agent = get_user_agent(request)
     data = {}
-    data["os"] = user_agent.os.family
-    data["os_version"] = user_agent.os.version_string
+    #data["os"] = user_agent.os.family
+    #data["os_version"] = user_agent.os.version_string
     data["browser"] = user_agent.browser.family
-    data["browser_version"] = user_agent.browser.version_string
+    #data["browser_version"] = user_agent.browser.version_string
     device_type = ''
     if user_agent.is_mobile:
-        device_type = 'mobile'
+        device_type = MOBILE
     elif user_agent.is_pc:
-        device_type='pc'
+        device_type=PC
     elif user_agent.is_tablet:
-        device_type='tablet'
+        device_type=TABLET
     elif user_agent.is_bot:
-        device_type='bot'
+        device_type=BOT
     data["device_type"] = device_type
-    data["device_family"] = user_agent.device.family
-    data["device_brand"] = user_agent.device.brand
-    data["device_model"] = user_agent.device.model
-    #json_data = json.dumps(data)
+    #data["device_family"] = user_agent.device.family
+    #data["device_brand"] = user_agent.device.brand
+    #data["device_model"] = user_agent.device.model
     return data
 
-def mergeAndGetDeviceInfo(request,deviceinfo):
-    data1 = {}
-    data1 = parse_user_agents(request)
-    data2 = json.loads(deviceinfo)
-    data1.update(data2)
-    json_data = json.dumps(data1)
-    return json_data
+def verifyCookie(value,userid,deviceInfo,deviceObj,cookieDbTime):
+    key = base64.b64decode(str.split(deviceObj.key, "::")[0])
+    iv = base64.b64decode(str.split(deviceObj.key, "::")[1])
+    plaintext = decrypt(value,key,iv)
+    cookieInfo = json.loads(plaintext)
+    cookieTime = cookieInfo['time']
+    cTime = datetime.strptime(cookieTime,datetimeFormat)
+    isExpired = False
+    dInfoFromCookie = cookieInfo['device_type'] + ';' + cookieInfo['browser']
+    if cookieInfo['user'] == userid and cookieInfo['time'] == cookieDbTime and dInfoFromCookie == deviceInfo:
+        # check if update needed
+        eTime = (cTime + timedelta(days=settings.USER_AUTH_COOKIE_UPDATE_IN_DAYS))
+        if eTime < datetime.now():
+            isExpired = True
+        return True,isExpired
+    return False,False
 
 class allowDevice(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, userid, deviceinfo, *args, **kwargs):
-        devices = models.UserDevice.objects.filter(user_id=userid)
-        device_data = mergeAndGetDeviceInfo(request,deviceinfo)
-        if len(devices) == 0:
-            userObj = User.objects.filter(id=userid)[0]
-            deviceObj = models.UserDevice(user=userObj)
-            deviceObj.device = device_data
-            deviceObj.save()
-            return HttpResponse(True)
-        deviceObj = devices[0]
-        if deviceObj.device:
-            deviceList = str.split(deviceObj.device, "--")
-            for device in deviceList:
-                if same(device, device_data) == True:
-                    return HttpResponse(True)
-
+        devices = models.UserCookieInfo.objects.filter(user_id=userid)
         userObj = User.objects.filter(id=userid)[0]
-        if not deviceObj.device or len(deviceList) < 3:
-            if not deviceObj.device:
-                deviceObj.device = device_data
-            else:
-                deviceObj.device = deviceObj.device + "--" + device_data
+        # check number of devices registered with this user
+        deviceCount = len(devices)
+        #device_data = mergeAndGetDeviceInfo(request,deviceinfo)
+        myDeviceMap = {}
+        # if no device registered, then register first device
+        device_data = parse_user_agents(request)
+        deviceDetected = device_data['device_type']+';'+device_data['browser']
+        if deviceCount == 0:
+            deviceObj = models.UserCookieInfo(user=userObj)
+            cookieValue = createNewCookieValue(userid,device_data)
+            ciphertext,key,iv = encrypt(json.dumps(cookieValue))
+            deviceObj.key = base64.b64encode(key).decode() + "::" + base64.b64encode(iv).decode()
+            deviceObj.device = deviceDetected
+            deviceObj.cookieTime = cookieValue['time']
             deviceObj.save()
-            return HttpResponse(True)
+            resp = HttpResponse(True)
+            resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+            sendNotificationEmail(userObj.email,device_data)
+            return resp
 
-        sendAuthenticationEmail(request.scheme,deviceObj, device_data, userObj)
-        return HttpResponse(False)
+        # In this case atleast one of the device is already registered
+        # check cookie here
+        deviceObj = devices[0]
+        deviceList = str.split(deviceObj.device, "--")
+        key = base64.b64decode(str.split(deviceObj.key, "::")[0])
+        iv = base64.b64decode(str.split(deviceObj.key, "::")[1])
+        cookieTimeList = str.split(deviceObj.cookieTime, "--")
+        # Try to validate cookie with the incoming request
+        i = 0
+        while i < len(deviceList) :
+            myDeviceMap[str.split(deviceList[i],';')[0]] = 1
+            if deviceList[i] == deviceDetected:
+                if settings.USER_AUTH_COOKIE in request.COOKIES.keys():
+                    # cookie found, then validate
+                    cookieValue = request.COOKIES.get(settings.USER_AUTH_COOKIE)
+                    isValid,isExpired = verifyCookie(cookieValue,userid,deviceDetected,deviceObj,cookieTimeList[i])
+                    # check cookie validity and set new cookie if required here
+                    resp = HttpResponse(isValid)
+                    if isValid and isExpired:
+                        # update cookie here
+                        cookieValue = createNewCookieValue(userid,device_data)
+                        cookieTimeList[i] = cookieValue['time']
+                        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+                        deviceObj.cookieTime = "--".join(cookieTimeList)
+                        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+                        deviceObj.save()
+                    return resp
+                elif deviceObj.miss <= settings.NUMBER_OF_COOKIE_MISS:
+                    # user must have deleted his cookie, or 
+                    # same device info found the shared login id
+                    # create new cookie
+                    deviceObj.miss = deviceObj.miss + 1
+                    cookieValue = createNewCookieValue(userid,device_data)
+                    cookieTimeList[i] = cookieValue['time']
+                    ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+                    resp = HttpResponse(True)
+                    deviceObj.cookieTime = "--".join(cookieTimeList)
+                    resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+                    deviceObj.save()
+                    sendNotificationEmail(userObj.email,device_data)
+                    return resp
+                else:
+                    return HttpResponse(False)
+            i = i+1
 
+        # user has exceeded number of supported devices
+        if len(deviceList) == settings.NUMBER_ALLOWED_DEVICES:
+            return HttpResponse(False)
+        
+        # ensure only one browser per device support
+        if device_data['device_type'] in myDeviceMap :
+            try:
+                sendAuthenticationEmail(request.scheme,deviceObj, device_data, userObj)
+            except:
+                return HttpResponse(False)
+            deviceObj.miss = deviceObj.miss + 1
+            deviceObj.save()
+            return HttpResponse(False)
+            
+
+        # add new device
+        cookieValue = createNewCookieValue(userid,device_data)
+        deviceObj.device = deviceObj.device + '--' + deviceDetected
+        deviceObj.cookieTime = deviceObj.cookieTime + '--' + cookieValue['time']
+        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+        resp = HttpResponse(True)
+        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+        deviceObj.save()
+        sendNotificationEmail(userObj.email,device_data)
+        return resp
+'''        
 class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
     template_name = 'authorize.html'
     http_method_names = ['get']
@@ -181,6 +306,59 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
 
         kwargs["challenge"] = challengeBytes
         return super().get(request, userid, *args, **kwargs)
+'''
+class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'authorize.html'
+    http_method_names = ['get']
+
+    def get(self, request, userid, *args, **kwargs):
+        # check logged in user is same as the one giving the authorize url
+        if userid != request.user.id:
+            raise Http404()
+
+        deviceObj = models.UserCookieInfo.objects.filter(user_id=userid)[0]
+
+        device_data = parse_user_agents(request)
+        deviceDetected = device_data['device_type']+';'+device_data['browser']
+
+        # check if the link is accessed within 5 minutes of its generation
+        if int(deviceObj.authTime) < int(calendar.timegm(time.gmtime())) - 300:
+            raise Http404()
+        devicecipher = (request.GET['cipher'])
+
+        key = base64.b64decode(str.split(deviceObj.key, "::")[0])
+        iv = base64.b64decode(str.split(deviceObj.key, "::")[1])
+        plaintext = decrypt(devicecipher,key,iv)
+        deviceInfo = json.loads(plaintext.decode())
+
+        # check details are same as in the auth mail
+        if deviceInfo['user'] != userid or deviceInfo['device_type'] != device_data['device_type'] or deviceInfo['browser'] != device_data['browser']:
+            raise Http404()
+        
+        # update device here 
+        # remove old info for this device and update new one
+        cookieValue = createNewCookieValue(userid,device_data)     
+        deviceList = str.split(deviceObj.device, "--")
+        cookieTimeList = str.split(deviceObj.cookieTime, "--")
+
+        i = 0
+        while i < len(deviceList):
+            if str.split(deviceList[i],';')[0] == str.split(deviceDetected,';')[0] :
+                deviceList[i] = deviceDetected
+                cookieTimeList[i] = cookieValue['time']
+                deviceObj.cookieTime = "--".join(cookieTimeList)
+                deviceObj.device = "--".join(deviceList)
+                break
+            i=i+1    
+
+        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+        deviceObj.save()
+        kwargs["device_type"] = device_data['device_type']
+        kwargs["browser"] = device_data['browser']
+        resp = super().get(request, userid, *args, **kwargs)
+        resp.set_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
+        sendNotificationEmail(userObj.email,device_data)
+        return resp
 
 class challengeAccept(generic.TemplateView):
     http_method_names = ['get']
