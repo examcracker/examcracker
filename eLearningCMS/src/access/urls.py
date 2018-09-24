@@ -5,5 +5,4 @@ app_name = 'access'
 urlpatterns = [
      path('allow/<int:userid>/<str:deviceinfo>', views.allowDevice.as_view(), name="allow"),
      path('authorize/<int:userid>', views.authorizeDevice.as_view(), name="authorize"),
-     path('challenge/<str:challengeBytes>/<str:deviceinfo>', views.challengeAccept.as_view(), name="challenge"),
 ]
