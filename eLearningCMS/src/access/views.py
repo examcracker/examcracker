@@ -70,7 +70,6 @@ def createNewCookieValue(userId,deviceInfo):
     return cookieDic
 
 def sendNotificationEmail(email,deviceInfo):
-    return
     emailSubj = 'New Device has been added'
     emailBody = """
     Dear Student,
@@ -94,8 +93,8 @@ def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     queryArg['cipher'] = ciphertext
     link = '{}://{}/access/authorize/{}?{}'.format(httpProtocol,profiles.signals.getHost(), userObj.id,urllib.parse.urlencode(queryArg))
     body = 'Authorize your device using the link ' + link
-    print (link)
-    #sendMail(userObj.email, 'GyaanHive Authorize Device',body)
+    #print (link)
+    sendMail(userObj.email, 'GyaanHive Authorize Device',body)
 
 '''
 def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
