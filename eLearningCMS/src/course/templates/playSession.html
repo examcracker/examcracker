@@ -33,13 +33,13 @@
 				{% for subj, subjdetails in coursedetails.items %}
 					<div class="panel panel-default">
 						<div class="panel-heading">
-							<h5 class="panel-title">
+							<h6 class="panel-title">
 								<a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
 									<span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
 									<span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
-									{{ subj }}
+									<font size="4"> {{ subj }}</font>
 								</a>
-							</h5>
+							</h6>
 						</div>
 						<div id="{{ subj }}" class="collapse show">
 						<div class="panel-body">
@@ -52,7 +52,7 @@
 								 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
 									 <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
 									 <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
-									 {{ chapdetails.name }}
+									 <font size="3"> {{ chapdetails.name }}</font>
 								 </a>
 							 </h6>
 						 </div>
@@ -62,10 +62,10 @@
 						{% for sess in chapdetails.sessions %}
 						{% if sess.id == session.id %}
 						<a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
-							<i class="fa fa-pause fa-fw" style="padding-right:10px"></i>{{ sess.name }}</a>
+							<i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
 						{% else %}
 						<a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
-							<i class="fa fa-play fa-fw" style="padding-right:10px"></i>{{ sess.name }}</a>
+							<i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
 						{% endif %}
 						{% endfor %}
 								</div>
