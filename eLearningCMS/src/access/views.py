@@ -133,6 +133,14 @@ def parse_user_agents(request):
     #data["device_model"] = user_agent.device.model
     return data
 
+def getCookieValue(request):
+    cookieValue = None
+    try:
+        cookieValue = request.get_signed_cookie(settings.USER_AUTH_COOKIE)
+    except:
+        return None
+    return cookieValue
+
 def verifyCookie(value,userid,deviceInfo,deviceObj,cookieDbTime,dbHash):
     # create data from received request
     cookieDic = {}
@@ -195,9 +203,13 @@ class allowDevice(generic.TemplateView):
             myDeviceMap[str.split(deviceList[i],';')[0]] = 1
             if deviceList[i] == deviceDetected:
                 if settings.USER_AUTH_COOKIE in request.COOKIES.keys():
-                    # cookie found, then validate
-                    cookieValue = request.get_signed_cookie(settings.USER_AUTH_COOKIE)
-                    isValid,isExpired = verifyCookie(cookieValue,userid,device_data,deviceObj,cookieTimeList[i],keyList[i])
+                    # check if cookie is found
+                    isValid = False
+                    isExpired = False
+                    cookieValue = getCookieValue(request)
+                    if cookieValue is not None:
+                        isValid, isExpired = verifyCookie(cookieValue,userid,device_data,deviceObj,cookieTimeList[i],keyList[i])
+
                     # check cookie validity and set new cookie if required here
                     resp = HttpResponse(isValid)
                     if isValid and isExpired:
