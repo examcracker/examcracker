@@ -63,6 +63,16 @@ def decrypt (encryptText,key,iv):
     plaintext = raw_decrypted.decode()
     return plaintext
 
+# takes json data as input
+def getHash(data):
+    data_md5 = hashlib.md5(data.encode()).hexdigest()
+    return data_md5
+
+# convert python dictionary to json string
+def getDictToJson(data):
+    jsondata = json.dumps(data,sort_keys=True)
+    return jsondata
+
 # return cookie value as dictionary
 def createNewCookieValue(userId,deviceInfo):
     cookieDic = {}
@@ -85,11 +95,12 @@ def sendNotificationEmail(email,deviceInfo):
     sendMail(email, emailSubj,emailBody)
 
 def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
-    key = base64.b64decode((str.split(deviceObj.key, "::")[0]).encode())
-    iv = base64.b64decode((str.split(deviceObj.key, "::")[1]).encode())
-    data = createNewCookieValue(userObj.id,deviceInfo)
-    text = json.dumps(data)
-    ciphertext = encrypt(text,key,iv)
+    authData = {}
+    authData['user'] = deviceObj.user_id
+    authData['device_type'] = deviceInfo['device_type']
+    authData['browser'] = deviceInfo['browser']
+    jsontext = getDictToJson(authData)
+    ciphertext = getHash(jsontext)
     deviceObj.authTime = calendar.timegm(time.gmtime())
     deviceObj.save()
     queryArg = {}
@@ -99,40 +110,7 @@ def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
     #print (link)
     sendMail(userObj.email, 'GyaanHive Authorize Device',body)
 
-'''
-def sendAuthenticationEmail(httpProtocol,deviceObj, deviceInfo, userObj):
-    key = get_random_bytes(16)
-    cipher_aes = AES.new(key, AES.MODE_GCM)
-    # sending deviceInfo hash to reduce length of Authentication mail
-    deviceInfoHash = hashlib.md5(deviceInfo.encode()).hexdigest()
-    deviceDict = {}
-    deviceDict['device'] = deviceInfoHash
-    deviceDict['user'] = userObj.id
-    text = json.dumps(deviceDict)
-    ciphertext = cipher_aes.encrypt(text.encode())
-
-    deviceObj.key = base64.b64encode(key).decode() + "::" + base64.b64encode(cipher_aes.nonce).decode()
-    deviceObj.time = calendar.timegm(time.gmtime())
-    deviceObj.save()
-
-    queryArg = {}
-    queryArg['cipher'] = base64.b64encode(ciphertext).decode()
-
-    link = '{}://{}/access/authorize/{}?{}'.format(httpProtocol,profiles.signals.getHost(), userObj.id, urllib.parse.urlencode(queryArg))
-    msg = MIMEMultipart()
-    msg['From'] = settings.EMAIL_HOST_USER
-    msg['To'] = userObj.email
-    msg['Subject'] = 'GyaanHive Authorize Device'
-    body = 'Authorize your device using the link ' + link
-    msg.attach(MIMEText(body, 'plain'))
-
-    server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    server.sendmail(settings.EMAIL_HOST_USER, userObj.email, msg.as_string())
-'''    
+  
 def parse_user_agents(request):
     user_agent = get_user_agent(request)
     data = {}
@@ -155,16 +133,23 @@ def parse_user_agents(request):
     #data["device_model"] = user_agent.device.model
     return data
 
-def verifyCookie(value,userid,deviceInfo,deviceObj,cookieDbTime):
-    key = base64.b64decode((str.split(deviceObj.key, "::")[0]).encode())
-    iv = base64.b64decode((str.split(deviceObj.key, "::")[1]).encode())
-    plaintext = decrypt(value,key,iv)
-    cookieInfo = json.loads(plaintext)
-    cookieTime = cookieInfo['time']
-    cTime = datetime.strptime(cookieTime,datetimeFormat)
+def verifyCookie(value,userid,deviceInfo,deviceObj,cookieDbTime,dbHash):
+    # create data from received request
+    cookieDic = {}
+    cookieDic['user'] = userid
+    cookieDic['time'] = cookieDbTime
+    cookieDic['device_type'] = deviceInfo['device_type']
+    cookieDic['browser'] = deviceInfo['browser']
+    jsontext = getDictToJson(cookieDic)
+    # hash from user request
+    hashjsontext = getHash(jsontext)
+
+    # hash stored in db
+    dbHash = dbHash
+    cTime = datetime.strptime(cookieDbTime,datetimeFormat)
     isExpired = False
-    dInfoFromCookie = cookieInfo['device_type'] + ';' + cookieInfo['browser']
-    if cookieInfo['user'] == userid and cookieInfo['time'] == cookieDbTime and dInfoFromCookie == deviceInfo:
+    #dInfoFromCookie = cookieInfo['device_type'] + ';' + cookieInfo['browser']
+    if dbHash == value and value == hashjsontext:
         # check if update needed
         eTime = (cTime + timedelta(days=settings.USER_AUTH_COOKIE_UPDATE_IN_DAYS))
         if eTime < datetime.now():
@@ -188,8 +173,8 @@ class allowDevice(generic.TemplateView):
         if deviceCount == 0:
             deviceObj = models.UserCookieInfo(user=userObj)
             cookieValue = createNewCookieValue(userid,device_data)
-            ciphertext,key,iv = encrypt(json.dumps(cookieValue))
-            deviceObj.key = base64.b64encode(key).decode() + "::" + base64.b64encode(iv).decode()
+            ciphertext = getHash(getDictToJson(cookieValue))
+            deviceObj.key = ciphertext
             deviceObj.device = deviceDetected
             deviceObj.cookieTime = cookieValue['time']
             deviceObj.save()
@@ -202,8 +187,7 @@ class allowDevice(generic.TemplateView):
         # check cookie here
         deviceObj = devices[0]
         deviceList = str.split(deviceObj.device, "--")
-        key = base64.b64decode((str.split(deviceObj.key, "::")[0]).encode())
-        iv = base64.b64decode((str.split(deviceObj.key, "::")[1]).encode())
+        keyList = str.split(deviceObj.key, "--")
         cookieTimeList = str.split(deviceObj.cookieTime, "--")
         # Try to validate cookie with the incoming request
         i = 0
@@ -213,15 +197,17 @@ class allowDevice(generic.TemplateView):
                 if settings.USER_AUTH_COOKIE in request.COOKIES.keys():
                     # cookie found, then validate
                     cookieValue = request.get_signed_cookie(settings.USER_AUTH_COOKIE)
-                    isValid,isExpired = verifyCookie(cookieValue,userid,deviceDetected,deviceObj,cookieTimeList[i])
+                    isValid,isExpired = verifyCookie(cookieValue,userid,device_data,deviceObj,cookieTimeList[i],keyList[i])
                     # check cookie validity and set new cookie if required here
                     resp = HttpResponse(isValid)
                     if isValid and isExpired:
                         # update cookie here
                         cookieValue = createNewCookieValue(userid,device_data)
-                        cookieTimeList[i] = cookieValue['time']
-                        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+                        ciphertext = getHash(getDictToJson(cookieValue))
+                        cookieTimeList[i] = cookieValue['time']                      
+                        keyList[i] = ciphertext
                         deviceObj.cookieTime = "--".join(cookieTimeList)
+                        deviceObj.key = "--".join(keyList)
                         resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
                         deviceObj.save()
                     return resp
@@ -229,12 +215,14 @@ class allowDevice(generic.TemplateView):
                     # user must have deleted his cookie, or 
                     # same device info found the shared login id
                     # create new cookie
+                    resp = HttpResponse(True)
                     deviceObj.miss = deviceObj.miss + 1
                     cookieValue = createNewCookieValue(userid,device_data)
-                    cookieTimeList[i] = cookieValue['time']
-                    ciphertext = encrypt(json.dumps(cookieValue),key,iv)
-                    resp = HttpResponse(True)
+                    ciphertext = getHash(getDictToJson(cookieValue))
+                    cookieTimeList[i] = cookieValue['time']                      
+                    keyList[i] = ciphertext
                     deviceObj.cookieTime = "--".join(cookieTimeList)
+                    deviceObj.key = "--".join(keyList)
                     resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
                     deviceObj.save()
                     sendNotificationEmail(userObj.email,device_data)
@@ -261,7 +249,8 @@ class allowDevice(generic.TemplateView):
         cookieValue = createNewCookieValue(userid,device_data)
         deviceObj.device = deviceObj.device + '--' + deviceDetected
         deviceObj.cookieTime = deviceObj.cookieTime + '--' + cookieValue['time']
-        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
+        ciphertext = getHash(getDictToJson(cookieValue))
+        deviceObj.key = deviceObj.key + '--' + ciphertext
         resp = HttpResponse(True)
         resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
         deviceObj.save()
@@ -278,80 +267,52 @@ class authorizeDevice(LoginRequiredMixin, generic.TemplateView):
             raise Http404()
 
         deviceObj = models.UserCookieInfo.objects.filter(user_id=userid)[0]
-
-        device_data = parse_user_agents(request)
-        deviceDetected = device_data['device_type']+';'+device_data['browser']
-
         # check if the link is accessed within 5 minutes of its generation
         if (deviceObj.authTime == 0) or int(deviceObj.authTime) < int(calendar.timegm(time.gmtime())) - 300:
+            # Auth link expired/Invalid
             raise Http404()
         
+        deviceInfo = parse_user_agents(request)
+        deviceDetected = deviceInfo['device_type']+';'+deviceInfo['browser']        
+        # auth data from verification link
         devicecipher = (request.GET['cipher'])
 
-        key = base64.b64decode((str.split(deviceObj.key, "::")[0]).encode())
-        iv = base64.b64decode((str.split(deviceObj.key, "::")[1]).encode())
-        plaintext = decrypt(devicecipher,key,iv)
-        deviceInfo = json.loads(plaintext)
-
-        # check details are same as in the auth mail
-        if deviceInfo['user'] != userid or deviceInfo['device_type'] != device_data['device_type'] or deviceInfo['browser'] != device_data['browser']:
+        # lets construct auth data from request
+        authData = {}
+        authData['user'] = userid
+        authData['device_type'] = deviceInfo['device_type']
+        authData['browser'] = deviceInfo['browser']
+        jsontext = getDictToJson(authData)
+        hashtext = getHash(jsontext)
+        #verify auth data
+        if hashtext != devicecipher:
             raise Http404()
-        
+
         # update device here 
         # remove old info for this device and update new one
-        cookieValue = createNewCookieValue(userid,device_data)     
+        cookieValue = createNewCookieValue(userid,deviceInfo)
+        ciphertext = getHash(getDictToJson(cookieValue))
         deviceList = str.split(deviceObj.device, "--")
         cookieTimeList = str.split(deviceObj.cookieTime, "--")
+        keyList = str.split(deviceObj.key, "--")
         deviceObj.authTime = 0
         i = 0
         while i < len(deviceList):
             if str.split(deviceList[i],';')[0] == str.split(deviceDetected,';')[0] :
                 deviceList[i] = deviceDetected
+                keyList[i] = ciphertext
                 cookieTimeList[i] = cookieValue['time']
                 deviceObj.cookieTime = "--".join(cookieTimeList)
                 deviceObj.device = "--".join(deviceList)
+                deviceObj.key = "--".join(keyList)
+                deviceObj.save()
                 break
-            i=i+1    
+            i=i+1
 
-        ciphertext = encrypt(json.dumps(cookieValue),key,iv)
-        deviceObj.save()
-        kwargs["device_type"] = device_data['device_type']
-        kwargs["browser"] = device_data['browser']
+        kwargs["device_type"] = deviceInfo['device_type']
+        kwargs["browser"] = deviceInfo['browser']
         resp = super().get(request, userid, *args, **kwargs)
         resp.set_signed_cookie(settings.USER_AUTH_COOKIE, ciphertext,max_age=settings.USER_AUTH_COOKIE_AGE)
         userObj = User.objects.filter(id=userid)[0]
-        sendNotificationEmail(userObj.email,device_data)
+        sendNotificationEmail(userObj.email,deviceInfo)
         return resp
-
-'''
-class challengeAccept(generic.TemplateView):
-    http_method_names = ['get']
-
-    def get(self, request, challengeBytes, deviceinfo, *args, **kwargs):
-        devices = models.UserDevice.objects.filter(challenge=challengeBytes)
-        if len(devices) == 0:
-            return HttpResponse(False)
-        
-        device_data = mergeAndGetDeviceInfo(request,deviceinfo)
-        
-        deviceObj = devices[0]
-        d1 = json.loads(deviceObj.candidate)['device']
-        d2 = data2_md5 = hashlib.md5(device_data.encode()).hexdigest()
-        #if not same(json.loads(deviceObj.candidate)['device'], device_data):
-        #    return HttpResponse(False)
-        if d1 != d2:
-            return HttpResponse(False)
-
-        registered = str.split(deviceObj.device, "--")
-
-        registered[0] = registered[1]
-        registered[1] = registered[2]
-        registered[2] = device_data
-
-        deviceStr = registered[0] + "--" + registered[1] + "--" + registered[2]
-        deviceObj.device = deviceStr
-        deviceObj.save()
-
-        notification.models.notify(deviceObj.user_id, notification.models.DEVICE_ADDED, notification.models.INFO)
-        return HttpResponse(True)
-'''
