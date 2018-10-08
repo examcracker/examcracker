@@ -40,7 +40,7 @@
 		    {% for subject in subDetails %}
 		    {% for chapId, chapDetails in subject.items %}
             <label class="container">{{ chapDetails.name }}
-            <input id="{{chapId}}" type="radio" checked="checked" name="radio">
+            <input id="{{chapId}}" type="radio" checked="checked" name="radio" onclick="selectChapter(this.id)">
             <span class="checkmark"></span>
             </label>
 			{% endfor %}
@@ -52,73 +52,199 @@
 	   <br>
 	   {% endfor %}
 	  </div>
-	  
-	 <video id="video" class="videostream" autoplay></video>
-     <p>
-	 <button id="capture-button">Start Recording</button>
-     <button id="stop-button">Stop Recording</button>
-	 </p>
 
+	<article>
+    <section class="experiment">
+	<div class="inner">
+        <button id="record-video">Start</button>
+        <button id="stop-recording-video" disabled>Stop</button>
+        <br>
+        <video id="video-preview" controls></video>
+        <br>
+    </div>
+	</section>
+	</article>
 
 <script>
-var coll = document.getElementsByClassName("collapsible");
-var i;
+			var client = new window.coreapi.Client();
 
-for (i = 0; i < coll.length; i++) {
-  coll[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.display === "block") {
-      content.style.display = "none";
-    } else {
-      content.style.display = "block";
-    }
-  });
-}
+			function selectChapter(id) {
+				selectedChapter = id;
+			}
 
-const constraints = {video: true, audio: true};
+			function upload(blobObject) {
+				var getUploadURLs = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/getUploadPaths/1";
+				client.get(getUploadURLs)
+					.then(function (data) {
+						var url = data[0].url;
+						var req = new XMLHttpRequest();
+						req.open("POST", url, false);
+						var uploaderForm = new FormData();
+						uploaderForm.append("file", blobObject);
+						req.send(uploaderForm);
+					})
+					.catch(function (error) {alert(error);});
+			}
 
-const captureVideoButton = document.getElementById('capture-button');
+			var coll = document.getElementsByClassName("collapsible");
+			var i;
 
-var videoBlob;
+			for (i = 0; i < coll.length; i++) {
+				coll[i].addEventListener("click", function() {
+					this.classList.toggle("active");
+					var content = this.nextElementSibling;
+					if (content.style.display === "block") {
+						content.style.display = "none";
+					} else {
+						content.style.display = "block";
+					}
+				});
+			}
 
-captureVideoButton.onclick = function() {
-  navigator.mediaDevices.getUserMedia(constraints).
-    then(handleSuccess).catch(handleError);
-};
+				var recordVideo;
+				var recordAudo;
+                var videoPreview = document.getElementById('video-preview');
+                var inner = document.querySelector('.inner');
 
-function handleSuccess(stream) {
-  video.srcObject = stream;
-  video.muted = true;
-  recorder = new RecordRTCPromisesHandler(stream, {mimeType: 'video/webm', bitsPerSecond: 128000});
-  recorder.startRecording().then(function() {console.info('Recording video ...');});
-  recorder.stream = stream;
-}
+                document.querySelector('#record-video').onclick = function() {
+                    this.disabled = true;
+                    navigator.getUserMedia({
+                            video: true,
+                        }, function(stream) {
+                            videoPreview.src = window.URL.createObjectURL(stream);
+                            videoPreview.play();
 
-document.getElementById('stop-button').onclick = handleStop;
+                            recordVideo = RecordRTC(stream, {type: 'video',mimeType: {video:  'video/webm'},});
+                            recordVideo.startRecording();
 
-function handleStop() {
-  video.srcObject.getTracks().forEach(function(track) {track.stop();});
-  recorder.stopRecording().then(function() {console.info('stopRecording success');
-            videoBlob = recorder.getBlob();
-            video.muted = false;
-			console.log(videoBlob);
-			save();
-  });
-}
+							navigator.getUserMedia({
+							    audio: true,
+							 }, function(astream) {
+							         recordAudio = RecordRTC(astream, {type: 'audio', recorderType: StereoAudioRecorder});
+									 recordAudio.startRecording();
+							 }, function(error) { throw error;});
 
-function save(){
-  var a = document.createElement("a");
-  document.body.appendChild(a);
-  a.style = "display: none";
-  var url = window.URL.createObjectURL(videoBlob);
-  a.href = url;
-  a.download = "video.webm";
-  a.click();
-  window.URL.revokeObjectURL(url);
-  return false;
-}
- 
+                        }, function(error) { throw error;});
+                    document.querySelector('#stop-recording-video').disabled = false;
+                };
+
+                document.querySelector('#stop-recording-video').onclick = function() {
+                    this.disabled = true;
+
+                    recordVideo.stopRecording(function(url) {
+                        videoPreview.src = url;
+                        videoPreview.download = 'video.webm';
+
+						recordAudio.stopRecording(function(url) {
+						    console.log('<a href="'+ workerPath +'" download="ffmpeg-asm.js">ffmpeg-asm.js</a> file download started. It is about 18MB in size; please be patient!');
+							convertStreams(recordVideo.getBlob(), recordAudio.getBlob());
+						});
+                    });
+                };
+
+                var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
+                //if(document.domain == 'localhost') {
+                    //workerPath = location.href.replace(location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
+                //}
+
+                function processInWebWorker() {
+                    var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: message.TOTAL_MEMORY || false};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
+                        type: 'application/javascript'
+                    }));
+
+                    var worker = new Worker(blob);
+                    URL.revokeObjectURL(blob);
+                    return worker;
+                }
+
+                var worker;
+
+                function convertStreams(videoBlob, audioBlob) {
+				    console.log(videoBlob);
+					console.log(audioBlob);
+
+                    var vab;
+                    var aab;
+					var buffersReady;
+					var workerReady;
+					var posted = false;
+					var fileReader1 = new FileReader();
+					fileReader1.onload = function() {
+						vab = this.result;
+						if (aab) buffersReady = true;
+						if (buffersReady && workerReady && !posted) postMessage();
+					};
+					var fileReader2 = new FileReader();
+					fileReader2.onload = function() {
+						aab = this.result;
+						if (vab) buffersReady = true;
+						if (buffersReady && workerReady && !posted) postMessage();
+					};
+					fileReader1.readAsArrayBuffer(videoBlob);
+					fileReader2.readAsArrayBuffer(audioBlob);
+					if (!worker) {
+						worker = processInWebWorker();
+					}
+
+                    worker.onmessage = function(event) {
+					    var message = event.data;
+                        if (message.type == "ready") {
+                            workerReady = true;
+                        if (buffersReady)
+                            postMessage();
+                        } else if (message.type == "stdout") {
+                           console.log(message.data);
+                        } else if (message.type == "start") {
+                           console.log('<a href="'+ workerPath +'" download="ffmpeg-asm.js">ffmpeg-asm.js</a> file received ffmpeg command.');
+                        } else if (message.type == "done") {
+                           console.log(JSON.stringify(message));
+                           var result = message.data[0];
+                           console.log(JSON.stringify(result));
+                           var blob = new Blob([result.data], {
+                                 type: 'video/mp4'
+                           });
+                           console.log(JSON.stringify(blob));
+                           PostBlob(blob);
+                        }
+                    };
+
+                    var postMessage = function() {
+                        posted = true;
+
+                        worker.postMessage({
+                            type: 'command',
+                            arguments: '-i video.webm -i audio.wav -strict experimental output.mp4'.split(' '),
+                            files: [
+                                {
+                                    data: new Uint8Array(vab),
+                                    name: 'video.webm'
+                                },
+								{
+                                    data: new Uint8Array(aab),
+                                    name: 'audio.wav'
+                                },
+                            ]
+                        });
+                    };
+                }
+
+                function PostBlob(blob) {
+                    var source = document.createElement('source');
+                    source.src = URL.createObjectURL(blob);
+                    source.type = 'video/mp4; codecs=h264';
+
+                    inner.appendChild(document.createElement('hr'));
+                    var h2 = document.createElement('h2');
+                    h2.innerHTML = '<a href="' + source.src + '" target="_blank" download="Play mp4 in VLC Player.mp4">Download</a>';
+                    inner.appendChild(h2);
+                    document.querySelector('#record-video').disabled = false;
+
+					upload(blob);
+                }
+
+                window.onbeforeunload = function() {
+                    document.querySelector('#record-video').disabled = false;
+                };
 </script>
 
 {% endblock active %}
