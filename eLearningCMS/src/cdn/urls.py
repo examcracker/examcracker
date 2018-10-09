@@ -7,6 +7,6 @@ schema_view = get_schema_view(title='Pastebin API') # new
 app_name = 'cdn'
 urlpatterns = [
     path('schema/', schema_view), # new
-     path('getUploadPaths/<int:count>', views.getUploadPaths),
-     #path('createSession/<slug:videoKey>/<int:sessionId>', views.createSession)
+    path('getUploadPaths/<int:count>', views.getUploadPaths),
+    path('saveLiveSession/<str:videoKey>/<int:chapterId>', views.saveLiveSession)
 ]

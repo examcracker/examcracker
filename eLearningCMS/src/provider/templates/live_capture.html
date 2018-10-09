@@ -67,6 +67,7 @@
 
 <script>
 			var client = new window.coreapi.Client();
+			var selectedChapter = 1;
 
 			function selectChapter(id) {
 				selectedChapter = id;
@@ -82,6 +83,24 @@
 						var uploaderForm = new FormData();
 						uploaderForm.append("file", blobObject);
 						req.send(uploaderForm);
+
+						if(req.status == 200) {
+						    var key = null;
+						    var queries = url.split("&");
+							for (i = 0; i < queries.length; i++ ) {
+								temp = queries[i].split('=');
+								if(temp[0] == "key") {
+									key = temp[1];
+									break;
+								}
+							}
+
+						    var saveurl = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/saveLiveSession/" + key + "/" + selectedChapter;
+							client.get(saveurl)
+								.then(function(data) {
+								})
+							.catch(function (error) {alert(error);});
+						}
 					})
 					.catch(function (error) {alert(error);});
 			}

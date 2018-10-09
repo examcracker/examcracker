@@ -14,11 +14,11 @@ from .serializers import uploadURLSerializer
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
-
 import logging
-
 import hashlib
 import time
+import datetime
+from examcracker import thread
 
 logger = logging.getLogger("project")
 
@@ -89,20 +89,33 @@ def getUploadPaths(request, count, format=None):
     serializer = uploadURLSerializer(urlList, many=True)
     return Response(serializer.data)
 
-#@api_view(['POST'])
-#def createSession(request, videoKey, sessionId):
-#    session = models.CdnSession()
-#    session.jwvideoid = videoKey
-#    session.ready = False
-#    session.session = sessionId
-#    session.save()
-#    return Response("Success", status=status.HTTP_201_CREATED)
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def saveLiveSession(request, videoKey, chapterId):
+    chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
+    providerId = provider.views.getProvider(request).id
 
-    # serializer = CdnSessionSerializer(data=request.data)
-    # if serializer.is_valid():
-    #     serializer.save()
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-    # else:
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    sessionObj = provider.models.Session()
+    sessionObj.name = str(providerId) + str(datetime.datetime.now().isoformat())
+    sessionObj.videoKey = videoKey
+    sessionObj.provider_id = providerId
+    sessionObj.tags = chapterObj.subject
+    sessionObj.save()
 
+    if len(chapterObj.sessions) > 0:
+        chapterObj.sessions = chapterObj.sessions + "," + str(sessionObj.id)
+    else:
+        chapterObj.sessions = str(sessionObj.id)
+    if len(chapterObj.published) > 0:
+        chapterObj.published = chapterObj.published + ",0"
+    else:
+        chapterObj.published = "0"
+    chapterObj.save()
 
+    # create thread to compute duration
+    callbackObj = provider.views.SessionDurationFetch(sessionObj)
+    t = thread.AppThread(callbackObj, True, 30)
+    t.start()
+
+    return Response({"result":True})
