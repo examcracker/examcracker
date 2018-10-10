@@ -79,28 +79,34 @@
 					.then(function (data) {
 						var url = data[0].url;
 						var req = new XMLHttpRequest();
-						req.open("POST", url, false);
+						req.open("POST", url, true);
+
+						req.onerror = function(e) {
+							alert(this.response);
+						}
+
+						req.onload = function(e) {
+							if(this.status == 200) {
+								var key = null;
+								var queries = url.split("&");
+								for (i = 0; i < queries.length; i++ ) {
+									temp = queries[i].split('=');
+									if(temp[0] == "key") {
+										key = temp[1];
+										break;
+									}
+								}
+
+								var saveurl = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/saveLiveSession/" + key + "/" + selectedChapter;
+								client.get(saveurl)
+									.then(function(data) {})
+									.catch(function (error) {alert(error);});
+								}
+						};
+
 						var uploaderForm = new FormData();
 						uploaderForm.append("file", blobObject);
 						req.send(uploaderForm);
-
-						if(req.status == 200) {
-						    var key = null;
-						    var queries = url.split("&");
-							for (i = 0; i < queries.length; i++ ) {
-								temp = queries[i].split('=');
-								if(temp[0] == "key") {
-									key = temp[1];
-									break;
-								}
-							}
-
-						    var saveurl = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/cdn/saveLiveSession/" + key + "/" + selectedChapter;
-							client.get(saveurl)
-								.then(function(data) {
-								})
-							.catch(function (error) {alert(error);});
-						}
 					})
 					.catch(function (error) {alert(error);});
 			}
