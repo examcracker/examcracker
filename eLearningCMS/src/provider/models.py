@@ -26,5 +26,7 @@ class Session(models.Model):
     videoKey = models.CharField(max_length=20, default='')
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
+    key = models.CharField(default='', max_length=32)
+    iv = models.CharField(default='', max_length=32)
 
 
