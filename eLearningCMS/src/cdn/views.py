@@ -19,6 +19,9 @@ import hashlib
 import time
 import datetime
 from examcracker import thread
+# crypto
+from Crypto.Random import get_random_bytes
+import base64
 
 logger = logging.getLogger("project")
 
@@ -72,9 +75,6 @@ def createVideoUploadURL():
     except jwplatform.errors.JWPlatformError as e:
         logger.error("Encountered an error creating a video\n{}".format(e))
 
-    #import pdb; pdb.set_trace();
-    #print("Url: ", upload_url)
-
     return upload_url
 
 @api_view(['GET'])
@@ -119,3 +119,12 @@ def saveLiveSession(request, videoKey, chapterId):
     t.start()
 
     return Response({"result":True})
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getSymetricKey(request):
+    key = get_random_bytes(16)
+    iv = get_random_bytes(16)
+    return Response({"key":base64.b64encode(key).decode(), "iv":base64.b64encode(iv).decode()})
+

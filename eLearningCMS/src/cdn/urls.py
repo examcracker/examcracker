@@ -8,5 +8,6 @@ app_name = 'cdn'
 urlpatterns = [
     path('schema/', schema_view), # new
     path('getUploadPaths/<int:count>', views.getUploadPaths),
-    path('saveLiveSession/<str:videoKey>/<int:chapterId>', views.saveLiveSession)
+    path('saveLiveSession/<str:videoKey>/<int:chapterId>', views.saveLiveSession),
+    path('getSymetricKey', views.getSymetricKey)
 ]
