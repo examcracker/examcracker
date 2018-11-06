@@ -23,6 +23,9 @@ PASSWORD_HASHERS = [
 ]
 AUTH_PASSWORD_VALIDATORS = []
 
+# Channels
+ASGI_APPLICATION = 'examcracker.routing.application'
+
 # Django Debug Toolbar
 INSTALLED_APPS += (
     'debug_toolbar',)
@@ -45,6 +48,10 @@ INTERNAL_IPS = [
 ]
 
 ALLOWED_HOSTS = ['www.gyaanhive.com']
+
+if DEBUG is False:
+    RECAPTCHA_PUBLIC_KEY = '6Ldum20UAAAAAEWoxXETng8qOScbkAdVLTJ7YN7_'
+    RECAPTCHA_PRIVATE_KEY = '6Ldum20UAAAAAHp3pr7r1OWmbRdL7qwKOm2jPvK2'
 
 # Log everything to the logs directory at the top
 LOGFILE_ROOT = BASE_DIR.parent / 'logs'

@@ -67,10 +67,9 @@ SECRET_KEY = env('SECRET_KEY')
 ALLOWED_HOSTS = []
 
 # Captcha settings
-#RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
-#RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
-RECAPTCHA_PUBLIC_KEY = '6Ldum20UAAAAAEWoxXETng8qOScbkAdVLTJ7YN7_'
-RECAPTCHA_PRIVATE_KEY = '6Ldum20UAAAAAHp3pr7r1OWmbRdL7qwKOm2jPvK2'
+RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
+RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
+
 # Email settings
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -83,6 +82,9 @@ DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@gmail.com>'
 VIMEO_CLIENT_ID = '0dabe4d1dc86c61dabf843461f3d57029a6e9b9c'
 VIMEO_CLIENT_SECRET = 'RlQwRiXMayDSLIZbLZYRjlMjM1k45FS55PnW1WihX7emqzdWARm8CVf3RkwXYErJ1NcVWmnkZ6O2B9nvwOCuh/ORczcnsfl5XD0Mr3vMVxzarQwwm1DH4cVLFRXJ0qbB'
 VIMEO_ACCESS_TOKEN = '69aaa4c6d5f05991df55ddf3d3955240'
+
+# Web socket details
+ASGI_APPLICATION = 'examcracker.routing.application'
 
 # JW settings
 JWPLAYER_API_KEY = '03IfLqqB'
@@ -104,6 +106,12 @@ INSTALLED_APPS = (
     'crispy_forms',
     'easy_thumbnails',
 
+    # django packages
+    'snowpenguin.django.recaptcha2',
+    'paypal.standard.ipn',
+    'django_user_agents',
+    'channels',
+
     # applications
     'profiles',
     'accounts',
@@ -114,14 +122,10 @@ INSTALLED_APPS = (
     'access',
     'notification',
     'cdn',
-
-    # django packages
-    'snowpenguin.django.recaptcha2',
-    'paypal.standard.ipn',
-    'django_user_agents',
+    'websock',
 
     # django rest api packages
-	'rest_framework',
+    'rest_framework',
 )
 
 PAYPAL_RECEIVER_EMAIL = 'eexamcracker@gmail.com'
