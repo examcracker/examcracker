@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     'access',
     'notification',
     'cdn',
+    'schedule',
     'websock',
 
     # django rest api packages
