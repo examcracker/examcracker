@@ -12,6 +12,7 @@ import access.urls
 import notification.urls
 import cdn.urls
 import websock.urls
+import schedule.urls
 from . import views
 
 # Personalized admin site settings like title and header
@@ -37,6 +38,7 @@ urlpatterns = [
     path('cdn/', include(cdn.urls)),
     path('course/', include(course.urls)),
     path('websock/', include(websock.urls)),
+    path('schedule/', include(schedule.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
     path('listCourses/', views.listCourses.as_view(), name='listCourses'),
