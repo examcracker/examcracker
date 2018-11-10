@@ -1,0 +1,35 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+  <!-- Breadcrumbs-->
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Event Scheduler</li>
+  </ol>
+  
+  <div class="container">
+    {% for course in mycourses %}
+       <button class="collapsible">{{ course.name }}</button>
+       <div class="content">
+	      {% for sub, subDetails in course.details.items %}
+		  <button class="collapsible">{{ sub }}</button>
+		  <div class="content">
+		    {% for subject in subDetails %}
+		    {% for chapId, chapDetails in subject.items %}
+            <label class="container">{{ chapDetails.name }}
+            <input id="{{chapId}}" type="radio" checked="checked" name="radio" onclick="selectChapter(this.id)">
+            <span class="checkmark"></span>
+            </label>
+			{% endfor %}
+			{% endfor %}
+		  </div>
+		  <br>
+		  {% endfor %}
+       </div>
+	   <br>
+	   {% endfor %}
+	  </div>
+{% endblock active %}

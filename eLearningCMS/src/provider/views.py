@@ -148,15 +148,19 @@ def saveCourseContent(request,courseId):
         return
     courseObj = course.models.Course.objects.filter(id=courseId)[0]
     lcids = request.POST.getlist('lcids')
+    chapterNameList = request.POST.getlist('cd[]')
     if len(lcids) > 0:
         cpPrefix = 'Chapter '              
         i = 0
         subjectChapterCntMap = {}
         chpArr = []
+        chpNameIndex = 0
         while i < len(lcids):
             cpid = lcids[i].split('-')
             subject = cpid[1]
             cpSuffix = 1
+            chapterName = chapterNameList[chpNameIndex]
+            chpNameIndex = chpNameIndex + 1
             if subject not in subjectChapterCntMap:
                 subjectChapterCntMap[subject] = 1
                 cpSuffix = 1
@@ -169,7 +173,8 @@ def saveCourseContent(request,courseId):
             else:
                 chapterObj = course.models.CourseChapter()
                 chapterObj.course = courseObj
-            chapterObj.name = cpPrefix +' ' +str(cpSuffix)
+                chapterObj.name = cpPrefix +' ' +str(cpSuffix) + ': ' + chapterName
+            #chapterObj.name = cpPrefix +' ' +str(cpSuffix)
             chapterObj.sequence = i+1
             chapterObj.subject = subject
 
