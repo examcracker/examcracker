@@ -22,42 +22,39 @@ function swapNodes(a, b) {
     aparent.insertBefore(b, asibling);
 }
 
-$.fn.nextElementInDom = function(selector, options) {
-      var defaults = { stopAt : 'body' };
-      options = $.extend(defaults, options);
-
-      var parent = $(this).parent();
-      var found = parent.find(selector);
-
-      switch(true){
-          case (found.length > 0):
-              return found;
-          case (parent.length === 0 || parent.is(options.stopAt)):
-              return $([]);
-          default:
-              return parent.nextElementInDom(selector);
+function fillSelectByName (me,target,targetNext) {
+  var val = $(me).find("option:selected").val();
+  //var x = document.getElementById("cSubject");
+  var x = document.getElementById(target);
+  var set = 0;
+  if (!$(x).attr("readonly")) {
+    for(i=0;i<x.options.length;i++)
+    {
+      var larray = x.options[i].value.split(":")
+      var optionVal;
+      if (larray.length > 2) {
+        optionVal  = larray.slice(0,larray.length - 1).join(":");
+      }  else{
+        optionVal = larray[0];
       }
-  };
+      if (optionVal != val) {
+        x.options[0].selected = false;
+        x.options[i].hidden=true;
+      }
+      else {
+        x.options[i].hidden=false;
+        set = i;
+      }
+    }
+}
 
-$("select[name=courseExam]").change(
-    function() {
-		var val = $(this).find("option:selected").val();
-    //var x = document.getElementById("cSubject");
-    var x = $(this).nextElementInDom("[name=courseSubject]")[0];
-		var set = 0;
-		//if (!$("select[id=cSubject]").attr("readonly")) {
-    if (!$(x).attr("readonly")) {
-		  for(i=0;i<x.options.length;i++)
-		  {
-			  var optionVal = x.options[i].value.split(":")[0];
-			  if (optionVal != val) {
-				  x.options[i].hidden=true;
-			  }
-			  else {
-				  x.options[i].hidden=false;
-				  set = i;
-			  }
-		  }
+  var isMultiple = x.multiple;
+  if (!isMultiple) {
+    x.options[set].selected = true;
   }
-  //$("select[id=cSubject]").val(x.options[set].value);
-});
+
+  if (targetNext != undefined) {
+    fillSelectByName(x,targetNext);
+  }
+}
+
