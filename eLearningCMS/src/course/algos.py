@@ -13,6 +13,7 @@ import provider
 import profiles
 import student
 import payments
+import schedule
 from django.forms.models import model_to_dict
 
 DELIMITER = ','
@@ -156,9 +157,13 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True):
             sessions = strToIntList(item.sessions)
             publishedStatus = strToBoolList(item.published)
             chapterDetailMap = {}
-
             chapterId = item.id
             chapterDetailMap[chapterId] = {}
+            # check whether this chapter has any live sessions planned
+            scheduleObj = schedule.models.Schedule.objects.filter(chapter_id=item.id)
+            if scheduleObj:
+                chapterDetailMap[chapterId]["hasLiveSessionsSchedules"] = 1
+                
             chapterDetailMap[chapterId]["name"] = item.name
             chapterDetailMap[chapterId]["sessions"] = []
             chapterDetailMap[chapterId]["duration"] = 0
