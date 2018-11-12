@@ -1,6 +1,5 @@
 from django.views.generic.edit import CreateView
 from django.views import generic
-from django.views.generic.edit import CreateView
 from django.http import JsonResponse
 
 class index(generic.TemplateView):

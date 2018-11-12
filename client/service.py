@@ -1,27 +1,21 @@
-import thread
+from websocket_server import WebsocketServer
 
-class serviceObject(thread.CallBackObject):
-    def execute(self):
-        return
+class ClientService:
+    def __init__(self, port=8000):
+        self.server = WebsocketServer(port)
+        self.server.set_fn_client_left(self.clientConnected)
+        self.server.set_fn_client_left(self.clientDisconnected)
+        self.server.set_fn_message_received(self.messageReceived)
 
-    def terminate(self):
-        return self.stop
+    def clientConnected(self):
+        print("New client connected and was given id %d" % client['id'])
 
-    def stop(self):
-        self.stop = True
+    def clientDisconnected(self, client, server):
+        print("Client(%d) disconnected" % client['id'])
 
-    stop = False
+    def messageReceived(self,client, server, message):
+        print("Client(%d) said: %s" % (client['id'], message))
 
-class clientService:
-    recur = True
-    timeout = 60
-    threadObj = None
-    callbackObj = serviceObject()
-
-    def __init__(self):
-        self.threadObj = thread.AppThread(self.callbackObj, self.recur, self.timeout)
-        self.threadObj.start()
-
-    def stop(self):
-        self.callbackObj.stop()
+    def run(self):
+        self.server.run_forever()
 
