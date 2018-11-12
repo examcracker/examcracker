@@ -72,7 +72,7 @@
 											</div>
 										<div class="col-md-4 mb-3">
 											<label for="cExam">Exam</label>
-											<select class="form-control" name="courseExam" id="cExam" data-live-search="true" {% if editCourse and editCourse.exam != ""  %} readonly {% endif %} required>
+											<select class="form-control" name="courseExam" id="cExam" onchange="fillSelectByName(this,'cSubject')" data-live-search="true" {% if editCourse and editCourse.exam != ""  %} readonly {% endif %} required>
 												{% if editCourse and editCourse.exam != "" %}
 												<option value="{{ editCourse.exam }}"selected>{{editCourse.exam}}</option>
 												{% else %}

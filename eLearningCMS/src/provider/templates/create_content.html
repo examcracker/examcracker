@@ -26,6 +26,9 @@
                             {% if not editContentDisable %}
                             <button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="{{courseName}}-deleteChapter">Delete</button>
                             <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
+                            {% if value.hasLiveSessionsSchedules %}
+                            <span class="badge badge-dark" title="This chapter has Live Sessions Planned"><i class="fa fa-info-circle" ></i></span>
+                            {% endif %}
                             <span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-{{chapid}}" {% if not value.hasUnPublishedSessions %} hidden {% endif %}><i class="fa fa-exclamation-triangle"></i></span>
                             {% endif %}
                         </div>
