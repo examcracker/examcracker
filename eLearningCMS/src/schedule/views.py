@@ -39,6 +39,7 @@ class addShowSchedule(showProviderHome):
                 scheduleInfo['chapterName'] = chapterObj.name
                 scheduleInfo['subjectName'] = chapterObj.subject
                 scheduleInfo['courseName'] = course.models.Course.objects.filter(id=chapterObj.course_id)[0].name
+                scheduleInfo['courseId'] = chapterObj.course_id
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
 

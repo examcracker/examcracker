@@ -29,8 +29,8 @@
 	  <div class="modal-body">
       <form  method="post" enctype="multipart/form-data"> {% csrf_token %}
         <div class="form-group row">
-          <label for="courseName" class="col-sm-2 col-form-label">Course</label>
-          <div class="col-sm-10">
+          <label for="courseName" class="col-sm-4 col-form-label">Course</label>
+          <div class="col-sm-8">
             <select name="courseName" class="form-control" id="courseName" data-live-search="true" onchange="fillSelectByName(this,'courseSubjectName','courseChapterName')">
                 <option value="">Course(s)</option>
                 {% for course in mycourses %}
@@ -40,8 +40,8 @@
           </div>
         </div>
         <div class="form-group row">
-          <label for="courseSubjectName" class="col-sm-2 col-form-label">Subject</label>
-          <div class="col-sm-10">
+          <label for="courseSubjectName" class="col-sm-4 col-form-label">Subject</label>
+          <div class="col-sm-8">
             <select id="courseSubjectName" name="courseSubjectName" class="form-control" data-live-search="true" onchange="fillSelectByName(this,'courseChapterName')">
                 <option value="">Subject(s)</option>
                 {% for course in mycourses %}
@@ -53,8 +53,8 @@
           </div>
         </div>
         <div class="form-group row">
-          <label for="courseChapterName" class="col-sm-2 col-form-label">Chapter</label>
-          <div class="col-sm-10">
+          <label for="courseChapterName" class="col-sm-4 col-form-label">Chapter</label>
+          <div class="col-sm-8">
             <select id="courseChapterName" name="courseChapterName" class="form-control" data-live-search="true">
                 <option value="">chapter(s)</option>
                 {% for course in mycourses %}
@@ -70,32 +70,32 @@
           </div>
         </div>
         <div class="form-group row">
-          <label for="startDate" class="col-sm-2 col-form-label">Start Date</label>
-          <div class="col-sm-10">
+          <label for="startDate" class="col-sm-4 col-form-label">Start Date</label>
+          <div class="col-sm-8">
             <input type="date" class="form-control" name="startDate" id="startDate" placeholder="Start Date" required>
           </div>
         </div>
         <div class="form-group row">
-          <label for="eventTime" class="col-sm-2 col-form-label">Event Time</label>
-          <div class="col-sm-10">
+          <label for="eventTime" class="col-sm-4 col-form-label">Event Time</label>
+          <div class="col-sm-8">
             <input type="time" class="form-control" name="eventTime" id="eventTime" placeholder="Start Date" required>
           </div>
         </div>
         <div class="form-group row">
-          <label for="eventCount" class="col-sm-2 col-form-label">Event Count</label>
-          <div class="col-sm-10">
+          <label for="eventCount" class="col-sm-4 col-form-label">Event Count</label>
+          <div class="col-sm-8">
             <input type="number" class="form-control" name="eventCount" id="eventCount" placeholder="Number of Events for this chapter" required>
           </div>
         </div>
         <div class="form-group row">
-          <label for="eventDuration" class="col-sm-2 col-form-label">Event Duration</label>
-          <div class="col-sm-10">
+          <label for="eventDuration" class="col-sm-4 col-form-label">Event Duration</label>
+          <div class="col-sm-8">
             <input type="number" class="form-control" name="eventDuration" id="eventDuration" value=3 placeholder="Event Duration in hours" required>
           </div>
         </div>
         <div class="form-group row">
-          <label for="eventRecur" class="col-sm-2 col-form-label">Recurence After</label>
-          <div class="col-sm-10">
+          <label for="eventRecur" class="col-sm-4 col-form-label">Recurence After</label>
+          <div class="col-sm-8">
             <input type="number" class="form-control" name="eventRecur" id="eventRecur" value=24 placeholder="Recurrence after in hours" required>
           </div>
         </div>
@@ -115,7 +115,7 @@
     <div class="container-fluid">
         {% if schedules|length > 0 %}
         <h5>Scheduled Course Events</h5>
-        <table class="table">
+        <table class="table" id="schedulesTable">
             <thead>
               <tr>
                 <th scope="col">#</th>
@@ -128,22 +128,33 @@
               </tr>
             </thead>
             <tbody>
+                <tr>
+                    <th scope="row"></th>
+                    <td><input type="text" id="filterCourse" onkeyup="filterFunction('filterCourse')" placeholder="Filter Course.."></td>
+                    <td><input type="text" id="filterSubject" onkeyup="filterFunction('filterSubject')" placeholder="Filter Subject.."></td>
+                    <td><input type="text" id="filterChapter" onkeyup="filterFunction('filterChapter')" placeholder="Filter Chapters.."></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    
+                  </tr>
             {% for schedule in schedules %}
               <tr>
                 <th scope="row">{{forloop.counter}}</th>
-                <td>{{schedule.courseName}}</td>
+                <td><a href="{% url 'provider:edit_course' schedule.courseId %}"> {{schedule.courseName}} </a></td>
                 <td>{{schedule.subjectName}}</td>
                 <td>{{schedule.chapterName}}</td>
                 <td>{{schedule.start}}</td>
                 <td>{{schedule.duration}}</td>
                 <td>{{schedule.eventcount}}</td>
+                <td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
               </tr>
               {% endfor %}    
             </tbody>
           </table>
         
         {% else %}
-        <h5>No Upcoming Live Sessions running</h5>
+        <h5>No Schedule Planned</h5>
         {% endif %}
     </div>
   <script src="{% static 'provider/js/createCourseContent.js' %}"></script>
