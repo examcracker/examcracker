@@ -3,12 +3,11 @@ import sys
 import http
 import service
 
-serviceObj = None
-port = 8000
+clientObj = None
 
 def main():
-    serviceObj = service.ClientService(port)
-    serviceObj.run()
+    clientObj = service.ClientService("websock_client.exe")
+    clientObj.run()
 
 
 if __name__ == '__main__':
