@@ -1,12 +1,12 @@
 import os
 import sys
-import http
+import myhttp
 import service
 
 clientObj = None
 
 def main():
-    clientObj = service.ClientService("websock_client.exe")
+    clientObj = service.ClientService()
     clientObj.run()
 
 
