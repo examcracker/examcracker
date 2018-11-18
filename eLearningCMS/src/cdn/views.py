@@ -77,22 +77,8 @@ def createVideoUploadURL():
 
     return upload_url
 
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, ))
-@permission_classes((IsAuthenticated, ))
-def getUploadPaths(request, count, format=None):
-    urlList = []
-    for _ in range(int(count)):
-        url = createVideoUploadURL()
-        urlList.append({"url": url})
-
-    serializer = uploadURLSerializer(urlList, many=True)
-    return Response(serializer.data)
-
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, ))
-@permission_classes((IsAuthenticated, ))
-def saveLiveSession(request, videoKey, chapterId):
+# methods to be called from provider client
+def saveSession(videoKey, chapterId):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerId = provider.views.getProvider(request).id
 
@@ -123,8 +109,27 @@ def saveLiveSession(request, videoKey, chapterId):
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
+def getUploadPaths(request, count, format=None):
+    urlList = []
+    for _ in range(int(count)):
+        url = createVideoUploadURL()
+        urlList.append({"url": url})
+
+    serializer = uploadURLSerializer(urlList, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def saveLiveSession(request, videoKey, chapterId):
+    return saveSession(videoKey, chapterId)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
 def getSymetricKey(request):
     key = get_random_bytes(16)
     iv = get_random_bytes(16)
     return Response({"key":base64.b64encode(key).decode(), "iv":base64.b64encode(iv).decode()})
+
 
