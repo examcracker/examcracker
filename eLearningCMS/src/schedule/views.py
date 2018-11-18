@@ -36,10 +36,16 @@ class addShowSchedule(showProviderHome):
             for schedule in scheduleObj:
                 scheduleInfo = model_to_dict(schedule)
                 chapterObj = course.models.CourseChapter.objects.filter(id=schedule.chapter_id)[0]
+                sessions = chapterObj.sessions
+                sessionsCount = 0
+                if sessions != '':
+                    sessionsCount = len(sessions.split(','))
                 scheduleInfo['chapterName'] = chapterObj.name
                 scheduleInfo['subjectName'] = chapterObj.subject
                 scheduleInfo['courseName'] = course.models.Course.objects.filter(id=chapterObj.course_id)[0].name
                 scheduleInfo['courseId'] = chapterObj.course_id
+                scheduleInfo['eventsOccured'] = sessionsCount
+                scheduleInfo['eventsRemaining'] = schedule.eventcount - sessionsCount
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
 
@@ -50,14 +56,24 @@ class addShowSchedule(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
-        courseChapterName = request.POST.get('courseChapterName')
-        chapterid = courseChapterName.split(':')[2]
-        scheduleObj = models.Schedule()
+        courseChapterName = request.POST.get('courseChapterName',"")
+        # if this element doesnt comes, then its edit flow
+        chapterid = ''
+        if courseChapterName == '':
+            chapterid = request.POST.get('scheduleChapterId')
+        else:
+            chapterid = courseChapterName.split(':')[2]
+        scheduleObj = models.Schedule.objects.filter(chapter_id = chapterid)
+        if not scheduleObj :
+            scheduleObj = models.Schedule()
+            scheduleObj.chapter_id = chapterid
+            scheduleObj.provider_id = providerObj.id
+        else:
+            scheduleObj = scheduleObj[0]
         scheduleObj.start = request.POST.get('startDate')
         scheduleObj.eventcount = request.POST.get('eventCount')
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
-        scheduleObj.chapter_id = chapterid
-        scheduleObj.provider_id = providerObj.id
+
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")

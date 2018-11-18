@@ -47,6 +47,57 @@ function filterFunction(filterType) {
     } 
   }
 }
+function setSelectedValue(object, value) {
+  for (var i = 0; i < object.options.length; i++) {
+      if (object.options[i].text === value) {
+          object.options[i].selected = true;
+          //object.onchange();
+          return object.options[i].value;
+      }
+  }
+}
+function editSchedule(e) {
+  var eButton = e;
+  var eTd = e.parentNode.parentNode;
+  var Cells = eTd.getElementsByTagName("td");
+  var scheduleModal = document.getElementById("scheduleModal");
+
+  var coursename = scheduleModal.querySelectorAll('select[id="courseName"]')[0];
+  coursename.disabled = true;
+  setSelectedValue(coursename,Cells[0].innerText)
+  
+  var courseSubjectName = scheduleModal.querySelectorAll('select[id="courseSubjectName"]')[0];
+  courseSubjectName.disabled = true;
+  setSelectedValue(courseSubjectName,Cells[1].innerText)
+
+  var courseChapterName = scheduleModal.querySelectorAll('select[id="courseChapterName"]')[0];
+  courseChapterName.disabled = true;
+  nameSubId = setSelectedValue(courseChapterName,Cells[2].innerText);
+  chapterid = nameSubId.split(':')[2];
+  var idHiddenElement = scheduleModal.querySelectorAll('input[id="scheduleChapterId"]')[0];
+  idHiddenElement.value = chapterid;
+
+  var startDate = scheduleModal.querySelectorAll('input[id="startDate"]')[0];
+  startDate.value = Cells[3].innerText;
+ 
+
+  var eventTime = scheduleModal.querySelectorAll('input[id="eventTime"]')[0];
+  eventTime.value = Cells[4].innerText
+
+  var eventCount = scheduleModal.querySelectorAll('input[id="eventCount"]')[0];
+  eventCount.value = Cells[5].innerText;
+  
+  $('#scheduleModal').modal('toggle');
+}
+$('#scheduleModal').on('hidden.bs.modal', function (e) {
+  var coursename = this.querySelectorAll('select[id="courseName"]')[0];
+  coursename.disabled = false;
+  var courseSubjectName = this.querySelectorAll('select[id="courseSubjectName"]')[0];
+  courseSubjectName.disabled = false;
+  var courseChapterName = this.querySelectorAll('select[id="courseChapterName"]')[0];
+  courseChapterName.disabled = false;
+  // do something...
+})
 
 function fillSelectByName (me,target,targetNext) {
   var val = $(me).find("option:selected").val();
