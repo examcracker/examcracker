@@ -4,7 +4,6 @@ import sys
 import jwplatform
 import requests
 import logging
-import pdb
 
 class uploadVideo:
 	def __init__(self, clientId):
@@ -24,7 +23,6 @@ class uploadVideo:
 		:return:
 		"""
 		filename = os.path.basename(local_video_path)
-		pdb.set_trace()
 		try:
 			response = self.jwplatform_client.videos.create(upload_method='s3', **kwargs)
 		except jwplatform.errors.JWPlatformError as e:
