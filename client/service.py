@@ -8,24 +8,29 @@ def on_message(ws, message):
     responseDict = {}
     messageDict = json.loads(message)
 
-    command = messageDict["command"]
-    if command == api.command_start:
-        if ws.obj.capturing:
-            responseDict["result"] = api.status_capture_started
-        else:
-            chapterid = messageDict["chapterid"]
-            responseDict["result"] = api.status_success
-            ws.obj.capturing = True
-            capture.startCapturing(chapterid)
-    elif command == api.command_stop:
-        if not ws.obj.capturing:
-            responseDict["result"] = api.status_no_capture_started
-            responseDict["result"] = api.status_success
-        else:
-            cature.stopCapturing()
-            ws.obj.capturing = False
+    if "command" in messageDict.keys():
+        command = messageDict["command"]
+        if command == api.command_start:
+            if ws.obj.capturing:
+                responseDict["result"] = api.status_capture_started
+            else:
+                chapterid = messageDict["chapterid"]
+                responseDict["result"] = api.status_success
+                ws.obj.capturing = True
+                ws.obj.chapterid = chapterid
+                capture.startCapturing(ws)
+        elif command == api.command_stop:
+            if not ws.obj.capturing:
+                responseDict["result"] = api.status_no_capture_started
+                responseDict["result"] = api.status_success
+            else:
+                cature.stopCapturing(ws, ws.obj.videokey, ws.obj.chapterid)
+                ws.obj.capturing = False
 
-    ws.send(json.dumps(responseDict))
+        ws.send(json.dumps(responseDict))
+    else if "url" in messageDict.keys():
+        videokey = messageDict["url"]
+        ws.obj.videokey = videokey
 
 def on_error(ws, error):
     print(error)
@@ -36,6 +41,8 @@ def on_close(ws):
 class ClientService(object):
     wsclient = None
     capturing = False
+    chapterid = None
+    videokey = None
 
     def __init__(self):
         self.wsclient = None
