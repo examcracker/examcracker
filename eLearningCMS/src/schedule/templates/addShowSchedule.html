@@ -23,7 +23,7 @@
 	  <!-- Modal content-->
 	  <div class="modal-content">
 	  <div class="modal-header">
-	  <h4 class="modal-title">Add new schedule for your Course</h4>
+	  <h4 class="modal-title">Add/Edit schedule for your Course</h4>
 	  <button type="button" class="close" data-dismiss="modal">×</button>
 	  </div>
 	  <div class="modal-body">
@@ -31,7 +31,7 @@
         <div class="form-group row">
           <label for="courseName" class="col-sm-4 col-form-label">Course</label>
           <div class="col-sm-8">
-            <select name="courseName" class="form-control" id="courseName" data-live-search="true" onchange="fillSelectByName(this,'courseSubjectName','courseChapterName')">
+            <select name="courseName" class="form-control" id="courseName" data-live-search="true" onchange="fillSelectByName(this,'courseSubjectName','courseChapterName')" >
                 <option value="">Course(s)</option>
                 {% for course in mycourses %}
               <option value="{{ course.name }}" >{{ course.name }}</option>
@@ -67,6 +67,7 @@
                   {% endfor %}
                 {% endfor %}
             </select>
+            <input type="hidden" id="scheduleChapterId" name="scheduleChapterId" value="" />
           </div>
         </div>
         <div class="form-group row">
@@ -101,7 +102,7 @@
         </div>
         <div class="form-group row">
           <div class="col-sm-10">
-            <button type="submit" class="btn btn-primary">Add</button>
+            <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
       </form>
@@ -123,8 +124,10 @@
                 <th scope="col">Subject</th>
                 <th scope="col">Chapter</th>
                 <th scope="col">Start Date</th>
-                <th scope="col">Lecture Duration</th>
-                <th scope="col">Total Lectures</th>
+                <th scope="col">Event Duration</th>
+                <th scope="col">Total Events</th>
+                <th scope="col">Events Occured</th>
+                <th scope="col">Events Remaining</th>
               </tr>
             </thead>
             <tbody>
@@ -147,7 +150,11 @@
                 <td>{{schedule.start}}</td>
                 <td>{{schedule.duration}}</td>
                 <td>{{schedule.eventcount}}</td>
+                <td>{{schedule.eventsOccured}}</td>
+                <td>{{schedule.eventsRemaining}}</td>
+                <td><button class="btn btn-info btn-sm mx-2 px-2" aria-pressed="true" onclick="editSchedule(this)">Edit</a></td>
                 <td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
+                <td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Mark Completed</a></td>
               </tr>
               {% endfor %}    
             </tbody>
