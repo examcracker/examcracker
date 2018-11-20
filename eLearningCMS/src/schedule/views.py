@@ -1,11 +1,15 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import generic
 import course
 from course import models
-
 from provider.views import showProviderHome, getProvider
 from django.forms.models import model_to_dict
 from . import models
+import websock
+import provider
+
 # Create your views here.
 
 class addShowSchedule(showProviderHome):
@@ -77,3 +81,21 @@ class addShowSchedule(showProviderHome):
 
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
+
+class startCapture(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, chapterid, *args, **kwargs):
+        chapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
+        courseObj = course.models.Course.objects.filter(id=chapterObj.course_id)[0]
+        providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+
+        wsclient = None
+        if providerObj.id in websock.consumers.connectedConsumerClients.keys():
+            wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
+
+        if wsclient:
+            wsclient.startcourse(chapterid)
+
+        return redirect("schedule:add_show_schedule")
+

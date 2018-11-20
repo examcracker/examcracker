@@ -63,13 +63,14 @@ def on_open(ws):
     ws.send(json.dumps(iddict))
 
 class ClientService(object):
-    def __init__(self):
-        wsclient = None
-        capturing = False
-        chapterid = None
-        videokey = None
-        wsclient = None
 
+    wsclient = None
+    capturing = False
+    chapterid = None
+    videokey = None
+    wsclient = None
+
+    def __init__(self):
         websocket.enableTrace(True)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))

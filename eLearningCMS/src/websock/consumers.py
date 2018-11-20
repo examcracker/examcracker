@@ -35,3 +35,9 @@ class ClientConsumer(WebsocketConsumer):
             chapterid = message["chapterid"]
             self.send(cdn.views.saveSession(videokey, chapterid))
 
+    def startcourse(self, chapterid):
+        msgDict = {}
+        msgDict["command"] = api.command_start
+        msgDict["chapterid"] = chapterid
+        self.send(text_data=json.dumps(msgDict))
+
