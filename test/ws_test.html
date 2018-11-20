@@ -10,11 +10,11 @@
     <input id="chat-message-submit" type="button" value="Send"/>
 </body>
 <script>
-    var chatSocket = new WebSocket('ws://localhost:8000/ws/gyaan/');
+    var chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/gyaan/');
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        var message = data['command'];
+        var message = data['message'];
         document.querySelector('#chat-log').value += (message + '\n');
     };
 

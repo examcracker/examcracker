@@ -3,6 +3,8 @@ import json
 from . import api
 import cdn
 
+connectedConsumerClients = {}
+
 class ClientConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
@@ -11,15 +13,18 @@ class ClientConsumer(WebsocketConsumer):
         pass
 
     def receive(self, text_data):
-        message = json.loads(text_data)
-        if "result" in message.keys():
-            result = message["result"]
-        if "upload" in message.keys():
+        print(text_data)
+        message_json = json.loads(text_data)
+
+        if "message" in message_json.keys():
+            message = message_json["message"]
+            self.send(text_data=json.dumps({"message": message}))
+        elif "id" in message_json.keys():
+            self.send(text_data=json.dumps({"id": message_json["id"]}))
+        elif "result" in message_json.keys():
+            result = message_json["result"]
+        elif "upload" in message.keys():
             videokey = message["videokey"]
             chapterid = message["chapterid"]
-            self.send(cdn.views.saveSession())
-        if "geturl" in message.keys():
-            urldict = {}
-            urldict["url"] = cdn.views.createVideoUploadURL()
-            self.send(json.dumps(urldict))
+            self.send(cdn.views.saveSession(videokey, chapterid))
 
