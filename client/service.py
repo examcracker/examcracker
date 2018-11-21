@@ -24,7 +24,7 @@ def on_message(ws, message):
     print(message)
     responseDict = {}
     messageDict = json.loads(message)
-
+    
     if "command" in messageDict.keys():
         command = messageDict["command"]
         if command == api.command_start:
@@ -104,7 +104,9 @@ class ClientService(object):
 
         self.capturing = False
         self.capture.stopCapturing()
-        #uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
+        print ("Uploading file to jw: ", self.capture.outputFileName)
+        uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
+        print ("Uploading done: ", uploadResponse)
         uploadDict = {}
         uploadDict["chapterid"] = self.chapterid
         uploadDict["videokey"] = self.videokey
