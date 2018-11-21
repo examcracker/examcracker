@@ -100,6 +100,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
 
         if wsclient:
             wsclient.startcourse(chapterid)
+        return redirect("schedule:add_show_schedule")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']

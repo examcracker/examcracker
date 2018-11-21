@@ -116,6 +116,7 @@
     <div class="container-fluid">
         {% if schedules|length > 0 %}
         <h5>Scheduled Course Events</h5>
+        <div style="overflow-x:auto;">
         <table class="table" id="schedulesTable">
             <thead>
               <tr>
@@ -153,12 +154,14 @@
                 <td>{{schedule.eventsOccured}}</td>
                 <td>{{schedule.eventsRemaining}}</td>
                 <td><button class="btn btn-info btn-sm mx-2 px-2" aria-pressed="true" onclick="editSchedule(this)">Edit</a></td>
-                <td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
-                <td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Mark Completed</a></td>
+                <td><a href="{% url 'schedule:startCapture' schedule.courseId %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
+                <td><a href="{% url 'schedule:stopCapture' schedule.courseId %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Stop</a></td>
+                <!--<td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Mark Completed</a></td> -->
               </tr>
               {% endfor %}    
             </tbody>
           </table>
+          </div>
         
         {% else %}
         <h5>No Schedule Planned</h5>
