@@ -82,13 +82,17 @@ class addShowSchedule(showProviderHome):
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
 
+def getProviderFromChapterId(chapterid):
+    chapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
+    courseObj = course.models.Course.objects.filter(id=chapterObj.course_id)[0]
+    providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+    return providerObj
+
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, chapterid, *args, **kwargs):
-        chapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
-        courseObj = course.models.Course.objects.filter(id=chapterObj.course_id)[0]
-        providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+        providerObj = getProviderFromChapterId(chapterid)
 
         wsclient = None
         if providerObj.id in websock.consumers.connectedConsumerClients.keys():
@@ -97,5 +101,17 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         if wsclient:
             wsclient.startcourse(chapterid)
 
+class stopCapture(LoginRequiredMixin, generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, chapterid, *args, **kwargs):
+        providerObj = getProviderFromChapterId(chapterid)
+
+        wsclient = None
+        if providerObj.id in websock.consumers.connectedConsumerClients.keys():
+            wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
+
+        if wsclient:
+            wsclient.stopcourse(chapterid)
         return redirect("schedule:add_show_schedule")
 

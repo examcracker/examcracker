@@ -41,3 +41,9 @@ class ClientConsumer(WebsocketConsumer):
         msgDict["chapterid"] = chapterid
         self.send(text_data=json.dumps(msgDict))
 
+    def stopcourse(self, chapterid):
+        msgDict = {}
+        msgDict["command"] = api.command_stop
+        msgDict["chapterid"] = chapterid
+        self.send(text_data=json.dumps(msgDict))
+
