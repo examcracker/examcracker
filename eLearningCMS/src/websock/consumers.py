@@ -30,10 +30,10 @@ class ClientConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps({"id": self.id}))
         elif "result" in message_json.keys():
             result = message_json["result"]
-        elif "upload" in message.keys():
-            videokey = message["videokey"]
-            chapterid = message["chapterid"]
-            self.send(cdn.views.saveSession(videokey, chapterid))
+            if result == api.status_stop_success:
+                videokey = message_json["videokey"]
+                chapterid = message_json["chapterid"]
+                self.send(text_data=json.dumps(cdn.views.saveSession("abc", chapterid)))
 
     def startcourse(self, chapterid):
         msgDict = {}

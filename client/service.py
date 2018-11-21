@@ -24,7 +24,7 @@ def on_message(ws, message):
     print(message)
     responseDict = {}
     messageDict = json.loads(message)
-    
+
     if "command" in messageDict.keys():
         command = messageDict["command"]
         if command == api.command_start:
@@ -32,7 +32,7 @@ def on_message(ws, message):
                 responseDict["result"] = api.status_capture_started
             else:
                 chapterid = messageDict["chapterid"]
-                responseDict["result"] = api.status_success
+                responseDict["result"] = api.status_start_success
                 ws.obj.chapterid = chapterid
                 ws.obj.startCapture()
         elif command == api.command_stop:
@@ -40,11 +40,14 @@ def on_message(ws, message):
                 responseDict["result"] = api.status_no_capture_started
             else:
                 ws.obj.stopCapture()
-                responseDict["result"] = api.status_success
+                responseDict["result"] = api.status_stop_success
+                responseDict["chapterid"] = ws.obj.chapterid
+                responseDict["videokey"] = ws.obj.videokey
 
         ws.send(json.dumps(responseDict))
     elif "id" in messageDict.keys():
-        print("Synced")
+        global clientid
+        print("Synced with id " + str(clientid))
         pass
     else:
         print ("Unhandled command: ", messageDict.keys())
@@ -59,7 +62,6 @@ def on_close(ws):
 def on_open(ws):
     iddict = {}
     iddict["id"] = int(clientid)
-    time.sleep(1)
     ws.send(json.dumps(iddict))
 
 class ClientService(object):
@@ -84,7 +86,6 @@ class ClientService(object):
 
         self.capture = captureFeed.captureFeed(clientid)
         self.upload = uploadVideo.uploadVideo(clientid)
-        #self.wsclient = websocketClient.clientWebsocket(self.clientId)
 
     def close(self):
         self.wsclient.close()
@@ -107,10 +108,6 @@ class ClientService(object):
         print ("Uploading file to jw: ", self.capture.outputFileName)
         uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
         print ("Uploading done: ", uploadResponse)
-        uploadDict = {}
-        uploadDict["chapterid"] = self.chapterid
-        uploadDict["videokey"] = self.videokey
-        #self.wsclient.send(json.dumps(uploadDict))
 
     def run(self):
         self.wsclient = websocket.WebSocketApp("ws://127.0.0.1:8000/ws/gyaan/", on_message = on_message, on_close = on_close, on_error = on_error)

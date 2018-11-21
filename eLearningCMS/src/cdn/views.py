@@ -77,15 +77,21 @@ def createVideoUploadURL():
 
     return upload_url
 
+def getProviderFromChapterId(chapterid):
+    chapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
+    courseObj = course.models.Course.objects.filter(id=chapterObj.course_id)[0]
+    providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+    return providerObj
+
 # methods to be called from provider client
 def saveSession(videoKey, chapterId):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
-    providerId = provider.views.getProvider(request).id
+    providerObj = getProviderFromChapterId(chapterId)
 
     sessionObj = provider.models.Session()
-    sessionObj.name = str(providerId) + str(datetime.datetime.now().isoformat())
+    sessionObj.name = str(providerObj.id) + str(datetime.datetime.now().isoformat())
     sessionObj.videoKey = videoKey
-    sessionObj.provider_id = providerId
+    sessionObj.provider_id = providerObj.id
     sessionObj.tags = chapterObj.subject
     sessionObj.save()
 
@@ -104,7 +110,7 @@ def saveSession(videoKey, chapterId):
     t = thread.AppThread(callbackObj, True, 30)
     t.start()
 
-    return Response({"result":True})
+    return {"result":True}
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
@@ -122,7 +128,7 @@ def getUploadPaths(request, count, format=None):
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
 def saveLiveSession(request, videoKey, chapterId):
-    return saveSession(videoKey, chapterId)
+    return Response(saveSession(videoKey, chapterId))
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
