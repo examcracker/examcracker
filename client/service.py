@@ -4,6 +4,7 @@ import captureFeed
 import uploadVideo
 import configparser
 import os
+import sys
 import websocket
 import time
 import api
@@ -34,16 +35,15 @@ def on_message(ws, message):
                 responseDict["result"] = api.status_start_success
                 ws.obj.chapterid = messageDict["chapterid"]
                 ws.obj.publish = messageDict["publish"]
-                ws.obj.capturing = True
                 ws.obj.startCapture()
         elif command == api.command_stop:
             if not ws.obj.capturing:
                 responseDict["result"] = api.status_no_capture_started
             else:
-                ws.obj.stopCapture()
+                res = ws.obj.stopCapture()
                 responseDict["result"] = api.status_stop_success
                 responseDict["chapterid"] = ws.obj.chapterid
-                responseDict["videokey"] = ws.obj.videokey
+                responseDict["videokey"] = res["videoKey"]
                 responseDict["publish"] = ws.obj.publish
 
         ws.send(json.dumps(responseDict))
@@ -71,7 +71,6 @@ class ClientService(object):
     wsclient = None
     capturing = False
     chapterid = None
-    videokey = None
     wsclient = None
     publish = False
 
@@ -79,15 +78,19 @@ class ClientService(object):
         websocket.enableTrace(True)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
+        if getattr(sys, 'frozen', False):
+            dir_path = os.path.dirname(sys.executable)
+
         config = configparser.ConfigParser()
-        config.readfp(open(os.path.join(dir_path, "arguments.cfg")))
+        configPath = os.path.join(dir_path, "arguments.cfg")
+        config.readfp(open(configPath))
 
         global clientid
         b64clientid = base64.b64decode(config.get("config", "clientId"))
         decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
         clientid = decipher.decrypt(b64clientid).decode()
 
-        self.capture = captureFeed.captureFeed(clientid)
+        self.capture = captureFeed.captureFeed(clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.upload = uploadVideo.uploadVideo(clientid)
 
     def close(self):
@@ -104,13 +107,15 @@ class ClientService(object):
     def stopCapture(self):
         if not self.capturing:
             print ("No active capturing")
-            return
+            return {"videoKey": None}
 
         self.capturing = False
         self.capture.stopCapturing()
+        time.sleep(5)
         print ("Uploading file to jw: ", self.capture.outputFileName)
         uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
         print ("Uploading done: ", uploadResponse)
+        return uploadResponse
 
     def run(self):
         self.wsclient = websocket.WebSocketApp("ws://127.0.0.1:8000/ws/gyaan/", on_message = on_message, on_close = on_close, on_error = on_error)
