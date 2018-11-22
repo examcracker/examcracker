@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from . import models
 import websock
 import provider
+import schedule
 
 # Create your views here.
 
@@ -44,12 +45,15 @@ class addShowSchedule(showProviderHome):
                 sessionsCount = 0
                 if sessions != '':
                     sessionsCount = len(sessions.split(','))
+
+                scheduleInfo['id'] = schedule.id
                 scheduleInfo['chapterName'] = chapterObj.name
                 scheduleInfo['subjectName'] = chapterObj.subject
                 scheduleInfo['courseName'] = course.models.Course.objects.filter(id=chapterObj.course_id)[0].name
                 scheduleInfo['courseId'] = chapterObj.course_id
                 scheduleInfo['eventsOccured'] = sessionsCount
                 scheduleInfo['eventsRemaining'] = schedule.eventcount - sessionsCount
+                scheduleInfo['autoPublish'] = schedule.autopublish
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
 
@@ -79,40 +83,39 @@ class addShowSchedule(showProviderHome):
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
 
+        if request.POST.get('autoPublish'):
+            scheduleObj.autopublish = True
+
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
-
-def getProviderFromChapterId(chapterid):
-    chapterObj = course.models.CourseChapter.objects.filter(id=chapterid)[0]
-    courseObj = course.models.Course.objects.filter(id=chapterObj.course_id)[0]
-    providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
-    return providerObj
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
-    def get(self, request, chapterid, *args, **kwargs):
-        providerObj = getProviderFromChapterId(chapterid)
+    def get(self, request, scheduleid, *args, **kwargs):
+        scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
+        providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
         wsclient = None
         if providerObj.id in websock.consumers.connectedConsumerClients.keys():
             wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
 
         if wsclient:
-            wsclient.startcourse(chapterid)
+            wsclient.startcourse(scheduleObj.chapter_id, scheduleObj.autopublish)
         return redirect("schedule:add_show_schedule")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
-    def get(self, request, chapterid, *args, **kwargs):
-        providerObj = getProviderFromChapterId(chapterid)
+    def get(self, request, scheduleid, *args, **kwargs):
+        scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
+        providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
         wsclient = None
         if providerObj.id in websock.consumers.connectedConsumerClients.keys():
             wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
 
         if wsclient:
-            wsclient.stopcourse(chapterid)
+            wsclient.stopcourse(scheduleObj.chapter_id)
         return redirect("schedule:add_show_schedule")
 

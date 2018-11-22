@@ -84,7 +84,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId):
+def saveSession(videoKey, chapterId, publish=False):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
 
@@ -95,14 +95,18 @@ def saveSession(videoKey, chapterId):
     sessionObj.tags = chapterObj.subject
     sessionObj.save()
 
+    publishstatus = "0"
+    if publish:
+        publishstatus = "1"
+
     if len(chapterObj.sessions) > 0:
         chapterObj.sessions = chapterObj.sessions + "," + str(sessionObj.id)
     else:
         chapterObj.sessions = str(sessionObj.id)
     if len(chapterObj.published) > 0:
-        chapterObj.published = chapterObj.published + ",0"
+        chapterObj.published = chapterObj.published + "," + publishstatus
     else:
-        chapterObj.published = "0"
+        chapterObj.published = publishstatus
     chapterObj.save()
 
     # create thread to compute duration

@@ -31,9 +31,10 @@ def on_message(ws, message):
             if ws.obj.capturing:
                 responseDict["result"] = api.status_capture_started
             else:
-                chapterid = messageDict["chapterid"]
                 responseDict["result"] = api.status_start_success
-                ws.obj.chapterid = chapterid
+                ws.obj.chapterid = messageDict["chapterid"]
+                ws.obj.publish = messageDict["publish"]
+                ws.obj.capturing = True
                 ws.obj.startCapture()
         elif command == api.command_stop:
             if not ws.obj.capturing:
@@ -43,6 +44,7 @@ def on_message(ws, message):
                 responseDict["result"] = api.status_stop_success
                 responseDict["chapterid"] = ws.obj.chapterid
                 responseDict["videokey"] = ws.obj.videokey
+                responseDict["publish"] = ws.obj.publish
 
         ws.send(json.dumps(responseDict))
     elif "id" in messageDict.keys():
@@ -71,6 +73,7 @@ class ClientService(object):
     chapterid = None
     videokey = None
     wsclient = None
+    publish = False
 
     def __init__(self):
         websocket.enableTrace(True)

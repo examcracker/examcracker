@@ -33,12 +33,14 @@ class ClientConsumer(WebsocketConsumer):
             if result == api.status_stop_success:
                 videokey = message_json["videokey"]
                 chapterid = message_json["chapterid"]
-                self.send(text_data=json.dumps(cdn.views.saveSession("abc", chapterid)))
+                publish = message_json["publish"]
+                self.send(text_data=json.dumps(cdn.views.saveSession(videokey, chapterid, publish)))
 
-    def startcourse(self, chapterid):
+    def startcourse(self, chapterid, publish):
         msgDict = {}
         msgDict["command"] = api.command_start
         msgDict["chapterid"] = chapterid
+        msgDict["publish"] = publish
         self.send(text_data=json.dumps(msgDict))
 
     def stopcourse(self, chapterid):
@@ -46,4 +48,3 @@ class ClientConsumer(WebsocketConsumer):
         msgDict["command"] = api.command_stop
         msgDict["chapterid"] = chapterid
         self.send(text_data=json.dumps(msgDict))
-

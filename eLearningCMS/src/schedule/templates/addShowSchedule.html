@@ -101,6 +101,12 @@
           </div>
         </div>
         <div class="form-group row">
+          <label for="autoPublish" class="col-sm-4 col-form-label">Instant Publish</label>
+          <div class="col-sm-8">
+            <input type="checkbox" class="form-control" name="autoPublish" id="autoPublish">
+          </div>
+        </div>
+        <div class="form-group row">
           <div class="col-sm-10">
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
@@ -129,6 +135,7 @@
                 <th scope="col">Total Events</th>
                 <th scope="col">Events Occured</th>
                 <th scope="col">Events Remaining</th>
+                <th scope="col">Instant Publish</th>
               </tr>
             </thead>
             <tbody>
@@ -153,9 +160,10 @@
                 <td>{{schedule.eventcount}}</td>
                 <td>{{schedule.eventsOccured}}</td>
                 <td>{{schedule.eventsRemaining}}</td>
+                <td>{{schedule.autoPublish}}</td>
                 <td><button class="btn btn-info btn-sm mx-2 px-2" aria-pressed="true" onclick="editSchedule(this)">Edit</a></td>
-                <td><a href="{% url 'schedule:startCapture' schedule.courseId %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
-                <td><a href="{% url 'schedule:stopCapture' schedule.courseId %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Stop</a></td>
+                <td><a href="{% url 'schedule:startCapture' schedule.id %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Start</a></td>
+                <td><a href="{% url 'schedule:stopCapture' schedule.id %}" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Stop</a></td>
                 <!--<td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Mark Completed</a></td> -->
               </tr>
               {% endfor %}    
