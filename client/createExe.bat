@@ -1,1 +1,1 @@
-pyinstaller service.py
+pyinstaller --onefile service.py

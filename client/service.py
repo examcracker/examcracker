@@ -4,6 +4,7 @@ import captureFeed
 import uploadVideo
 import configparser
 import os
+import sys
 import websocket
 import time
 import api
@@ -77,15 +78,19 @@ class ClientService(object):
         websocket.enableTrace(True)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
+        if getattr(sys, 'frozen', False):
+            dir_path = os.path.dirname(sys.executable)
+
         config = configparser.ConfigParser()
-        config.readfp(open(os.path.join(dir_path, "arguments.cfg")))
+        configPath = os.path.join(dir_path, "arguments.cfg")
+        config.readfp(open(configPath))
 
         global clientid
         b64clientid = base64.b64decode(config.get("config", "clientId"))
         decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
         clientid = decipher.decrypt(b64clientid).decode()
 
-        self.capture = captureFeed.captureFeed(clientid)
+        self.capture = captureFeed.captureFeed(clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.upload = uploadVideo.uploadVideo(clientid)
 
     def close(self):
