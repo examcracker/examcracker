@@ -73,6 +73,7 @@ class ClientService(object):
     chapterid = None
     wsclient = None
     publish = False
+    debug = False
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -92,6 +93,11 @@ class ClientService(object):
 
         self.capture = captureFeed.captureFeed(clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.upload = uploadVideo.uploadVideo(clientid)
+
+        try:
+            self.debug = bool(int(config.get("config", "debug")))
+        except:
+            pass
 
     def close(self):
         self.wsclient.close()
@@ -118,7 +124,12 @@ class ClientService(object):
         return uploadResponse
 
     def run(self):
-        self.wsclient = websocket.WebSocketApp("ws://127.0.0.1:8000/ws/gyaan/", on_message = on_message, on_close = on_close, on_error = on_error)
+        url = "wss://gyaanhive.com/ws/gyaan/"
+        if self.debug:
+            url = "ws://127.0.0.1:8000/ws/gyaan/"
+        print(url)
+
+        self.wsclient = websocket.WebSocketApp(url, on_message = on_message, on_close = on_close, on_error = on_error)
         self.wsclient.on_open = on_open
         self.wsclient.obj = self
         self.wsclient.run_forever()
