@@ -71,10 +71,10 @@ class HomePage(fillCartCourses):
 
     def get(self, request, *args, **kwargs):
         pusher_client = pusher.Pusher(
-        app_id=PUSHER_APP_ID,
-        key=PUSHER_APP_KEY,
-        secret=PUSHER_APP_SECRET,
-        cluster=PUSHER_APP_CLUSTER,
+        app_id=settings.PUSHER_APP_ID,
+        key=settings.PUSHER_APP_KEY,
+        secret=settings.PUSHER_APP_SECRET,
+        cluster=settings.PUSHER_APP_CLUSTER,
         ssl=True
         )
 
