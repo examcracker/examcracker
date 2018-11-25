@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.conf import settings
+from django.views import generic
 from . import models
 import provider
 # for interacting jw platform
@@ -18,6 +19,7 @@ import logging
 import hashlib
 import time
 import datetime
+import json
 from examcracker import thread
 # crypto
 from Crypto.Random import get_random_bytes
@@ -142,4 +144,10 @@ def getSymetricKey(request):
     iv = get_random_bytes(16)
     return Response({"key":base64.b64encode(key).decode(), "iv":base64.b64encode(iv).decode()})
 
+class saveClientSession(generic.TemplateView):
+    http_method_names = ['get']
 
+    def get(self, request, *args, **kwargs):
+        jsonObj = json.loads(request.body.decode())
+        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]))
+        return super().get(request, *args, **kwargs)

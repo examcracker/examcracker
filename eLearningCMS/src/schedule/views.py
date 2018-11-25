@@ -10,6 +10,14 @@ from . import models
 import websock
 import provider
 import schedule
+import pusher
+import pysher
+import websocket
+
+PUSHER_APP_ID = "656749"
+PUSHER_KEY = "3ff394e3371be28d8abd"
+PUSHER_SECRET = "35f5a7cde33cd756c30d"
+PUSHER_CLUSTER = "ap2"
 
 # Create your views here.
 
@@ -96,12 +104,22 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
+        '''
         wsclient = None
         if providerObj.id in websock.consumers.connectedConsumerClients.keys():
             wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
 
         if wsclient:
             wsclient.startcourse(scheduleObj.chapter_id, scheduleObj.autopublish)
+        '''
+
+        pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
+        msgDict = {}
+        msgDict["command"] = websock.api.command_start
+        msgDict["chapterid"] = scheduleObj.chapter_id
+        msgDict["publish"] = scheduleObj.autopublish
+        pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
+
         return redirect("schedule:add_show_schedule")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):
@@ -111,11 +129,20 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
+        '''
         wsclient = None
         if providerObj.id in websock.consumers.connectedConsumerClients.keys():
             wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
 
         if wsclient:
             wsclient.stopcourse(scheduleObj.chapter_id)
+        '''
+
+        pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
+        msgDict = {}
+        msgDict["command"] = websock.api.command_stop
+        msgDict["chapterid"] = scheduleObj.chapter_id
+        pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
+
         return redirect("schedule:add_show_schedule")
 

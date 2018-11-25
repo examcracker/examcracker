@@ -9,5 +9,6 @@ urlpatterns = [
     path('schema/', schema_view), # new
     path('getUploadPaths/<int:count>', views.getUploadPaths),
     path('saveLiveSession/<str:videoKey>/<int:chapterId>', views.saveLiveSession),
-    path('getSymetricKey', views.getSymetricKey)
+    path('getSymetricKey', views.getSymetricKey),
+    path('saveClientSession/', views.saveClientSession.as_view(), name='saveClientSession'),
 ]

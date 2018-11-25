@@ -9,7 +9,6 @@ import student
 from course.views import fillCartCourses
 from profiles.signals import sendMail
 from django.http import JsonResponse
-import pusher
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(fillCartCourses):
@@ -70,16 +69,6 @@ class HomePage(fillCartCourses):
     http_method_names = ['get','post']
 
     def get(self, request, *args, **kwargs):
-        pusher_client = pusher.Pusher(
-        app_id=settings.PUSHER_APP_ID,
-        key=settings.PUSHER_APP_KEY,
-        secret=settings.PUSHER_APP_SECRET,
-        cluster=settings.PUSHER_APP_CLUSTER,
-        ssl=True
-        )
-
-        pusher_client.trigger('my-channel', 'my-event', {'message': 'hello world'})
-
         examsList = getExams()
         courseList = getPublishedCourses()
         providerObj = getProvider(request)
