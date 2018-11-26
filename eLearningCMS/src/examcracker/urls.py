@@ -37,7 +37,6 @@ urlpatterns = [
     path('notification/', include(notification.urls)),
     path('cdn/', include(cdn.urls)),
     path('course/', include(course.urls)),
-    path('websock/', include(websock.urls)),
     path('schedule/', include(schedule.urls)),
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),

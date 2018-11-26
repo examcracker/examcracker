@@ -7,17 +7,28 @@ from course import models
 from provider.views import showProviderHome, getProvider
 from django.forms.models import model_to_dict
 from . import models
-import websock
 import provider
 import schedule
 import pusher
 import pysher
 import websocket
+import enum
 
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
 PUSHER_CLUSTER = "ap2"
+
+# Commands
+command_start = 0
+command_stop = 1
+
+# Status
+status_start_success = 0
+status_capture_started = 1
+status_no_capture_started = 2
+status_camera_not_detected = 3
+status_stop_success = 4
 
 # Create your views here.
 
@@ -115,7 +126,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
         msgDict = {}
-        msgDict["command"] = websock.api.command_start
+        msgDict["command"] = command_start
         msgDict["chapterid"] = scheduleObj.chapter_id
         msgDict["publish"] = scheduleObj.autopublish
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
@@ -140,7 +151,7 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
         msgDict = {}
-        msgDict["command"] = websock.api.command_stop
+        msgDict["command"] = command_stop
         msgDict["chapterid"] = scheduleObj.chapter_id
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
 

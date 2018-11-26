@@ -123,7 +123,6 @@ INSTALLED_APPS = (
     'notification',
     'cdn',
     'schedule',
-    'websock',
 
     # django rest api packages
     'rest_framework',
