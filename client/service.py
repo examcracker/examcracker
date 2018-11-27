@@ -144,7 +144,7 @@ class ClientService(object):
         return uploadResponse
 
     def run(self):
-        self.url = "https://gyaanhive.com"
+        self.url = "https://www.gyaanhive.com"
         if self.debug:
             self.url = "http://127.0.0.1:8000"
         print(self.url)
