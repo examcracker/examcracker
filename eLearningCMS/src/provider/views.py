@@ -65,8 +65,6 @@ def getProviderStats(providerId):
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
 
     totalSessionPlayed = 0
-    #import pdb
-    #pdb.set_trace()
     for session in sessionObj:
         sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
         if(len(sessionStatsObj) > 0):
@@ -150,7 +148,6 @@ def saveCourseContent(request,courseId):
     lcids = request.POST.getlist('lcids')
     chapterNameList = request.POST.getlist('cd[]')
     if len(lcids) > 0:
-        cpPrefix = 'Chapter '              
         i = 0
         subjectChapterCntMap = {}
         chpArr = []
