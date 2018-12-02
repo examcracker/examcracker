@@ -108,6 +108,17 @@ class addShowSchedule(showProviderHome):
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
 
+def createDictSchedule(scheduleObj, command):
+    dictObj = {}
+    dictObj["command"] = command
+    dictObj["start"] = str(scheduleObj.start)
+    dictObj["eventcount"] = scheduleObj.eventcount
+    dictObj["duration"] = scheduleObj.duration
+    dictObj["recurafter"] = scheduleObj.recurafter
+    dictObj["chapterid"] = scheduleObj.chapter_id
+    dictObj["publish"] = scheduleObj.autopublish
+    return dictObj
+
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
@@ -125,12 +136,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         '''
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
-        msgDict = {}
-        msgDict["command"] = command_start
-        msgDict["chapterid"] = scheduleObj.chapter_id
-        msgDict["publish"] = scheduleObj.autopublish
-        pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
-
+        pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_start))
         return redirect("schedule:add_show_schedule")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):
@@ -150,10 +156,6 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
         '''
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
-        msgDict = {}
-        msgDict["command"] = command_stop
-        msgDict["chapterid"] = scheduleObj.chapter_id
-        pusherObj.trigger(str(providerObj.id), str(providerObj.id), msgDict)
-
+        pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
         return redirect("schedule:add_show_schedule")
 
