@@ -14,7 +14,7 @@ import base64
 import json
 import signal
 import httpReq
-
+import platform
 try:
     import thread
 except ImportError:
@@ -24,6 +24,7 @@ aes_key = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
 
 serviceObj = None
+systemname = platform.node()
 
 def on_message(message):
     print(message)
@@ -56,7 +57,7 @@ def on_message(message):
         responseDict["id"] = serviceObj.clientid
         print("Sending " + str(responseDict))
         if command == api.command_stop:
-            httpReq.send(serviceObj.url, json.dumps(responseDict))
+            httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
 
         #ws.send(json.dumps(responseDict))
     elif "id" in messageDict.keys():
@@ -92,6 +93,7 @@ class ClientService(object):
     #wsclient = None
     publish = False
     debug = False
+    encryptedid = None
     clientid = None
     pusherobj = None
     url = None
@@ -107,9 +109,9 @@ class ClientService(object):
         configPath = os.path.join(dir_path, "arguments.cfg")
         config.readfp(open(configPath))
 
-        b64clientid = base64.b64decode(config.get("config", "clientId"))
+        self.encryptedid = config.get("config", "clientId")
         decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
-        self.clientid = decipher.decrypt(b64clientid).decode()
+        self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.upload = uploadVideo.uploadVideo(self.clientid)
@@ -157,6 +159,12 @@ class ClientService(object):
         self.pusherobj = pysher.Pusher("3ff394e3371be28d8abd", "ap2")
         self.pusherobj.connection.bind('pusher:connection_established', connect_handler)
         self.pusherobj.connect()
+
+        global systemname
+        initDict = {}
+        initDict["id"] = self.encryptedid
+        initDict["system"] = systemname
+        httpReq.send(self.url, "/schedule/systemName", json.dumps(initDict))
 
         while True:
             time.sleep(1)

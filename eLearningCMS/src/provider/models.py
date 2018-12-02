@@ -6,7 +6,6 @@ from django.core.files.storage import FileSystemStorage
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 from Crypto.Cipher import AES
-import subprocess
 import json
 import os
 import base64
@@ -40,5 +39,7 @@ class Session(models.Model):
     key = models.CharField(default='', max_length=32)
     iv = models.CharField(default='', max_length=32)
 
-
+class System(models.Model):
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    name = models.CharField(default='', max_length=100)
 

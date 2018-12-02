@@ -6,6 +6,8 @@ import course
 from course import models
 from provider.views import showProviderHome, getProvider
 from django.forms.models import model_to_dict
+from django.http import HttpResponse
+from Crypto.Cipher import AES
 from . import models
 import provider
 import schedule
@@ -13,6 +15,8 @@ import pusher
 import pysher
 import websocket
 import enum
+import json
+import base64
 
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
@@ -158,4 +162,27 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
         return redirect("schedule:add_show_schedule")
+
+class HttpResponseNoContent(HttpResponse):
+    status_code = 200
+
+class addSystem(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        dictBody = json.loads(request.body.decode())
+
+        encryptedClientId = base64.b64decode(dictBody["id"])
+        decipher = AES.new(provider.models.aes_key, AES.MODE_CFB, provider.models.aes_iv)
+        providerId = int(decipher.decrypt(encryptedClientId).decode())
+
+        systemName = dictBody["system"]
+        systemQ = provider.models.System.objects.filter(provider_id=providerId).filter(name=systemName)
+        if len(systemQ) == 0:
+            systemObj = provider.models.System()
+            systemObj.name = dictBody["system"]
+            systemObj.provider = provider.models.Provider.objects.filter(id=providerId)[0]
+            systemObj.save()
+
+        return HttpResponseNoContent()
 

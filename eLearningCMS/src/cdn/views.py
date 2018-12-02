@@ -20,6 +20,7 @@ import hashlib
 import time
 import datetime
 import json
+import schedule
 from examcracker import thread
 # crypto
 from Crypto.Random import get_random_bytes
@@ -150,4 +151,4 @@ class saveClientSession(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
         saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]))
-        return super().get(request, *args, **kwargs)
+        return schedule.views.HttpResponseNoContent()

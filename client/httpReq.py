@@ -1,9 +1,16 @@
 import requests
-endpoint = "/cdn/saveClientSession/"
   
-def send(myurl, jsonObj):
+def send(myurl, endpoint, jsonObj):
     myurl = myurl + endpoint
     print(myurl)
     print(jsonObj)
-    r = requests.get(url = myurl, data = jsonObj)
-    #print(r.text)
+    r = requests.get(myurl, data = jsonObj)
+    print(r.status_code, r.reason)
+
+def post(myurl, endpoint, jsonObj):
+    myurl = myurl + endpoint
+    print(myurl)
+    print(jsonObj)
+    r = requests.post(url = myurl, data = jsonObj)
+    print(r.status_code, r.reason)
+
