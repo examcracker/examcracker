@@ -25,6 +25,7 @@ from examcracker import thread
 # crypto
 from Crypto.Random import get_random_bytes
 import base64
+from profiles.signals import sendMail
 
 logger = logging.getLogger("project")
 
@@ -116,6 +117,19 @@ def saveSession(videoKey, chapterId, publish=False):
     callbackObj = provider.views.SessionDurationFetch(sessionObj)
     t = thread.AppThread(callbackObj, True, 30)
     t.start()
+
+    # send mail to provider that new session has been added
+    userObj = User.objects.filter(id=providerObj.user_id)[0]
+    subject = "New session available for chapter " + chapterObj.name
+    emailBody = """
+    Dear """+ userObj.name + """,
+        New session has been added for chapter  """+ chapterObj.name +""".
+        If you have not enabled auto publish your schedule, kindly go to course page and click
+        on publish to make it visible to your students. For any issues , kindly contact us.
+    Thanks
+    GyaanHive Team
+    """
+    sendMail(userObj.email, subject,emailBody)
 
     return {"result":True}
 
