@@ -12,3 +12,4 @@ class Schedule(models.Model):
     duration = models.IntegerField(default=60) #minutes
     recurafter = models.IntegerField(default=0) #0 hours => does not recur
     autopublish = models.BooleanField(default=False)
+    running = models.BooleanField(default=False)

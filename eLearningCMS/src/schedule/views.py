@@ -7,6 +7,7 @@ from course import models
 from provider.views import showProviderHome, getProvider
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
+from django.http import Http404
 from Crypto.Cipher import AES
 from . import models
 import provider
@@ -33,6 +34,9 @@ status_capture_started = 1
 status_no_capture_started = 2
 status_camera_not_detected = 3
 status_stop_success = 4
+
+class HttpResponseNoContent(HttpResponse):
+    status_code = 200
 
 # Create your views here.
 
@@ -114,6 +118,7 @@ class addShowSchedule(showProviderHome):
 
 def createDictSchedule(scheduleObj, command):
     dictObj = {}
+    dictObj["id"] = scheduleObj.id
     dictObj["command"] = command
     dictObj["start"] = str(scheduleObj.start)
     dictObj["eventcount"] = scheduleObj.eventcount
@@ -163,9 +168,6 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
         return redirect("schedule:add_show_schedule")
 
-class HttpResponseNoContent(HttpResponse):
-    status_code = 200
-
 class addSystem(generic.TemplateView):
     http_method_names = ['get']
 
@@ -174,7 +176,11 @@ class addSystem(generic.TemplateView):
 
         encryptedClientId = base64.b64decode(dictBody["id"])
         decipher = AES.new(provider.models.aes_key, AES.MODE_CFB, provider.models.aes_iv)
-        providerId = int(decipher.decrypt(encryptedClientId).decode())
+
+        try:
+            providerId = int(decipher.decrypt(encryptedClientId).decode())
+        except:
+            raise Http404()
 
         systemName = dictBody["system"]
         systemQ = provider.models.System.objects.filter(provider_id=providerId).filter(name=systemName)
@@ -186,3 +192,30 @@ class addSystem(generic.TemplateView):
 
         return HttpResponseNoContent()
 
+class captureState(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, scheduleid, *args, **kwargs):
+        scheduleObj = models.Schedule.objects.filter(id=scheduleid)
+        if len(scheduleObj) == 0:
+            raise Http404()
+        scheduleObj = scheduleObj[0]
+
+        dictBody = json.loads(request.body.decode())
+
+        encryptedClientId = base64.b64decode(dictBody["id"])
+        decipher = AES.new(provider.models.aes_key, AES.MODE_CFB, provider.models.aes_iv)
+
+        try:
+            providerId = int(decipher.decrypt(encryptedClientId).decode())
+        except:
+            raise Http404()
+
+        if scheduleObj.provider_id != providerId:
+            raise Http404()
+
+        state = dictBody["state"]
+        scheduleObj.running = state
+        scheduleObj.save()
+
+        return HttpResponseNoContent()
