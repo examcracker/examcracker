@@ -173,7 +173,8 @@ def saveCourseContent(request,courseId):
             else:
                 chapterObj = course.models.CourseChapter()
                 chapterObj.course = courseObj
-                chapterObj.name = cpPrefix +' ' +str(cpSuffix) + ': ' + chapterName
+                #chapterObj.name = cpPrefix +' ' +str(cpSuffix) + ': ' + chapterName
+                chapterObj.name = chapterName
             #chapterObj.name = cpPrefix +' ' +str(cpSuffix)
             chapterObj.sequence = i+1
             chapterObj.subject = subject
