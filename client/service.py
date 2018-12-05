@@ -50,6 +50,7 @@ def on_message(message):
                 serviceObj.scheduleid = messageDict["id"]
                 serviceObj.chapterid = messageDict["chapterid"]
                 serviceObj.publish = messageDict["publish"]
+                serviceObj.timeout = int(messageDict["duration"])*60
                 sendCaptureResponse(True)
                 serviceObj.startCapture()
         elif command == api.command_stop:
@@ -105,6 +106,8 @@ class ClientService(object):
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.upload = uploadVideo.uploadVideo(self.clientid)
+        self.timeout = 0
+        self.captureStartTime = -1
 
         try:
             self.debug = bool(int(config.get("config", "debug")))
@@ -120,6 +123,7 @@ class ClientService(object):
             return
 
         self.capturing = True
+        self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
 
     def stopCapture(self):
@@ -128,6 +132,7 @@ class ClientService(object):
             return {"videoKey": None}
 
         self.capturing = False
+        self.timeout = 0
         self.capture.stopCapturing()
         time.sleep(5)
         print ("Uploading file to jw: ", self.capture.outputFileName)
@@ -153,6 +158,22 @@ class ClientService(object):
 
         while True:
             time.sleep(1)
+            if self.capturing and self.timeout > 0:
+                timeDiff = int(round(time.time())) - self.captureStartTime
+                if timeDiff >= self.timeout:
+                    responseDict = {}
+                    print ("Timeout stopping the capturing")
+                    sendCaptureResponse(False)
+                    res = self.stopCapture()
+                    responseDict["result"] = api.status_stop_success
+                    responseDict["chapterid"] = self.chapterid
+                    responseDict["videokey"] = res["videoKey"]
+                    responseDict["publish"] = self.publish
+
+                    global pusherServer
+                    responseDict["id"] = self.clientid
+                    httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+				
 
 def main():
     global serviceObj

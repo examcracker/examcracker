@@ -39,7 +39,11 @@ class captureFeed:
             self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
     def stopCapturing(self):
-        os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+    	try:
+            os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+    	except Exception as ex:
+            print ("Exception in killing ffmpeg process: ", str(ex))
+			
 	
 	
 def main():
