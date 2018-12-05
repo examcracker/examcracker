@@ -91,6 +91,7 @@ JWPLAYER_API_KEY = '03IfLqqB'
 JWPLAYER_API_SECRET = 'AK6y0bBoyEOHASfYwE5xUnWw'
 
 PROVIDER_APPROVAL_NEEDED = False
+COURSE_ENROLLING_ALLOWED = False
 
 # Application definition
 
@@ -139,7 +140,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        # other middlewares...
+    # other middlewares...
     'django_user_agents.middleware.UserAgentMiddleware',
 ]
 

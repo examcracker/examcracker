@@ -9,6 +9,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict
 from django.http import Http404
+from django.conf import settings
 import urllib
 from . import models
 import course
@@ -17,7 +18,8 @@ import profiles
 from course.views import getCartCourses,fillCartCourses
 from student.views import getStudent
 import re
-# Try kghoshnitk@gmail.com and sane password
+
+# Try kghoshnitk@gmail.com and same password
 @csrf_exempt
 def payment_done(request):
     studentObj = getStudent(request)
@@ -80,6 +82,10 @@ class Cart(LoginRequiredMixin, fillCartCourses):
     def post(self, request, *args, **kwargs):
         if request.user.is_staff:
             raise Http404()
+
+        if not settings.COURSE_ENROLLING_ALLOWED:
+            return render(request, 'join_block.html')
+
         studentObj = getStudent(request)
         cartObjs = models.Cart.objects.filter(student_id=studentObj.id)
         coursesStr = ''
