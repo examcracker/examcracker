@@ -159,8 +159,12 @@
                 <td>{{schedule.eventsRemaining}}</td>
                 <td>{{schedule.autoPublish}}</td>
                 <td><button class="btn btn-info btn-sm mx-2 px-2" aria-pressed="true" onclick="editSchedule(this)"><i class="fa fa-edit fa-sm" title="Edit schedule"></i></td>
-                <td><a href="{% url 'schedule:startCapture' schedule.id %}" class="btn btn-dark btn-sm mx-2 px-2" role="button" aria-pressed="true"><i class="fa fa-circle fa-sm" title="Start capture"></i></a></td>
+                {% if schedule.running == 0 %}
+                <td><a href="{% url 'schedule:startCapture' schedule.id %}" class="btn btn-dark btn-sm mx-2 px-2" role="button" aria-pressed="true"><i class="fa fa-circle fa-sm" title="Start capture"></i></a></td>              
+                {% else %}
+                <td><i class="fas fa-sync fa-spin" title="Capturing"></i></td>
                 <td><a href="{% url 'schedule:stopCapture' schedule.id %}" class="btn btn-danger btn-sm mx-2 px-2" role="button" aria-pressed="true"><i class="fa fa-circle fa-sm" title="Stop capture"></i></a></td>
+                {% endif %}
                 <!--<td><a href="" class="btn btn-info btn-sm mx-2 px-2" role="button" aria-pressed="true">Mark Completed</a></td> -->
               </tr>
               {% endfor %}    
