@@ -9,6 +9,7 @@ from operator import itemgetter
 from django.http import QueryDict
 from collections import defaultdict
 from django.http import Http404
+from django.conf import settings
 from math import ceil
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
@@ -179,6 +180,8 @@ class courseDetails(fillCartCourses):
         cart.course = courseObj
 
         if "join" in request.POST:
+            if not settings.COURSE_ENROLLING_ALLOWED:
+                return render(request, 'join_block.html')
             cart.checkout = True
             cart.save()
             query_dictionary = QueryDict('', mutable=True)
