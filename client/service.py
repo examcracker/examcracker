@@ -41,6 +41,10 @@ def on_message(message):
     global serviceObj
 
     if "command" in messageDict.keys():
+        machine = messageDict["machine"]
+        # check if this client is intended recipient
+        if machine != systemname:
+            return
         command = messageDict["command"]
         if command == api.command_start:
             if serviceObj.capturing:

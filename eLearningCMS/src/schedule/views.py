@@ -133,6 +133,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["recurafter"] = scheduleObj.recurafter
     dictObj["chapterid"] = scheduleObj.chapter_id
     dictObj["publish"] = scheduleObj.autopublish
+    dictObj["machine"] = scheduleObj.system
     return dictObj
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
@@ -141,15 +142,6 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
-
-        '''
-        wsclient = None
-        if providerObj.id in websock.consumers.connectedConsumerClients.keys():
-            wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
-
-        if wsclient:
-            wsclient.startcourse(scheduleObj.chapter_id, scheduleObj.autopublish)
-        '''
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_start))
@@ -161,15 +153,6 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
-
-        '''
-        wsclient = None
-        if providerObj.id in websock.consumers.connectedConsumerClients.keys():
-            wsclient = websock.consumers.connectedConsumerClients[providerObj.id]
-
-        if wsclient:
-            wsclient.stopcourse(scheduleObj.chapter_id)
-        '''
 
         pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
