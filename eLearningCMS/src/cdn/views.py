@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views import generic
+from django.contrib.auth import get_user_model
 from . import models
 import provider
 # for interacting jw platform
@@ -28,6 +29,8 @@ import base64
 from profiles.signals import sendMail
 
 logger = logging.getLogger("project")
+
+User = get_user_model()
 
 # methods to go here
 EXPIRY_BANDWIDTH = 3600*5
@@ -121,16 +124,19 @@ def saveSession(videoKey, chapterId, publish=False):
     # send mail to provider that new session has been added
     userObj = User.objects.filter(id=providerObj.user_id)[0]
     subject = "New session available for chapter " + chapterObj.name
-    emailBody = """
-    Dear """+ userObj.name + """,
-        New session has been added for chapter  """+ chapterObj.name +""".
-        If you have not enabled auto publish your schedule, kindly go to course page and click
-        on publish to make it visible to your students. For any issues , kindly contact us.
-    Thanks
-    GyaanHive Team
-    """
+    emailBody = '\
+    Dear ' + userObj.name + ',\
+        New session has been added for chapter ' + chapterObj.name + '.\
+        If you have not enabled auto publish your schedule, kindly go to course page and click\
+        on publish to make it visible to your students. For any issues , kindly contact us.\
+    Thanks\
+    GyaanHive Team\
+    '
+
     sendMail(userObj.email, subject,emailBody)
 
+def saveLiveSessionInt(videoKey, chapterId):
+    saveSession(videoKey, chapterId)
     return {"result":True}
 
 @api_view(['GET'])
@@ -149,7 +155,7 @@ def getUploadPaths(request, count, format=None):
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
 def saveLiveSession(request, videoKey, chapterId):
-    return Response(saveSession(videoKey, chapterId))
+    return Response(saveLiveSessionInt(videoKey, chapterId))
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
