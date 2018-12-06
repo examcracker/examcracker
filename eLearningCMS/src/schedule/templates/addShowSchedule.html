@@ -138,6 +138,7 @@
                 <th scope="col">Course</th>
                 <th scope="col">Subject</th>
                 <th scope="col">Chapter</th>
+                <th scope="col">Location</th>
                 <th scope="col">Starts From</th>
                 <th scope="col">Duration</th>
                 <th scope="col">Total Sessions</th>
@@ -163,6 +164,7 @@
                 <td><a href="{% url 'provider:edit_course' schedule.courseId %}"> {{schedule.courseName}} </a></td>
                 <td>{{schedule.subjectName}}</td>
                 <td>{{schedule.chapterName}}</td>
+                <td>{{schedule.system}}</td>
                 <td>{{schedule.start}}</td>
                 <td>{{schedule.duration}}</td>
                 <td>{{schedule.eventcount}}</td>
