@@ -49,6 +49,13 @@ class addShowSchedule(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
+        locations = []
+        locationObj = provider.models.System.objects.filter(provider_id=providerObj.id)
+        for location in locationObj:
+            locations.append(location.name)
+        kwargs['locations'] = locations
+
+
         mycourses = course.models.Course.objects.raw('SELECT * from course_course WHERE provider_id = ' + str(providerObj.id) + \
                                                      ' AND id NOT IN (SELECT parent_id from course_linkcourse)')
 
@@ -109,7 +116,7 @@ class addShowSchedule(showProviderHome):
         scheduleObj.eventcount = request.POST.get('eventCount')
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
-
+        scheduleObj.system = request.POST.get('courseLocation')
         if request.POST.get('autoPublish'):
             scheduleObj.autopublish = True
 
