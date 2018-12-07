@@ -1,6 +1,8 @@
 {% extends "__user_base.html" %}
 {% load staticfiles %}
-
+{% block bodystart%}
+<body class="fixed-nav bg-dark" id="page-top" onload="JavaScript:AutoRefresh(3000);">
+{% endblock bodystart %}
 {% block active %}
   <!-- Breadcrumbs-->
   <nav class="navbar">
@@ -189,6 +191,14 @@
         <h5>No Schedule Planned</h5>
         {% endif %}
     </div>
-  <script src="{% static 'provider/js/createCourseContent.js' %}"></script>
+  <script src="{% static 'provider/js/createCourseContent.js' %}">
+  </script>
+  <script type="text/JavaScript">
+     
+      function AutoRefresh( t ) {
+                setTimeout("location.reload(true);", t);
+             }
+          
+       </script>
 {% endblock active %}
 
