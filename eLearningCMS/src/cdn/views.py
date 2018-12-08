@@ -27,6 +27,7 @@ from examcracker import thread
 from Crypto.Random import get_random_bytes
 import base64
 from profiles.signals import sendMail
+from course.algos import strToIntList
 
 logger = logging.getLogger("project")
 
@@ -94,9 +95,12 @@ def getProviderFromChapterId(chapterid):
 def saveSession(videoKey, chapterId, publish=False):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
-
     sessionObj = provider.models.Session()
-    sessionObj.name = str(providerObj.id) + str(datetime.datetime.now().isoformat())
+    # session file Naming convention : chapter_date_sessionNumber
+    dateTimeStr = datetime.datetime.now().strftime("%B %d, %Y")
+    sessionids = strToIntList(chapterObj.sessions)
+    sessionObj.name = chapterObj.name + '_' + dateTimeStr + '_' + str(len(sessionids)+1)
+    
     sessionObj.videoKey = videoKey
     sessionObj.provider_id = providerObj.id
     sessionObj.tags = chapterObj.subject
