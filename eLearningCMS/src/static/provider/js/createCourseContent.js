@@ -26,15 +26,11 @@ function filterFunction(filterType) {
   // Declare variables 
   var input, filter, table, tr, td, i;
   input = document.getElementById(filterType);
+  cellIndex = input.parentNode.cellIndex;
   filter = input.value.toUpperCase();
   table = document.getElementById("schedulesTable");
   tr = table.getElementsByTagName("tr");
-  var filterIndex = 0;
-  if (filterType == "filterSubject") {
-    filterIndex = 1;
-  }  else if (filterType == "filterChapter") {
-    filterIndex = 2;
-  }
+  var filterIndex = cellIndex-1;
   // Loop through all table rows, and hide those who don't match the search query
   for (i = 2; i < tr.length; i++) {
     td = tr[i].getElementsByTagName("td")[filterIndex];
@@ -86,6 +82,9 @@ function editSchedule(e) {
 
   var eventCount = scheduleModal.querySelectorAll('input[id="eventCount"]')[0];
   eventCount.value = Cells[5].innerText;
+
+  var autoPublish = scheduleModal.querySelectorAll('input[id="autoPublish"]')[0];
+  autoPublish.checked = Cells[7].innerText == "True"?1:0;
   
   $('#scheduleModal').modal('toggle');
 }

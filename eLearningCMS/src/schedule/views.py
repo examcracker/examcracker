@@ -96,7 +96,6 @@ class addShowSchedule(showProviderHome):
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-
         providerObj = getProvider(request)
         courseChapterName = request.POST.get('courseChapterName',"")
         # if this element doesnt comes, then its edit flow
@@ -112,13 +111,17 @@ class addShowSchedule(showProviderHome):
             scheduleObj.provider_id = providerObj.id
         else:
             scheduleObj = scheduleObj[0]
-        scheduleObj.start = request.POST.get('startDate')
+        startDate = request.POST.get('startDate','')
+        if startDate != '':
+            scheduleObj.start = startDate
         scheduleObj.eventcount = request.POST.get('eventCount')
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
         scheduleObj.system = request.POST.get('courseLocation')
         if request.POST.get('autoPublish'):
             scheduleObj.autopublish = True
+        else:
+            scheduleObj.autopublish = False
 
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
