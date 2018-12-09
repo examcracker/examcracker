@@ -237,7 +237,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 raise Http404()
-
+            kwargs["isOwner"] = 'no'
             # updating the playing session stats
             self.updateSessionStats(request.user.id, sessionid)
                 
@@ -261,6 +261,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             if courseObj.provider_id != providerObj.id:
                 raise Http404()
+            kwargs["isOwner"] = 'yes'
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 

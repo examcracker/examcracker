@@ -98,20 +98,24 @@
 	//var height = screen.height;
 	// Adding system fonts in device info. We will add more data 
 	//var deviceJSON = getFontsInstalled();
-	var deviceJSON = "DUMMYSTRING";
-	var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET", url, false);
-    xmlHttp.send(null);
-	
-	var accepted = (/True/).test(xmlHttp.responseText);
-	if (accepted) {
-	  document.getElementById("jwplayer").src = "{{ signedurl }}";
+		var isOwner = "{{isOwner}}"
+		if (isOwner == "yes") {
+			document.getElementById("jwplayer").src = "{{ signedurl }}";
+		}  else {
+			var deviceJSON = "DUMMYSTRING";
+			var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open("GET", url, false);
+    		xmlHttp.send(null);
+			var accepted = (/True/).test(xmlHttp.responseText);
+			if (accepted) {
+	  			document.getElementById("jwplayer").src = "{{ signedurl }}";
+			}
+			else {
+	  			alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+			}
+		}
 	}
-	else {
-	  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
-	}
-    }
 
 
     </script>
