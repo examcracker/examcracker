@@ -131,6 +131,11 @@ class courseDetails(fillCartCourses):
                     totalDuration = 0
                     enrolledCourseObj = enrolledCourse[0]
 
+                    # check for view hours restriction
+                    if enrolledCourseObj.viewhours > 0:
+                        courseOverviewMap["viewhours"] = enrolledCourseObj.viewhours
+                        courseOverviewMap["completedminutes"] = enrolledCourseObj.completedminutes
+
                     if enrolledCourseObj.sessions != '':
                         sessionsPlayed = course.algos.strToIntList(enrolledCourseObj.sessions)
                         for s in sessionsPlayed:

@@ -63,6 +63,16 @@ courses ( all courses ,course model)
                                     <td>Duration (months)</td>
                                     <td align="right">{{ course_overview.Duration }}</td>
                                 </tr>
+								<tr>
+								{% if course_overview.viewhours %}
+                                    <td>Restricted Viewing (hrs)</td>
+                                    <td align="right">{{ course_overview.viewhours }}</td>
+                                </tr>
+								<tr>
+                                    <td>Viewed (mins)</td>
+                                    <td align="right">{{ course_overview.completedminutes }}</td>
+                                </tr>
+								{% endif %}
         
                               </table>
                               <p class="card-text"><small class="text-muted">Published {{ course_overview.Published }}</small></p>
