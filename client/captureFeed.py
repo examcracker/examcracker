@@ -5,10 +5,13 @@ import sys
 import subprocess
 import signal
 import time
+import logger
 
 class captureFeed:
     def __init__(self, clientId, configPath, ffmpegPath):
         self.dir_path = os.path.dirname(os.path.realpath(__file__))
+        # Log file
+        self.LOG = logger.getLogFile(__name__)
 
         config = configparser.ConfigParser()
         config.readfp(open(configPath))
@@ -33,7 +36,7 @@ class captureFeed:
     def startCapturing(self):
         self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_') + '.mp4')
         if self.videoFramerate:
-            print ("Using frame rate and resolution information")
+            self.LOG.info("Start capturing")
             self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
             self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
@@ -42,7 +45,7 @@ class captureFeed:
     	try:
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
     	except Exception as ex:
-            print ("Exception in killing ffmpeg process: ", str(ex))
+            self.LOG.error("Exception in killing ffmpeg process: ", str(ex))
 			
 	
 	

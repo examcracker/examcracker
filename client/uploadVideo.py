@@ -3,7 +3,10 @@ import os
 import sys
 import jwplatform
 import requests
-import logging
+import logger
+
+# Log file
+LOG = logger.getLogFile(__name__)
 
 class uploadVideo:
 	def __init__(self, clientId):
@@ -26,7 +29,7 @@ class uploadVideo:
 		try:
 			response = self.jwplatform_client.videos.create(upload_method='s3', **kwargs)
 		except jwplatform.errors.JWPlatformError as e:
-			logging.error("Encountered an error creating a video\n{}".format(e))
+			LOG.error("Encountered an error creating a video\n{}".format(e))
 			sys.exit(e.message)
 
 		# Construct base url for upload
@@ -47,8 +50,8 @@ class uploadVideo:
 		headers = {'Content-Disposition': 'attachment; filename="{}"'.format(filename)}
 		with open(local_video_path, 'rb') as f:
 			res = requests.put(upload_url, params=query_parameters, headers=headers, data=f)
-			logging.info('uploading file {} to url {}'.format(local_video_path, res.url))
-			logging.info('upload response: {}'.format(res.text))
+			LOG.debug('uploading file {} to url {}'.format(local_video_path, res.url))
+			LOG.debug('upload response: {}'.format(res.text))
 			responseCode = res.status_code
 			
 		return {'responseCode': responseCode, 'videoKey': uploadedVideoKey, 'completeResponse': res}

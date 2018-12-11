@@ -15,6 +15,9 @@ import json
 import signal
 import httpReq
 import platform
+import logger
+
+
 try:
     import thread
 except ImportError:
@@ -26,6 +29,9 @@ aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
 serviceObj = None
 systemname = platform.node()
 
+# Log file
+LOG = logger.getLogFile(__name__)
+
 def sendCaptureResponse(state):
     global serviceObj
     data = {}
@@ -34,7 +40,7 @@ def sendCaptureResponse(state):
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
 
 def on_message(message):
-    print(message)
+    LOG.info(str(message))
 
     responseDict = {}
     messageDict = json.loads(message)
@@ -44,6 +50,7 @@ def on_message(message):
         machine = messageDict["machine"]
         # check if this client is intended recipient
         if machine != systemname:
+            LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
             return
         command = messageDict["command"]
         if command == api.command_start:
@@ -72,10 +79,10 @@ def on_message(message):
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
     else:
-        print ("Unhandled command: ", messageDict.keys())
+        LOG.warn("Unhandled command: " + str(messageDict.keys())
 
 def connect_handler(data):
-    print(data)
+    #print(data)
     global serviceObj
     channel = serviceObj.pusherobj.subscribe(str(serviceObj.clientid))
     channel.bind(str(serviceObj.clientid), on_message)
@@ -123,7 +130,7 @@ class ClientService(object):
 
     def startCapture(self):
         if self.capturing:
-            print ("Already capturing")
+            LOG.warn ("Already capturing")
             return
 
         self.capturing = True
@@ -132,23 +139,24 @@ class ClientService(object):
 
     def stopCapture(self):
         if not self.capturing:
-            print ("No active capturing")
+            LOG.warn ("No active capturing")
             return {"videoKey": None}
 
         self.capturing = False
         self.timeout = 0
         self.capture.stopCapturing()
         time.sleep(5)
-        print ("Uploading file to jw: ", self.capture.outputFileName)
+        LOG.info ("Uploading file to server: " + str(self.capture.outputFileName))
         uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
-        print ("Uploading done: ", uploadResponse)
+        LOG.info ("Uploading done")
+        LOG.debug("Video Server response: " + str(uploadResponse))
         return uploadResponse
 
     def run(self):
         self.url = "https://www.gyaanhive.com"
         if self.debug:
             self.url = "http://127.0.0.1:8000"
-        print(self.url)
+        LOG.info(self.url)
 
         self.pusherobj = pysher.Pusher("3ff394e3371be28d8abd", "ap2")
         self.pusherobj.connection.bind('pusher:connection_established', connect_handler)
@@ -166,7 +174,7 @@ class ClientService(object):
                 timeDiff = int(round(time.time())) - self.captureStartTime
                 if timeDiff >= self.timeout:
                     responseDict = {}
-                    print ("Timeout stopping the capturing")
+                    LOG.info ("Timeout stopping the capturing")
                     sendCaptureResponse(False)
                     res = self.stopCapture()
                     responseDict["result"] = api.status_stop_success
