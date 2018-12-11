@@ -51,7 +51,7 @@ def on_message(message):
         # check if this client is intended recipient
         if machine != systemname:
             LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
-            return
+            #return
         command = messageDict["command"]
         if command == api.command_start:
             if serviceObj.capturing:
@@ -79,7 +79,7 @@ def on_message(message):
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
     else:
-        LOG.warn("Unhandled command: " + str(messageDict.keys())
+        LOG.warn("Unhandled command: " + str(messageDict.keys()))
 
 def connect_handler(data):
     #print(data)
