@@ -21,6 +21,8 @@
             <th>Progress</th>
             <th>Total Sessions</th>
             <th>Joined on</th>
+			<th>Restricted Viewing (hrs)</th>
+			<th>Viewed (mins)</th>
         </tr>
     </thead>
     <tbody>
@@ -32,6 +34,13 @@
             <td>{{ item.CourseCompleted }}</td>
             <td>{{ item.totalSessions }}</td>
             <td>{{ item.enrolled_date }}</td>
+			{% if item.viewhours >  0 %}
+			<td>{{ item.viewhours }}</td>
+			<td>{{ item.completedminutes }}</td>
+			{% else %}
+			<td>NA</td>
+			<td>NA</td>
+			{% endif %}
         </tr>
         {% endfor %}
     </tbody>
