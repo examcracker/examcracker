@@ -98,6 +98,8 @@ class EnrolledCourse(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     enrolled = models.DateTimeField(auto_now_add=True)
     sessions = models.CharField(max_length=10000, blank=True)
+    viewhours = models.IntegerField(default=0) # 0 => no restriction in view hours
+    completedminutes = models.IntegerField(default=0)
 
 class SessionStats(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)

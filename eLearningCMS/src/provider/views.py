@@ -520,6 +520,9 @@ class myStudents(showProviderHome):
                 studentInfo['totalSessions'] = len(sessionIDList)
                 studentInfo['totalSessionWatched'] = totalSessionWatched
                 studentInfo['totalPlayedCount'] = totalPlayedCount
+                studentInfo['viewhours'] = studentItem.viewhours
+                studentInfo['completedminutes'] = studentItem.completedminutes
+
                 if(len(sessionIDList) > 0):
                     studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
                 else:

@@ -131,6 +131,11 @@ class courseDetails(fillCartCourses):
                     totalDuration = 0
                     enrolledCourseObj = enrolledCourse[0]
 
+                    # check for view hours restriction
+                    if enrolledCourseObj.viewhours > 0:
+                        courseOverviewMap["viewhours"] = enrolledCourseObj.viewhours
+                        courseOverviewMap["completedminutes"] = enrolledCourseObj.completedminutes
+
                     if enrolledCourseObj.sessions != '':
                         sessionsPlayed = course.algos.strToIntList(enrolledCourseObj.sessions)
                         for s in sessionsPlayed:
@@ -237,6 +242,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 raise Http404()
+            # check if view hours have completed
+            ecObj = enrolledCourse[0]
+            if ecObj.viewhours > 0 and ecObj.completedminutes > ecObj.viewhours*60:
+                raise Http404()
+
             kwargs["isOwner"] = 'no'
             # updating the playing session stats
             self.updateSessionStats(request.user.id, sessionid)
