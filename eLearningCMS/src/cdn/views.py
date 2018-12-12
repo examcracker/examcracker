@@ -49,11 +49,14 @@ def getCdnSessionForSession(sessionid):
     return models.CdnSession.objects.filter(session_id=sessionid)[0]
 
 def getSignedUrl(jwid):
-    path = 'players/' + jwid + '-zRzB2xDB.html'
+    #path = 'players/' + jwid + '-zRzB2xDB.html'
+    path = 'manifests/' + jwid + '.m3u8'
     expiry = str(int(time.time()) + EXPIRY_BANDWIDTH)
     digest = hashlib.md5((path + ':' + expiry + ':' + settings.JWPLAYER_API_SECRET).encode()).hexdigest()
     url = 'https://content.jwplatform.com/' + path + '?exp=' + expiry + '&sig=' + digest
+
     return url
+
 
 def getVideoDuration(jwid):
     jwplatform_client = getJWClient()

@@ -12,13 +12,14 @@
 
 	{% block content %}
 	<script src="{% static 'access/access.js' %}"></script>
+	<script src="{% static 'jwplayer/jwplayer.js' %}"></script>
 
 <div class="container-full">
 	<div class="row">
 			<div class="col-8">
 				<h2>{{ course.name }}</h2>
-				<div class="jwplayerDiv">
-				<iframe id="jwplayer" width="720" height="405" frameborder="30" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
+				<div id="jwplayerDiv">
+				<!-- <iframe id="jwplayer" width="720" height="405" frameborder="30" scrolling="auto" allowfullscreen style="position:absolute;"></iframe> -->
 				</div>
 				<h4>{{ session.name }}</h4>
 
@@ -100,7 +101,12 @@
 	//var deviceJSON = getFontsInstalled();
 		var isOwner = "{{isOwner}}"
 		if (isOwner == "yes") {
-			document.getElementById("jwplayer").src = "{{ signedurl }}";
+			//document.getElementById("jwplayer").src = "{{ signedurl }}";
+			jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
+			jwplayer("jwplayerDiv").setup({
+				file: "{{ signedurl }}"
+			});
+
 		}  else {
 			var deviceJSON = "DUMMYSTRING";
 			var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
@@ -109,7 +115,11 @@
     		xmlHttp.send(null);
 			var accepted = (/True/).test(xmlHttp.responseText);
 			if (accepted) {
-	  			document.getElementById("jwplayer").src = "{{ signedurl }}";
+				jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
+				jwplayer("jwplayerDiv").setup({
+					file: "{{ signedurl }}"
+				});
+	  			//document.getElementById("jwplayer").src = "{{ signedurl }}";
 			}
 			else {
 	  			alert("This device is unknown. Authenticate yourself by the link sent to your email.");
