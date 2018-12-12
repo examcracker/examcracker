@@ -13,19 +13,16 @@
 	{% block content %}
 	<script src="{% static 'access/access.js' %}"></script>
 	<script src="{% static 'jwplayer/jwplayer.js' %}"></script>
+	<script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
 
 <div class="container-full">
 	<div class="row">
 			<div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
 				<h2>{{ course.name }}</h2>
 				<div id="jwplayerDiv">
-				<!-- <iframe id="jwplayer" width="720" height="405" frameborder="30" scrolling="auto" allowfullscreen style="position:absolute;"></iframe> -->
 				</div>
 				<h4>{{ session.name }}</h4>
 
-				<!-- <div class="jwplayerDiv_test" style="display:none">
-					<iframe id="jwplayer_test" width="0" height="0" frameborder="0" src="https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4" scrolling="auto" allowfullscreen style="position:absolute;"></iframe>
-				</div> -->
 			</div>
 			<div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
 				<h2>Contents</h2>
@@ -86,22 +83,30 @@
 </div>
 
 	<script type="text/javascript">
-	var position1;
+	function getUTCTimeSecs() {
+	 return new Date().getTime()/1000;
+	}
+
+	var coreapi = window.coreapi;
+	var client = new coreapi.Client();
+
+	var lasttime = 0;
+	var lastplayertime = 0;
+	var now = 0;
+	var nowplayer = 0;
+	var durationplayed = 0;
+	var lastdurationplayed = 0;
+
+	function update() {
+	  var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationplayed);
+	  client.get(url)
+            .then(function (data) {})
+			.catch(function (error) {alert(error);});
+	}
+
 	window.onload = function() {
-	/*var pluginsLength = navigator.plugins.length;
-	for(var i = 0; i < pluginsLength; i++) {
-  	var t1 = navigator.plugins[i].name;
-  	var t2 = navigator.plugins[i].filename;
-  	var t3 = navigator.plugins[i].description;
-	}*/
-	//var deviceJSON = getDeviceInfo();
-	//var width = screen.width;
-	//var height = screen.height;
-	// Adding system fonts in device info. We will add more data 
-	//var deviceJSON = getFontsInstalled();
 		var isOwner = "{{isOwner}}"
 		if (isOwner == "yes") {
-			//document.getElementById("jwplayer").src = "{{ signedurl }}";
 			jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
 			jwplayer("jwplayerDiv").setup({
 				file: "{{ signedurl }}"
@@ -119,7 +124,50 @@
 				jwplayer("jwplayerDiv").setup({
 					file: "{{ signedurl }}"
 				});
-	  			//document.getElementById("jwplayer").src = "{{ signedurl }}";
+				jwplayer().on('time', (data) =>
+				{
+				  now = getUTCTimeSecs();
+				  nowplayer = data.position;
+
+				  if (lasttime == 0) {
+				    lastplayertime = nowplayer;
+				    lasttime = now;
+					return;
+				  }
+
+				  var playergap = nowplayer - lastplayertime;
+				  if(playergap < 0) {
+				    lastplayertime = nowplayer;
+				    lasttime = now;
+					return;
+				  }
+
+				  var systemgap = now - lasttime;
+				  if(Math.abs(systemgap - playergap) < 3) {
+				   durationplayed = durationplayed + playergap;
+				   lastplayertime = nowplayer;
+				   lasttime = now;
+				   console.log(durationplayed);
+				   if(durationplayed - lastdurationplayed > 6) {
+				     lastdurationplayed = durationplayed;
+					 update();
+				   }
+				   return;
+				  }
+
+				  // system time and player time deviations are different, either its paused, stalled or sought forward
+				  if(systemgap > playergap) {
+				   durationplayed = durationplayed + playergap;
+				  }
+
+				  lastplayertime = nowplayer;
+				  lasttime = now;
+
+				  if(durationplayed - lastdurationplayed > 6) {
+				     lastdurationplayed = durationplayed;
+					 update();
+				   }
+				});
 			}
 			else {
 	  			alert("This device is unknown. Authenticate yourself by the link sent to your email.");

@@ -13,6 +13,12 @@ from django.conf import settings
 from math import ceil
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from . import models
 import course
 from course import algos
@@ -283,6 +289,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
+        kwargs["enrolledcourseid"] = ecObj.id
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
@@ -303,3 +310,12 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 
         url = "course:coursePage"
         return redirect(url,courseid)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def updateDuration(request, enrolledcourseid, duration, format=None):
+    enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
+    enrolledCourseObj.completedminutes = duration/60
+    enrolledCourseObj.save()
+    return Response({"result":True})
