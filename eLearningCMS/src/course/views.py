@@ -252,7 +252,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             ecObj = enrolledCourse[0]
             if ecObj.viewhours > 0 and ecObj.completedminutes > ecObj.viewhours*60:
                 raise Http404()
-
+            kwargs["enrolledcourseid"] = ecObj.id
             kwargs["isOwner"] = 'no'
             # updating the playing session stats
             self.updateSessionStats(request.user.id, sessionid)
@@ -289,7 +289,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
-        kwargs["enrolledcourseid"] = ecObj.id
+        
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
