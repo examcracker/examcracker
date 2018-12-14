@@ -250,10 +250,17 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
             # check if view hours have completed
             ecObj = enrolledCourse[0]
+            kwargs["enrolledcourseid"] = ecObj.id
+
             if ecObj.viewhours > 0 and ecObj.completedminutes > ecObj.viewhours*60:
                 raise Http404()
-            kwargs["enrolledcourseid"] = ecObj.id
+
+            # dont do device verification if restricted viewing for student is set
+            if ecObj.viewhours > 0:
+                kwargs["disableaccess"] = True
+
             kwargs["isOwner"] = 'no'
+
             # updating the playing session stats
             self.updateSessionStats(request.user.id, sessionid)
                 
@@ -277,6 +284,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             if courseObj.provider_id != providerObj.id:
                 raise Http404()
+
             kwargs["isOwner"] = 'yes'
 
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
@@ -289,7 +297,6 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
-        
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

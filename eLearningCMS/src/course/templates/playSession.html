@@ -113,13 +113,19 @@
 			});
 
 		}  else {
-			var deviceJSON = "DUMMYSTRING";
-			var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", url, false);
-    		xmlHttp.send(null);
-			var accepted = (/True/).test(xmlHttp.responseText);
-			if (accepted) {
+            var accepted = 0;
+            if ("{{disableaccess}}") {
+              accepted = 1;
+            } else {
+              var deviceJSON = "DUMMYSTRING";
+              var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
+              var xmlHttp = new XMLHttpRequest();
+              xmlHttp.open("GET", url, false);
+              xmlHttp.send(null);
+              accepted = (/True/).test(xmlHttp.responseText);
+            }
+
+            if (accepted) {
 				jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
 				jwplayer("jwplayerDiv").setup({
 					file: "{{ signedurl }}"
