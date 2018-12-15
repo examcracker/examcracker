@@ -40,6 +40,19 @@ class HttpResponseNoContent(HttpResponse):
 
 # Create your views here.
 
+def getActiveSchedules(providerId):
+    scheduleObj = models.Schedule.objects.filter(provider_id=providerId)
+    activeCount = 0
+    for schedule in scheduleObj:
+        chapterObj = course.models.CourseChapter.objects.filter(id=schedule.chapter_id)[0]
+        sessions = chapterObj.sessions
+        sessionsCount = 0
+        if sessions != '':
+            sessionsCount = len(sessions.split(','))
+        if sessionsCount < schedule.eventcount:
+            activeCount = activeCount+1
+    return activeCount
+
 class addShowSchedule(showProviderHome):
     template_name = "addShowSchedule.html"
     http_method_names = ['get','post']
@@ -90,7 +103,6 @@ class addShowSchedule(showProviderHome):
                 scheduleInfo['autoPublish'] = schedule.autopublish
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
-
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
