@@ -92,7 +92,7 @@
     <div class="col-md-6" align="right">
         <div style="padding-right: 10px; padding-left: 30px; padding-top: 30px">
             <div class="card text-white clickableCard" style="background: #a37c27;">
-                <a href="{% url 'provider:my_students' %}"></a>
+                <a href="{% url 'schedule:add_show_schedule' %}"></a>
                 <div class="card-body">
                     <div class="row">
                     <div class="col-md-5">
@@ -102,9 +102,9 @@
                     </div>
                     <div class="col-md-7">
                         <h1 class="text-center display-4">
-                            {{ statsInfo.totalSessionPlayed }}
+                            {{ statsInfo.activeSchedules }}
                         </h1>
-                        <p class="text-center">Total sessions played </p>
+                        <p class="text-center">Upcoming sessions</p>
                     </div>
                   </div>
                   </div>

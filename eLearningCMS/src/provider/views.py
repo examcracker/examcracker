@@ -19,6 +19,7 @@ import student
 import os
 from examcracker import thread
 import cdn
+import schedule
 
 def getDelimiter(subject=False):
     if not subject:
@@ -64,15 +65,16 @@ def getProviderStats(providerId):
     providerStatsInfo['totalStudents'] = '{:,}'.format(totalStudents)
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
 
-    totalSessionPlayed = 0
-    for session in sessionObj:
-        sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
-        if(len(sessionStatsObj) > 0):
-            statsDict = json.loads(sessionStatsObj[0].stats)
-            for key in statsDict:
-                totalSessionPlayed += statsDict[key]
+    # totalSessionPlayed = 0
+    # for session in sessionObj:
+    #     sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
+    #     if(len(sessionStatsObj) > 0):
+    #         statsDict = json.loads(sessionStatsObj[0].stats)
+    #         for key in statsDict:
+    #             totalSessionPlayed += statsDict[key]
+    #providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(totalSessionPlayed)
 
-    providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(totalSessionPlayed)
+    providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
 
     providerStatsInfo['piechartArray'] = courses
     return providerStatsInfo
