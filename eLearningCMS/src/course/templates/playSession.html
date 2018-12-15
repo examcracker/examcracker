@@ -107,7 +107,6 @@
 	window.onload = function() {
 		var isOwner = "{{isOwner}}"
 		if (isOwner == "yes") {
-			jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
 			jwplayer("jwplayerDiv").setup({
 				file: "{{ signedurl }}"
 			});
@@ -126,7 +125,6 @@
             }
 
             if (accepted) {
-				jwplayer.key="0Iy4nDyqEYLP4PcMVrWiH7HIh16ssqKoQmUqodyd3xo=";
 				jwplayer("jwplayerDiv").setup({
 					file: "{{ signedurl }}"
 				});
