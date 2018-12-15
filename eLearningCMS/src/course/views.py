@@ -32,6 +32,8 @@ import json
 
 
 User = get_user_model()
+OFUSCATE_JW = True
+# url is https://obfuscator.io/
 
 def getCartCourses(request):
     studentObj = student.views.getStudent(request)
@@ -226,6 +228,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         sessionStatsObj.save()
 
     def get(self, request, chapterid, sessionid, *args, **kwargs):
+        if OFUSCATE_JW:
+            kwargs["offuscate"] = True
+        else:
+            kwargs["offuscate"] = False
+
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
 
         if len(courseChapterObj) == 0:

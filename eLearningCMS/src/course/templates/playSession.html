@@ -2,7 +2,7 @@
 <html>
     {% load staticfiles %}
 
-	{% block ImageSlider %}
+    {% block ImageSlider %}
     {% endblock ImageSlider %}
 
     {% block jumbotronBlock %}
@@ -10,108 +10,114 @@
 
     {% block container %}
 
-	{% block content %}
-	<script src="{% static 'access/access.js' %}"></script>
-	<script src="{% static 'jwplayer/jwplayer.js' %}"></script>
-	<script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
+    {% block content %}
+    <script src="{% static 'access/access.js' %}"></script>
+    {% if offuscate %}
+    <script src="{% static 'jwplayer/jwplayer_of.js' %}"></script>
+    {% else %}
+    <script src="{% static 'jwplayer/jwplayer.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
 
 <div class="container-full">
-	<div class="row">
-			<div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
-				<h2>{{ course.name }}</h2>
-				<div id="jwplayerDiv">
-				</div>
-				<h4>{{ session.name }}</h4>
+    <div class="row">
+            <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ course.name }}</h2>
+                <div id="jwplayerDiv">
+                </div>
+                <h4>{{ session.name }}</h4>
 
-			</div>
-			<div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
-				<h2>Contents</h2>
-				<div class="container">
-				<div class="panel-group" id="accordion">
-				{% for subj, subjdetails in coursedetails.items %}
-					<div class="panel panel-default">
-						<div class="panel-heading">
-							<h6 class="panel-title">
-								<a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
-									<span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
-									<span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
-									<font size="4"> {{ subj }}</font>
-								</a>
-							</h6>
-						</div>
-						<div id="{{ subj }}" class="collapse show">
-						<div class="panel-body">
-					{% for s in subjdetails %}
-					{% for chapid, chapdetails in s.items %}
+            </div>
+            <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
+                <h2>Contents</h2>
+                <div class="container">
+                <div class="panel-group" id="accordion">
+                {% for subj, subjdetails in coursedetails.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
+                                    <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                    <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                    <font size="4"> {{ subj }}</font>
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="{{ subj }}" class="collapse show">
+                        <div class="panel-body">
+                    {% for s in subjdetails %}
+                    {% for chapid, chapdetails in s.items %}
 
-					<div class="panel">
-							<div class="panel-heading">
-							 <h6 class="panel-title">
-								 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
-									 <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
-									 <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
-									 <font size="3"> {{ chapdetails.name }}</font>
-								 </a>
-							 </h6>
-						 </div>
-						<div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
-							<div class="panel-child-body">
-								<div class="list-group">
-						{% for sess in chapdetails.sessions %}
-						{% if sess.id == session.id %}
-						<a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
-							<i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
-						{% else %}
-						<a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
-							<i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
-						{% endif %}
-						{% endfor %}
-								</div>
-							</div>
-						</div>
-					</div>
-					{% endfor %}
-					{% endfor %}
-				</div>
-				</div>
-		</div>
-				{% endfor %}
-				</div>
-			</div>
-		</div>
-	</div>
+                    <div class="panel">
+                            <div class="panel-heading">
+                             <h6 class="panel-title">
+                                 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
+                                     <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                     <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                     <font size="3"> {{ chapdetails.name }}</font>
+                                 </a>
+                             </h6>
+                         </div>
+                        <div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
+                            <div class="panel-child-body">
+                                <div class="list-group">
+                        {% for sess in chapdetails.sessions %}
+                        {% if sess.id == session.id %}
+                        <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                            <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                        {% else %}
+                        <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                            <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                        {% endif %}
+                        {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                </div>
+        </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-	<script type="text/javascript">
-	function getUTCTimeSecs() {
-	 return new Date().getTime()/1000;
-	}
+    <script type="text/javascript">
+    function getUTCTimeSecs() {
+     return new Date().getTime()/1000;
+    }
 
-	var coreapi = window.coreapi;
-	var client = new coreapi.Client();
+    var coreapi = window.coreapi;
+    var client = new coreapi.Client();
 
-	var lasttime = 0;
-	var lastplayertime = 0;
-	var now = 0;
-	var nowplayer = 0;
-	var durationplayed = 0;
-	var lastdurationplayed = 0;
+    var lasttime = 0;
+    var lastplayertime = 0;
+    var now = 0;
+    var nowplayer = 0;
+    var durationplayed = 0;
+    var lastdurationplayed = 0;
 
-	function update() {
-	  var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationplayed);
-	  client.get(url)
+    function update() {
+      var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationplayed);
+      client.get(url)
             .then(function (data) {})
-			.catch(function (error) {alert(error);});
-	}
+            .catch(function (error) {alert(error);});
+    }
 
-	window.onload = function() {
-		var isOwner = "{{isOwner}}"
-		if (isOwner == "yes") {
-			jwplayer("jwplayerDiv").setup({
-				file: "{{ signedurl }}"
-			});
+    window.onload = function() {
+        var offuscate = "{{offuscate}}";
 
-		}  else {
+        var isOwner = "{{isOwner}}";
+        if (isOwner == "yes") {
+            jwplayer("jwplayerDiv").setup({
+                file: "{{ signedurl }}"
+            });
+
+        }  else {
             var accepted = 0;
             if ("{{disableaccess}}") {
               accepted = 1;
@@ -125,63 +131,67 @@
             }
 
             if (accepted) {
-				jwplayer("jwplayerDiv").setup({
-					file: "{{ signedurl }}"
-				});
-				jwplayer().on('time', (data) =>
-				{
-				  now = getUTCTimeSecs();
-				  nowplayer = data.position;
+                jwplayer("jwplayerDiv").setup({
+                    file: "{{ signedurl }}"
+                });
+                jwplayer().on('time', (data) =>
+                {
+                  now = getUTCTimeSecs();
+                  nowplayer = data.position;
 
-				  if (lasttime == 0) {
-				    lastplayertime = nowplayer;
-				    lasttime = now;
-					return;
-				  }
+                  if (lasttime == 0) {
+                    lastplayertime = nowplayer;
+                    lasttime = now;
+                    return;
+                  }
 
-				  var playergap = nowplayer - lastplayertime;
-				  if(playergap < 0) {
-				    lastplayertime = nowplayer;
-				    lasttime = now;
-					return;
-				  }
+                  var playergap = nowplayer - lastplayertime;
+                  if(playergap < 0) {
+                    lastplayertime = nowplayer;
+                    lasttime = now;
+                    return;
+                  }
 
-				  var systemgap = now - lasttime;
-				  if(Math.abs(systemgap - playergap) < 3) {
-				   durationplayed = durationplayed + playergap;
-				   lastplayertime = nowplayer;
-				   lasttime = now;
-				   console.log(durationplayed);
-				   if(durationplayed - lastdurationplayed > 6) {
-				     lastdurationplayed = durationplayed;
-					 update();
-				   }
-				   return;
-				  }
+                  var systemgap = now - lasttime;
+                  if(Math.abs(systemgap - playergap) < 3) {
+                   durationplayed = durationplayed + playergap;
+                   lastplayertime = nowplayer;
+                   lasttime = now;
 
-				  // system time and player time deviations are different, either its paused, stalled or sought forward
-				  if(systemgap > playergap) {
-				   durationplayed = durationplayed + playergap;
-				  }
+                   console.log(durationplayed);
 
-				  lastplayertime = nowplayer;
-				  lasttime = now;
+                   if(durationplayed - lastdurationplayed > 6) {
+                     lastdurationplayed = durationplayed;
+                     update();
+                   }
+                   return;
+                  }
 
-				  if(durationplayed - lastdurationplayed > 6) {
-				     lastdurationplayed = durationplayed;
-					 update();
-				   }
-				});
-			}
-			else {
-	  			alert("This device is unknown. Authenticate yourself by the link sent to your email.");
-			}
-		}
-	}
+                  // system time and player time deviations are different, either its paused, stalled or sought forward
+                  if(systemgap > playergap) {
+                   durationplayed = durationplayed + playergap;
+                  }
+
+                  console.log(durationplayed);
+
+                  lastplayertime = nowplayer;
+                  lasttime = now;
+
+                  if(durationplayed - lastdurationplayed > 6) {
+                     lastdurationplayed = durationplayed;
+                     update();
+                   }
+                });
+            }
+            else {
+                  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+            }
+        }
+    }
 
 
     </script>
     {%  endblock %}
-	{%  endblock container %}
+    {%  endblock container %}
 </html>
 
