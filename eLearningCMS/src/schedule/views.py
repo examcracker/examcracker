@@ -129,7 +129,7 @@ class addShowSchedule(showProviderHome):
         scheduleObj.eventcount = request.POST.get('eventCount')
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
-        scheduleObj.system = request.POST.get('courseLocation')
+        scheduleObj.system = request.POST.get('courseLocation','')
         if request.POST.get('autoPublish'):
             scheduleObj.autopublish = True
         else:
