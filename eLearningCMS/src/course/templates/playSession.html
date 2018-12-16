@@ -116,11 +116,13 @@
             jwplayer("jwplayerDiv").setup({
                 file: "{{ signedurl }}"
             });
-
         }  else {
             var accepted = 0;
+            var tracktime = 0;
+
             if ("{{disableaccess}}") {
               accepted = 1;
+              tracktime = 1;
             } else {
               var deviceJSON = "DUMMYSTRING";
               var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
@@ -131,57 +133,10 @@
             }
 
             if (accepted) {
-                jwplayer("jwplayerDiv").setup({
-                    file: "{{ signedurl }}"
-                });
-                jwplayer().on('time', (data) =>
-                {
-                  now = getUTCTimeSecs();
-                  nowplayer = data.position;
-
-                  if (lasttime == 0) {
-                    lastplayertime = nowplayer;
-                    lasttime = now;
-                    return;
-                  }
-
-                  var playergap = nowplayer - lastplayertime;
-                  if(playergap < 0) {
-                    lastplayertime = nowplayer;
-                    lasttime = now;
-                    return;
-                  }
-
-                  var systemgap = now - lasttime;
-                  if(Math.abs(systemgap - playergap) < 3) {
-                   durationplayed = durationplayed + playergap;
-                   lastplayertime = nowplayer;
-                   lasttime = now;
-
-                   console.log(durationplayed);
-
-                   if(durationplayed - lastdurationplayed > 6) {
-                     lastdurationplayed = durationplayed;
-                     update();
-                   }
-                   return;
-                  }
-
-                  // system time and player time deviations are different, either its paused, stalled or sought forward
-                  if(systemgap > playergap) {
-                   durationplayed = durationplayed + playergap;
-                  }
-
-                  console.log(durationplayed);
-
-                  lastplayertime = nowplayer;
-                  lasttime = now;
-
-                  if(durationplayed - lastdurationplayed > 6) {
-                     lastdurationplayed = durationplayed;
-                     update();
-                   }
-                });
+                jwplayer("jwplayerDiv").setup({file: "{{ signedurl }}"});
+                if(tracktime) {
+                  var _0x4bf7=['position','abs','log','time'];(function(_0xc60a23,_0x157c7b){var _0x105539=function(_0x35fc2c){while(--_0x35fc2c){_0xc60a23['push'](_0xc60a23['shift']());}};_0x105539(++_0x157c7b);}(_0x4bf7,0x14b));var _0x177d=function(_0x55ad27,_0x231945){_0x55ad27=_0x55ad27-0x0;var _0x2ca301=_0x4bf7[_0x55ad27];return _0x2ca301;};jwplayer()['on'](_0x177d('0x0'),_0x250cd6=>{now=getUTCTimeSecs();nowplayer=_0x250cd6[_0x177d('0x1')];if(lasttime==0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x38d0d8=nowplayer-lastplayertime;if(_0x38d0d8<0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x51aaa7=now-lasttime;if(Math[_0x177d('0x2')](_0x51aaa7-_0x38d0d8)<0x3){durationplayed=durationplayed+_0x38d0d8;lastplayertime=nowplayer;lasttime=now;console[_0x177d('0x3')](durationplayed);if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}return;}if(_0x51aaa7>_0x38d0d8){durationplayed=durationplayed+_0x38d0d8;}console[_0x177d('0x3')](durationplayed);lastplayertime=nowplayer;lasttime=now;if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}});
+                }
             }
             else {
                   alert("This device is unknown. Authenticate yourself by the link sent to your email.");
