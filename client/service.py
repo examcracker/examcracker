@@ -16,6 +16,7 @@ import signal
 import httpReq
 import platform
 import logger
+import psutil
 
 
 try:
@@ -119,14 +120,40 @@ class ClientService(object):
         self.upload = uploadVideo.uploadVideo(self.clientid)
         self.timeout = 0
         self.captureStartTime = -1
+        self.ffmpegProcName = "ffmpeg.exe"
+       
+        self.checkFolderInterval = 60*60*1 # 1 hours
 
         try:
+            self.deleteContent = config.getboolean("config", "deleteContent")
+            self.waitBeforeDelete = int(config.get("config", "waitBeforeDelete"))
+            self.outputFolder = config.get("config","outputFolder")
+
             self.debug = bool(int(config.get("config", "debug")))
         except:
             pass
 
     def close(self):
         self.wsclient.close()
+
+    def checkAndCleanCapturedData(self):
+        time_in_secs = time.time() - (self.waitBeforeDelete * 24 * 60 * 60)
+        for root, dirs, files in os.walk(self.outputFolder):
+            for file_ in files:
+                try:
+                    full_path = os.path.join(root, file_)
+                    stat = os.stat(full_path)
+                    if stat.st_mtime <= time_in_secs:
+                        os.remove(full_path)
+                except Exception as ex:
+                    LOG.error("Exception in cleaning up the output folder: ", str(ex))
+                    pass
+
+    def checkAndKillProcess(self):
+        for proc in psutil.process_iter():
+            # check whether the process name matches
+            if proc.name() == self.ffmpegProcName:
+                proc.kill()
 
     def startCapture(self):
         if self.capturing:
@@ -139,6 +166,7 @@ class ClientService(object):
 
     def stopCapture(self):
         if not self.capturing:
+            self.checkAndKillProcess()
             LOG.warn ("No active capturing")
             return {"videoKey": None}
 
@@ -168,6 +196,7 @@ class ClientService(object):
         initDict["system"] = systemname
         httpReq.send(self.url, "/schedule/systemName", json.dumps(initDict))
 
+        waitCounterForCleaningFiles = self.checkFolderInterval
         while True:
             time.sleep(1)
             if self.capturing and self.timeout > 0:
@@ -185,6 +214,13 @@ class ClientService(object):
                     global pusherServer
                     responseDict["id"] = self.clientid
                     httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+            
+            waitCounterForCleaningFiles += 1
+            if waitCounterForCleaningFiles > self.checkFolderInterval:
+                waitCounterForCleaningFiles = 0
+                if self.deleteContent:
+                    self.checkAndCleanCapturedData()
+
 				
 
 def main():
