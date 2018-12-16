@@ -140,7 +140,7 @@
                 {% if locations|length > 1 %}
                  <th scope="col">Location</th> 
                  {% endif %}
-                <th scope="col">Starts From</th>
+                <th scope="col" style="display:none;">Starts From</th>
                 <th scope="col">Duration</th>
                 <th scope="col">Total Sessions</th>
                 <th scope="col">Sessions Finished</th>
@@ -167,7 +167,7 @@
                 {% if locations|length > 1 %}
                 <td>{{schedule.system}}</td>
                 {% endif %}
-                <td>{{schedule.start}}</td>
+                <td style="display:none;">{{schedule.start}}</td>
                 <td>{{schedule.duration}}</td>
                 <td>{{schedule.eventcount}}</td>
                 <td>{{schedule.eventsOccured}}</td>
