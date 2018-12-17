@@ -330,6 +330,6 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 @permission_classes((IsAuthenticated, ))
 def updateDuration(request, enrolledcourseid, duration, format=None):
     enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
-    enrolledCourseObj.completedminutes = duration/60
+    enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
     enrolledCourseObj.save()
     return Response({"result":True})
