@@ -108,7 +108,7 @@ class courseDetails(fillCartCourses):
         # show everything to the provider
         providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)
         checkPublished = True
-        if providerObj and providerObj[0].id:
+        if providerObj and providerObj[0].id == courseObj.provider_id:
             providerObj = providerObj[0]
             checkPublished = False
 
