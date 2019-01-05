@@ -231,7 +231,7 @@ class ClientService(object):
                 break
             except Exception as ex:
                 LOG.error("Exception in uploading the file: " + str(ex))
-                uploadResponse['exception'] = str(ex)
+                uploadResponse['fail_reason'] = str(ex)
                 retryCount += 1
                 continue
         return uploadResponse
