@@ -218,10 +218,12 @@ class ClientService(object):
         retryCount = 0
         uploadResponse = {}
         if not os.path.isfile(filePath):
-            return uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
+            uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
+            return uploadResponse 
 
         if os.stat(filePath).st_size == 0:
-            return uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+            uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+            return uploadResponse
 
         while retryCount < self.uploadRetryCount:
             try:
