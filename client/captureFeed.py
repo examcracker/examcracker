@@ -25,6 +25,8 @@ class captureFeed:
 
         self.outputFolder = config.get("config","outputFolder")
         self.loglevel = config.get("config","loglevel")
+
+        self.outputFileName = ''
 		
         # capturing timeout in seconds
         self.timeout = 30

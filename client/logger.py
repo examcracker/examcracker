@@ -2,6 +2,7 @@ import logging
 
 # Log level
 logLevel = logging.INFO
+logFileName = 'client.log'
 
 def getLogFile(name):
 	# create logger
@@ -9,7 +10,7 @@ def getLogFile(name):
 	logger.setLevel(logLevel)
 
 	# create console handler and set level to debug
-	fileHandle = logging.FileHandler('client.log')
+	fileHandle = logging.FileHandler(logFileName)
 	fileHandle.setLevel(logLevel)
 
 	# create formatter

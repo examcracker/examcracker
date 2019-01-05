@@ -17,7 +17,8 @@ import httpReq
 import platform
 import logger
 import psutil
-
+from collections import deque
+import glob
 
 try:
     import thread
@@ -71,14 +72,60 @@ def on_message(message):
             else:
                 sendCaptureResponse(False)
                 res = serviceObj.stopCapture()
-                responseDict["result"] = api.status_stop_success
+                if 'videoKey' in res.keys():
+                    responseDict["result"] = api.status_stop_success
+                    responseDict["videokey"] = res["videoKey"]
+                else:
+                    responseDict["result"] = api.status_upload_fail
+                    responseDict["fail_response"] = res
+                    
                 responseDict["chapterid"] = serviceObj.chapterid
-                responseDict["videokey"] = res["videoKey"]
                 responseDict["publish"] = serviceObj.publish
 
                 global pusherServer
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+        elif command == api.command_upload_logs:
+            lineCount = 50
+            if 'lineCount' in messageDict.keys():
+                lineCount = messageDict["lineCount"]
+            logData = ""
+            with open(logger.logFileName) as fin:
+                logData = fin.readlines()[-lineCount:]
+
+            httpReq.send(serviceObj.url, "/cdn/logData", json.dumps(logData))
+        elif command == api.command_get_recent_capture_file_details:
+            if serviceObj.capture.outputFileName != "":
+                responseDict['filePath'] = str(serviceObj.capture.outputFileName)
+            else:
+                list_of_files = glob.glob( serviceObj.capture.outputFolder + r'\*.mp4')
+                responseDict['filePath'] = max(list_of_files, key=os.path.getctime)
+
+            responseDict["id"] = serviceObj.scheduleid
+            responseDict["chapterid"] = serviceObj.chapterid
+            responseDict["publish"] = serviceObj.publish
+            httpReq.send(serviceObj.url, "/schedule/getFileDetails/" + str(serviceObj.scheduleid), json.dumps(responseDict))
+        elif command == api.command_upload_file:
+            filePath = messageDict["filePath"]
+            
+            res = serviceObj.uploadFileToCDN(filePath)
+            if 'videoKey' in res.keys():
+                responseDict["result"] = api.status_upload_sucess
+                responseDict["videokey"] = res["videoKey"]
+            else:
+                responseDict["result"] = api.status_upload_fail
+                responseDict["fail_response"] = res
+
+            responseDict["chapterid"] = messageDict["chapterid"]
+            responseDict["publish"] = messageDict["publish"]
+
+            global pusherServer
+            responseDict["id"] = messageDict["id"]
+            httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+            
+        elif command == api.command_check_client_active:
+            responseDict['result'] = api.status_client_active
+            httpReq.send(serviceObj.url, "/cdn/clientState", json.dumps(responseDict))
     else:
         LOG.warn("Unhandled command: " + str(messageDict.keys()))
 
@@ -121,6 +168,8 @@ class ClientService(object):
         self.timeout = 0
         self.captureStartTime = -1
         self.ffmpegProcName = "ffmpeg.exe"
+
+        self.uploadRetryCount = 5
        
         self.checkFolderInterval = 60*60*1 # 1 hours
 
@@ -146,7 +195,7 @@ class ClientService(object):
                     if stat.st_mtime <= time_in_secs:
                         os.remove(full_path)
                 except Exception as ex:
-                    LOG.error("Exception in cleaning up the output folder: ", str(ex))
+                    LOG.error("Exception in cleaning up the output folder: " + str(ex))
                     pass
 
     def checkAndKillProcess(self):
@@ -164,6 +213,30 @@ class ClientService(object):
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
 
+    def uploadFileToCDN(self, filePath):
+        LOG.info ("Uploading file to server: " + str(filePath))
+        retryCount = 0
+        uploadResponse = {}
+        if not os.path.isfile(filePath):
+            return uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
+
+        if os.stat(filePath).st_size == 0:
+            return uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+
+        while retryCount < self.uploadRetryCount:
+            try:
+                uploadResponse = self.upload.uploadVideoJW(filePath)
+                LOG.info ("Uploading done")
+                LOG.debug("Video Server response: " + str(uploadResponse))
+                break
+            except Exception as ex:
+                LOG.error("Exception in uploading the file: " + str(ex))
+                uploadResponse['exception'] = str(ex)
+                retryCount += 1
+                continue
+        return uploadResponse
+
+
     def stopCapture(self):
         if not self.capturing:
             self.checkAndKillProcess()
@@ -174,10 +247,8 @@ class ClientService(object):
         self.timeout = 0
         self.capture.stopCapturing()
         time.sleep(5)
-        LOG.info ("Uploading file to server: " + str(self.capture.outputFileName))
-        uploadResponse = self.upload.uploadVideoJW(self.capture.outputFileName)
-        LOG.info ("Uploading done")
-        LOG.debug("Video Server response: " + str(uploadResponse))
+        
+        uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
         return uploadResponse
 
     def run(self):
@@ -206,9 +277,14 @@ class ClientService(object):
                     LOG.info ("Timeout stopping the capturing")
                     sendCaptureResponse(False)
                     res = self.stopCapture()
-                    responseDict["result"] = api.status_stop_success
+                    if 'videoKey' in res.keys():
+                        responseDict["result"] = api.status_stop_success
+                        responseDict["videokey"] = res["videoKey"]
+                    else:
+                        responseDict["result"] = api.status_upload_fail
+                        responseDict["fail_response"] = res
+
                     responseDict["chapterid"] = self.chapterid
-                    responseDict["videokey"] = res["videoKey"]
                     responseDict["publish"] = self.publish
 
                     global pusherServer
