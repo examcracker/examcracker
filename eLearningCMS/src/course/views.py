@@ -29,7 +29,7 @@ import re
 import profiles
 import payments
 import json
-
+from django.http import HttpResponse
 
 User = get_user_model()
 OFUSCATE_JW = True
@@ -340,3 +340,18 @@ def updateDuration(request, enrolledcourseid, duration, format=None):
     enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
     enrolledCourseObj.save()
     return Response({"result":True})
+
+# Authenticate that provider has rights to publish live streaming
+class authPublish(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=201)
+
+# Authenticate live streaming view by user
+class authPlay(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=201)
+

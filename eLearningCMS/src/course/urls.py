@@ -10,4 +10,6 @@ urlpatterns = [
      path('addReview/<int:id>', views.addReview.as_view(), name="addReview"),
      path('playSession/<int:chapterid>/<int:sessionid>', views.playSession.as_view(), name="playSession"),
      path('updateDurationPlayed/<int:enrolledcourseid>/<int:duration>', views.updateDuration),
+     path('authPlay', views.authPlay.as_view(), name="authPlay"),
+     path('authPublish', views.authPublish.as_view(), name="authPublish"),
 ]
