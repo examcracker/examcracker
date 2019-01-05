@@ -347,6 +347,23 @@ class authPublish(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         return HttpResponse(status=201)
+        
+        chapterid = request.GET.get('chapter', '')
+        providerid = request.GET.get('provider', '')
+
+        if chapterid == '' or providerid == '':
+            HttpResponse(status=404)
+
+        chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)
+        if chapterObj:
+            chapterObj = chapterObj[0]
+            providerObj = getProviderFromChapterId(chapterId)
+            if providerid == providerObj.id:
+                HttpResponse(status=201)
+            else:
+               HttpResponse(status=404) 
+        else
+            HttpResponse(status=404)
 
 # Authenticate live streaming view by user
 class authPlay(generic.TemplateView):
