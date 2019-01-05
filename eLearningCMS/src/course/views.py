@@ -362,7 +362,7 @@ class authPublish(generic.TemplateView):
                 HttpResponse(status=201)
             else:
                HttpResponse(status=404) 
-        else
+        else:
             HttpResponse(status=404)
 
 # Authenticate live streaming view by user
