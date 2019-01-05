@@ -1,0 +1,48 @@
+ jwplayer().on('time', (data) =>
+                {
+                  now = getUTCTimeSecs();
+                  nowplayer = data.position;
+
+                  if (lasttime == 0) {
+                    lastplayertime = nowplayer;
+                    lasttime = now;
+                    return;
+                  }
+
+                  var playergap = nowplayer - lastplayertime;
+                  if(playergap < 0) {
+                    lastplayertime = nowplayer;
+                    lasttime = now;
+                    return;
+                  }
+
+                  var systemgap = now - lasttime;
+                  if(Math.abs(systemgap - playergap) < 3) {
+                   durationplayed = durationplayed + playergap;
+                   lastplayertime = nowplayer;
+                   lasttime = now;
+
+                   console.log(durationplayed);
+
+                   if(durationplayed - lastdurationplayed > 6) {
+                     lastdurationplayed = durationplayed;
+                     update();
+                   }
+                   return;
+                  }
+
+                  // system time and player time deviations are different, either its paused, stalled or sought forward
+                  if(systemgap > playergap) {
+                   durationplayed = durationplayed + playergap;
+                  }
+
+                  console.log(durationplayed);
+
+                  lastplayertime = nowplayer;
+                  lasttime = now;
+
+                  if(durationplayed - lastdurationplayed > 6) {
+                     lastdurationplayed = durationplayed;
+                     update();
+                   }
+                });

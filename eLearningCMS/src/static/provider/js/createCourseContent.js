@@ -76,15 +76,17 @@ function editSchedule(e) {
   var startDate = scheduleModal.querySelectorAll('input[id="startDate"]')[0];
   startDate.value = Cells[3].innerText;
  
+  var eventDuration = scheduleModal.querySelectorAll('input[id="eventDuration"]')[0];
+  eventDuration.value = Cells[5].innerText
 
   var eventTime = scheduleModal.querySelectorAll('input[id="eventTime"]')[0];
   eventTime.value = Cells[4].innerText
 
   var eventCount = scheduleModal.querySelectorAll('input[id="eventCount"]')[0];
-  eventCount.value = Cells[5].innerText;
+  eventCount.value = Cells[6].innerText;
 
   var autoPublish = scheduleModal.querySelectorAll('input[id="autoPublish"]')[0];
-  autoPublish.checked = Cells[7].innerText == "True"?1:0;
+  autoPublish.checked = Cells[8].innerText == "True"?1:0;
   
   $('#scheduleModal').modal('toggle');
 }

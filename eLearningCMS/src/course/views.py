@@ -104,7 +104,15 @@ class courseDetails(fillCartCourses):
 
         courseObj = courseObj[0]
 
-        if courseObj.published == False:
+        # this code is for the provider preview.
+        # show everything to the provider
+        providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)
+        checkPublished = True
+        if providerObj and providerObj[0].id == courseObj.provider_id:
+            providerObj = providerObj[0]
+            checkPublished = False
+
+        if checkPublished and courseObj.published == False:
             kwargs["not_published"] = True
             raise Http404()
 
@@ -123,7 +131,7 @@ class courseDetails(fillCartCourses):
 
         ##########################################################
 
-        courseDetailMap = algos.getCourseDetails(id)
+        courseDetailMap = algos.getCourseDetails(id,checkPublished)
         kwargs["course_detail"] = courseDetailMap
 
         if request.user.is_authenticated:
@@ -166,7 +174,6 @@ class courseDetails(fillCartCourses):
                 if len(addedCourse) > 0:
                     courseOverviewMap["addedCourse"] = True
             else:
-                providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
                 if courseObj.provider_id == providerObj.id:
                     courseOverviewMap["myCourse"] = True
 
@@ -234,7 +241,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             kwargs["offuscate"] = False
 
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
-
+        checkPublished = True
         if len(courseChapterObj) == 0:
             raise Http404()
 
@@ -293,13 +300,13 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
             kwargs["isOwner"] = 'yes'
-
+            checkPublished = False
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
         if sessionObj.duration == 0:
             raise Http404()
 
-        kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id)
+        kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished)
         kwargs["signedurl"] = cdn.views.getSignedUrl(sessionObj.videoKey)
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
@@ -330,6 +337,6 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 @permission_classes((IsAuthenticated, ))
 def updateDuration(request, enrolledcourseid, duration, format=None):
     enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
-    enrolledCourseObj.completedminutes = duration/60
+    enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
     enrolledCourseObj.save()
     return Response({"result":True})

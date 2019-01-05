@@ -71,12 +71,19 @@ RECAPTCHA_PUBLIC_KEY = '6LeooVkUAAAAANcm2d0EvhOzz_uv8yhdxDbuxz9B'
 RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
 
 # Email settings
-EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_PORT = 587
+#EMAIL_HOST_USER = 'mygyaanhive@gmail.com'
+#EMAIL_HOST_PASSWORD = 'gyaanhive123'
+#EMAIL_USE_TLS = True
+#DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@gmail.com>'
+
+EMAIL_HOST = 'smtp.mail.yahoo.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'mygyaanhive@gmail.com'
-EMAIL_HOST_PASSWORD = 'gyaanhive123'
+EMAIL_HOST_USER = 'mygyaanhive@yahoo.com'
+EMAIL_HOST_PASSWORD = 'examcracker2018'
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@gmail.com>'
+DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@yahoo.com>'
 
 # Vimeo settings
 VIMEO_CLIENT_ID = '0dabe4d1dc86c61dabf843461f3d57029a6e9b9c'

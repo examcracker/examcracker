@@ -173,7 +173,7 @@ def saveCourseContent(request,courseId):
                 chapterObj = course.models.CourseChapter()
                 chapterObj.course = courseObj
                 #chapterObj.name = cpPrefix +' ' +str(cpSuffix) + ': ' + chapterName
-                chapterObj.name = chapterName
+            chapterObj.name = chapterName
             #chapterObj.name = cpPrefix +' ' +str(cpSuffix)
             chapterObj.sequence = i+1
             chapterObj.subject = subject
@@ -523,7 +523,7 @@ class myStudents(showProviderHome):
                 studentInfo['totalSessionWatched'] = totalSessionWatched
                 studentInfo['totalPlayedCount'] = totalPlayedCount
                 studentInfo['viewhours'] = studentItem.viewhours
-                studentInfo['completedminutes'] = studentItem.completedminutes
+                studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
 
                 if(len(sessionIDList) > 0):
                     studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'

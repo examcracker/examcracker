@@ -67,7 +67,11 @@
             <input type="hidden" id="scheduleChapterId" name="scheduleChapterId" value="" />
           </div>
         </div>
-        <div class="form-group row">
+        {% if locations|length > 0 %}
+        <div class="form-group row" style="display:none;">
+          {% else %}
+          <div class="form-group row"></div>
+          {% endif %}
           <label for="courseLocation" class="col-sm-4 col-form-label">Location</label>
           <div class="col-sm-8">
             <select id="courseLocation" name="courseLocation" class="form-control" data-live-search="true">
@@ -77,13 +81,13 @@
             </select>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="display:none;">
           <label for="startDate" class="col-sm-4 col-form-label">Starts On</label>
           <div class="col-sm-8">
             <input type="date" class="form-control" name="startDate" id="startDate" placeholder="Start Date" >
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="display:none;">
           <label for="eventTime" class="col-sm-4 col-form-label">Time</label>
           <div class="col-sm-8">
             <input type="time" class="form-control" name="eventTime" id="eventTime" value="00:00" placeholder="Start Time" >
@@ -101,7 +105,7 @@
             <input type="number" class="form-control" name="eventCount" id="eventCount" value=10 placeholder="Number of Sessions for this chapter" required>
           </div>
         </div>
-        <div class="form-group row">
+        <div class="form-group row" style="display:none;">
           <label for="eventRecur" class="col-sm-4 col-form-label">Repeats Every (hours)</label>
           <div class="col-sm-8">
             <input type="number" class="form-control" name="eventRecur" id="eventRecur" value=24 placeholder="Repeats every in hours" required>
@@ -110,7 +114,7 @@
         <div class="form-group row">
           <label for="autoPublish" class="col-sm-4 col-form-label">Publish Session</label>
           <div class="col-sm-8">
-            <input type="checkbox" class="form-control" name="autoPublish" id="autoPublish" checked>
+            <input type="checkbox" class="form-control" name="autoPublish" id="autoPublish">
           </div>
         </div>
         <div class="form-group row">
@@ -138,9 +142,11 @@
                 <th scope="col">Subject</th>
                 <th scope="col">Chapter</th>
                 {% if locations|length > 1 %}
-                 <th scope="col">Location</th> 
+                 <th scope="col">Location</th>
+                 {% else %}
+                 <th scope="col" style="display:none;">Location</th> 
                  {% endif %}
-                <th scope="col">Starts From</th>
+                <th scope="col" style="display:none;">Starts From</th>
                 <th scope="col">Duration</th>
                 <th scope="col">Total Sessions</th>
                 <th scope="col">Sessions Finished</th>
@@ -166,8 +172,10 @@
                 <td >{{schedule.chapterName}}</td>
                 {% if locations|length > 1 %}
                 <td>{{schedule.system}}</td>
+                {% else %}
+                <td style="display:none;">{{schedule.system}}</td>
                 {% endif %}
-                <td>{{schedule.start}}</td>
+                <td style="display:none;">{{schedule.start}}</td>
                 <td>{{schedule.duration}}</td>
                 <td>{{schedule.eventcount}}</td>
                 <td>{{schedule.eventsOccured}}</td>
@@ -196,6 +204,11 @@
     </div>
   <script src="{% static 'provider/js/createCourseContent.js' %}">
   </script>
-
+<script>
+    window.onload = function() {
+    var selectElement = document.getElementById('courseName');
+    fillSelectByName(selectElement,'courseSubjectName','courseChapterName');
+};
+</script>
 {% endblock active %}
 

@@ -100,9 +100,12 @@
     var nowplayer = 0;
     var durationplayed = 0;
     var lastdurationplayed = 0;
+    var lastdurationsent = 0;
 
     function update() {
-      var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationplayed);
+      var durationdiff = durationplayed - lastdurationsent;
+      lastdurationsent = durationplayed;
+      var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
       client.get(url)
             .then(function (data) {})
             .catch(function (error) {alert(error);});
@@ -135,8 +138,8 @@
             if (accepted) {
                 jwplayer("jwplayerDiv").setup({file: "{{ signedurl }}"});
                 if(tracktime) {
-                  var _0x4bf7=['position','abs','log','time'];(function(_0xc60a23,_0x157c7b){var _0x105539=function(_0x35fc2c){while(--_0x35fc2c){_0xc60a23['push'](_0xc60a23['shift']());}};_0x105539(++_0x157c7b);}(_0x4bf7,0x14b));var _0x177d=function(_0x55ad27,_0x231945){_0x55ad27=_0x55ad27-0x0;var _0x2ca301=_0x4bf7[_0x55ad27];return _0x2ca301;};jwplayer()['on'](_0x177d('0x0'),_0x250cd6=>{now=getUTCTimeSecs();nowplayer=_0x250cd6[_0x177d('0x1')];if(lasttime==0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x38d0d8=nowplayer-lastplayertime;if(_0x38d0d8<0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x51aaa7=now-lasttime;if(Math[_0x177d('0x2')](_0x51aaa7-_0x38d0d8)<0x3){durationplayed=durationplayed+_0x38d0d8;lastplayertime=nowplayer;lasttime=now;console[_0x177d('0x3')](durationplayed);if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}return;}if(_0x51aaa7>_0x38d0d8){durationplayed=durationplayed+_0x38d0d8;}console[_0x177d('0x3')](durationplayed);lastplayertime=nowplayer;lasttime=now;if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}});
-                }
+                 var _0x3f2d=['log','position'];(function(_0x3a034e,_0x42782b){var _0x57a9e8=function(_0x82727e){while(--_0x82727e){_0x3a034e['push'](_0x3a034e['shift']());}};_0x57a9e8(++_0x42782b);}(_0x3f2d,0x157));var _0x2788=function(_0x3f0109,_0x548465){_0x3f0109=_0x3f0109-0x0;var _0x3838e3=_0x3f2d[_0x3f0109];return _0x3838e3;};jwplayer()['on']('time',_0x1af3dd=>{now=getUTCTimeSecs();nowplayer=_0x1af3dd[_0x2788('0x0')];if(lasttime==0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x1c6c5b=nowplayer-lastplayertime;if(_0x1c6c5b<0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x945a77=now-lasttime;if(Math['abs'](_0x945a77-_0x1c6c5b)<0x3){durationplayed=durationplayed+_0x1c6c5b;lastplayertime=nowplayer;lasttime=now;console[_0x2788('0x1')](durationplayed);if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}return;}if(_0x945a77>_0x1c6c5b){durationplayed=durationplayed+_0x1c6c5b;}console[_0x2788('0x1')](durationplayed);lastplayertime=nowplayer;lasttime=now;if(durationplayed-lastdurationplayed>0x6){lastdurationplayed=durationplayed;update();}});
+			   }
             }
             else {
                   alert("This device is unknown. Authenticate yourself by the link sent to your email.");
