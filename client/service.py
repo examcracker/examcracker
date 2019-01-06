@@ -38,13 +38,14 @@ def sendCaptureResponse(state):
     global serviceObj
     data = {}
     data["state"] = state
-    data["id"] = serviceObj.encryptedid
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
 
 def on_message(message):
     LOG.info(str(message))
 
     responseDict = {}
+    # always add encrypted provider id in response
+    responseDict["id"] = serviceObj.encryptedid
     messageDict = json.loads(message)
     global serviceObj
 
@@ -53,7 +54,7 @@ def on_message(message):
         # check if this client is intended recipient
         if machine != systemname:
             LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
-            #return
+            return
         command = messageDict["command"]
         if command == api.command_start:
             if serviceObj.capturing:
@@ -82,7 +83,6 @@ def on_message(message):
                 responseDict["chapterid"] = serviceObj.chapterid
                 responseDict["publish"] = serviceObj.publish
 
-                global pusherServer
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
         elif command == api.command_upload_logs:
@@ -92,8 +92,9 @@ def on_message(message):
             logData = ""
             with open(logger.logFileName) as fin:
                 logData = fin.readlines()[-lineCount:]
-
-            httpReq.send(serviceObj.url, "/cdn/logData", json.dumps(logData))
+            responseDict["logs"] = logData
+            print(json.dumps(responseDict))
+            httpReq.send(serviceObj.url, "/cdn/logData/", json.dumps(responseDict))
         elif command == api.command_get_recent_capture_file_details:
             if serviceObj.capture.outputFileName != "":
                 responseDict['filePath'] = str(serviceObj.capture.outputFileName)
@@ -118,8 +119,6 @@ def on_message(message):
 
             responseDict["chapterid"] = messageDict["chapterid"]
             responseDict["publish"] = messageDict["publish"]
-
-            global pusherServer
             responseDict["id"] = messageDict["id"]
             httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
             
@@ -288,9 +287,6 @@ class ClientService(object):
 
                     responseDict["chapterid"] = self.chapterid
                     responseDict["publish"] = self.publish
-
-                    global pusherServer
-                    responseDict["id"] = self.clientid
                     httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
             
             waitCounterForCleaningFiles += 1

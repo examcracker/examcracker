@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.views import generic
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from . import models
 import provider
 # for interacting jw platform
@@ -28,10 +29,15 @@ from Crypto.Random import get_random_bytes
 import base64
 from profiles.signals import sendMail
 from course.algos import strToIntList
+# pusher
+import pusher
+import pysher
 
 logger = logging.getLogger("project")
 
 User = get_user_model()
+
+command_upload_logs = 2
 
 # methods to go here
 EXPIRY_BANDWIDTH = 3600*5
@@ -179,3 +185,33 @@ class saveClientSession(generic.TemplateView):
         jsonObj = json.loads(request.body.decode())
         saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]))
         return schedule.views.HttpResponseNoContent()
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getLogData(request, machineName):
+    providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+    reqDict = {}
+    reqDict["command"] = command_upload_logs
+    reqDict["machine"] = machineName
+    pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
+    pusherObj.trigger(str(providerObj.id), str(providerObj.id), reqDict)
+    return Response({"status":True})
+
+class saveLogData(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        jsonObj = json.loads(request.body.decode())
+        encryptedId = jsonObj["id"]
+        contents = jsonObj["logs"]
+        logObj = models.Logs.objects.filter(providerencryptedid=encryptedId)
+        if len(logObj) == 0:
+            logObj = models.Logs()
+        else:
+            logObj = logObj[0]
+        logObj.providerencryptedid = encryptedId
+        logObj.contents = contents
+        logObj.save()
+        return schedule.views.HttpResponseNoContent()
+

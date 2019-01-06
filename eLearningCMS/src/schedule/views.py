@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
+from django.conf import settings
 import course
 from course import models
 from provider.views import showProviderHome, getProvider
@@ -158,7 +159,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
-        pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
+        pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_start))
         return redirect("schedule:add_show_schedule")
 
@@ -169,7 +170,7 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)[0]
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
-        pusherObj = pusher.Pusher(app_id=PUSHER_APP_ID, key=PUSHER_KEY, secret=PUSHER_SECRET, cluster=PUSHER_CLUSTER, ssl=True)
+        pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
         return redirect("schedule:add_show_schedule")
 

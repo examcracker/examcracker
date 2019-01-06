@@ -11,4 +11,6 @@ urlpatterns = [
     path('saveLiveSession/<str:videoKey>/<int:chapterId>', views.saveLiveSession),
     path('getSymetricKey', views.getSymetricKey),
     path('saveClientSession/', views.saveClientSession.as_view(), name='saveClientSession'),
+    path('logData/', views.saveLogData.as_view(), name='logData'),
+    path('getLogData/<str:machineName>', views.getLogData),
 ]
