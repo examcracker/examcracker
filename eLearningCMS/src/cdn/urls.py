@@ -13,4 +13,6 @@ urlpatterns = [
     path('saveClientSession/', views.saveClientSession.as_view(), name='saveClientSession'),
     path('logData/', views.saveLogData.as_view(), name='logData'),
     path('getLogData/<int:providerId>/<str:machineName>', views.getLogData),
+    path('clientState/', views.saveClientState.as_view(), name='clientState'),
+    path('getClientState/<int:providerId>/<str:machineName>', views.getClientState),
 ]

@@ -124,7 +124,7 @@ def on_message(message):
             
         elif command == api.command_check_client_active:
             responseDict['result'] = api.status_client_active
-            httpReq.send(serviceObj.url, "/cdn/clientState", json.dumps(responseDict))
+            httpReq.send(serviceObj.url, "/cdn/clientState/", json.dumps(responseDict))
     else:
         LOG.warn("Unhandled command: " + str(messageDict.keys()))
 

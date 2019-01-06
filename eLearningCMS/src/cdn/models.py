@@ -8,3 +8,7 @@ class Logs(models.Model):
     providerencryptedid = models.CharField(max_length=10)
     contents = models.TextField()
 
+class ClientState(models.Model):
+    providerencryptedid = models.CharField(max_length=10)
+    when = models.DateTimeField(auto_now=True)
+

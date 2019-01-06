@@ -38,6 +38,7 @@ logger = logging.getLogger("project")
 User = get_user_model()
 
 command_upload_logs = 2
+command_check_client_active = 5
 
 # methods to go here
 EXPIRY_BANDWIDTH = 3600*5
@@ -218,3 +219,34 @@ class saveLogData(generic.TemplateView):
         logObj.save()
         return schedule.views.HttpResponseNoContent()
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getClientState(request, providerId, machineName):
+    if not request.user.is_superuser:
+        return Response({"status":False})
+
+    providerObj = provider.models.Provider.objects.filter(id=providerId)[0]
+    reqDict = {}
+    reqDict["command"] = command_check_client_active
+    reqDict["machine"] = machineName
+    pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
+    pusherObj.trigger(str(providerObj.id), str(providerObj.id), reqDict)
+    return Response({"status":True})
+
+class saveClientState(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        jsonObj = json.loads(request.body.decode())
+        encryptedId = jsonObj["id"]
+        state = jsonObj["result"]
+        stateObj = models.ClientState.objects.filter(providerencryptedid=encryptedId)
+        if len(stateObj) == 0:
+            stateObj = models.ClientState()
+        else:
+            stateObj = stateObj[0]
+        stateObj.providerencryptedid = encryptedId
+        stateObj.state = state
+        stateObj.save()
+        return schedule.views.HttpResponseNoContent()
