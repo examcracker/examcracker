@@ -189,8 +189,11 @@ class saveClientSession(generic.TemplateView):
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
-def getLogData(request, machineName):
-    providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
+def getLogData(request, providerId, machineName):
+    if not request.user.is_superuser:
+        return Response({"status":False})
+
+    providerObj = provider.models.Provider.objects.filter(id=providerId)[0]
     reqDict = {}
     reqDict["command"] = command_upload_logs
     reqDict["machine"] = machineName

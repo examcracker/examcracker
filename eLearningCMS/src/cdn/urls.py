@@ -12,5 +12,5 @@ urlpatterns = [
     path('getSymetricKey', views.getSymetricKey),
     path('saveClientSession/', views.saveClientSession.as_view(), name='saveClientSession'),
     path('logData/', views.saveLogData.as_view(), name='logData'),
-    path('getLogData/<str:machineName>', views.getLogData),
+    path('getLogData/<int:providerId>/<str:machineName>', views.getLogData),
 ]
