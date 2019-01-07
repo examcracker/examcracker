@@ -38,6 +38,7 @@ logger = logging.getLogger("project")
 User = get_user_model()
 
 command_upload_logs = 2
+command_get_recent_capture_file_details = 3
 command_check_client_active = 5
 
 # methods to go here
@@ -249,4 +250,36 @@ class saveClientState(generic.TemplateView):
         stateObj.providerencryptedid = encryptedId
         stateObj.state = state
         stateObj.save()
+        return schedule.views.HttpResponseNoContent()
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getFileDetails(request, providerId, machineName):
+    if not request.user.is_superuser:
+        return Response({"status":False})
+
+    providerObj = provider.models.Provider.objects.filter(id=providerId)[0]
+    reqDict = {}
+    reqDict["command"] = command_get_recent_capture_file_details
+    reqDict["machine"] = machineName
+    pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
+    pusherObj.trigger(str(providerObj.id), str(providerObj.id), reqDict)
+    return Response({"status":True})
+
+class saveFileDetails(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        jsonObj = json.loads(request.body.decode())
+        encryptedId = jsonObj["id"]
+        details = request.body.decode()
+        fileDetObj = models.FileDetails.objects.filter(providerencryptedid=encryptedId)
+        if len(fileDetObj) == 0:
+            fileDetObj = models.FileDetails()
+        else:
+            fileDetObj = fileDetObj[0]
+        fileDetObj.providerencryptedid = encryptedId
+        fileDetObj.state = state
+        fileDetObj.save()
         return schedule.views.HttpResponseNoContent()

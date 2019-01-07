@@ -105,7 +105,7 @@ def on_message(message):
             responseDict["id"] = serviceObj.scheduleid
             responseDict["chapterid"] = serviceObj.chapterid
             responseDict["publish"] = serviceObj.publish
-            httpReq.send(serviceObj.url, "/schedule/getFileDetails/" + str(serviceObj.scheduleid), json.dumps(responseDict))
+            httpReq.send(serviceObj.url, "/cdn/getFileDetails/", json.dumps(responseDict))
         elif command == api.command_upload_file:
             filePath = messageDict["filePath"]
             

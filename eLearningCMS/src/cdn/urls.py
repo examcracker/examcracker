@@ -15,4 +15,6 @@ urlpatterns = [
     path('getLogData/<int:providerId>/<str:machineName>', views.getLogData),
     path('clientState/', views.saveClientState.as_view(), name='clientState'),
     path('getClientState/<int:providerId>/<str:machineName>', views.getClientState),
+    path('fileDetails/', views.saveFileDetails.as_view(), name='fileDetails'),
+    path('getFileDetails/<int:providerId>/<str:machineName>', views.getFileDetails),
 ]

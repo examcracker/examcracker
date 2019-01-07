@@ -12,3 +12,8 @@ class ClientState(models.Model):
     providerencryptedid = models.CharField(max_length=10)
     when = models.DateTimeField(auto_now=True)
 
+class FileDetails(models.Model):
+    providerencryptedid = models.CharField(max_length=10)
+    details = models.CharField(max_length=100)
+    when = models.DateTimeField(auto_now=True)
+
