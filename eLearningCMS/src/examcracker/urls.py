@@ -41,7 +41,7 @@ urlpatterns = [
     path('home/', views.HomePage.as_view(), name='home'),
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
     path('listCourses/', views.listCourses.as_view(), name='listCourses'),
-    path('testClient/', views.clientTest.as_view(), name='testClient'),
+    path('debug/<int:providerid>', views.DebugPage.as_view(), name='debug'),
     path('', include(accounts.urls)),
 ]
 

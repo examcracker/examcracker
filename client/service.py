@@ -102,7 +102,7 @@ def on_message(message):
                 list_of_files = glob.glob( serviceObj.capture.outputFolder + r'\*.mp4')
                 responseDict['filePath'] = max(list_of_files, key=os.path.getctime)
 
-            responseDict["id"] = serviceObj.scheduleid
+            responseDict["scheduleid"] = serviceObj.scheduleid
             responseDict["chapterid"] = serviceObj.chapterid
             responseDict["publish"] = serviceObj.publish
             httpReq.send(serviceObj.url, "/cdn/getFileDetails/", json.dumps(responseDict))

@@ -6,9 +6,12 @@ from django.shortcuts import redirect,render
 from django.urls import reverse,reverse_lazy
 from provider.views import *
 import student
+import cdn
 from course.views import fillCartCourses
 from profiles.signals import sendMail
 from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(fillCartCourses):
@@ -120,10 +123,28 @@ class BlogPage(generic.TemplateView):
 class PricingPage(generic.TemplateView):
     template_name = "pricing.html"
 
-class clientTest(generic.TemplateView):
-    http_method_names = ['get']
+class DebugPage(generic.TemplateView, LoginRequiredMixin):
+    template_name = "debug.html"
 
-    def get(self, request, *args, **kwargs):
-        return JsonResponse({'data':'success'})
+    def get(self, request, providerid, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise Http404()
+        providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
+        fileObj = cdn.models.FileDetails.objects.filter(providerencryptedid=providerObj.encryptedid)
+        stateObj = cdn.models.ClientState.objects.filter(providerencryptedid=providerObj.encryptedid)
+        logObj = cdn.models.Logs.objects.filter(providerencryptedid=providerObj.encryptedid)
+        system = provider.models.System.objects.filter(id=providerid)[0].name
 
+        if len(fileObj) > 0:
+            kwargs["filedetails"] = fileObj[0]
+        if len(stateObj) > 0:
+            kwargs["clientstate"] = stateObj[0]
+        if len(logObj) > 0:
+            kwargs["log"] = logObj[0]
+
+        cdn.views.getLogData(request, providerid, system)
+        cdn.views.getFileDetails(request, providerid, system)
+        cdn.views.getClientState(request, providerid, system)
+        kwargs["providerid"] = providerid
+        return super().get(request, *args, **kwargs)
 
