@@ -93,7 +93,6 @@ def on_message(message):
             with open(logger.logFileName) as fin:
                 logData = fin.readlines()[-lineCount:]
             responseDict["logs"] = logData
-            print(json.dumps(responseDict))
             httpReq.send(serviceObj.url, "/cdn/logData/", json.dumps(responseDict))
         elif command == api.command_get_recent_capture_file_details:
             if serviceObj.capture.outputFileName != "":
