@@ -375,7 +375,11 @@ class authPlay(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        print("on_publish_done called")
+        print("AuthPlay called")
+        chapterid = request.GET['chapterid']
+        providerid = request.GET['providerid']
+        print("chapterid is : " + chapterid)
+        print("providerid is : " + providerid)
         if request.user.is_authenticated:
             print("AuthPlay: Authenticated")
         else:
