@@ -34,10 +34,11 @@ systemname = platform.node()
 # Log file
 LOG = logger.getLogFile(__name__)
 
-def sendCaptureResponse(state):
+def sendCaptureResponse(state, id):
     global serviceObj
     data = {}
     data["state"] = state
+    data["id"] = id
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
 
 def on_message(message):
@@ -65,13 +66,13 @@ def on_message(message):
                 serviceObj.chapterid = messageDict["chapterid"]
                 serviceObj.publish = messageDict["publish"]
                 serviceObj.timeout = int(messageDict["duration"])*60
-                sendCaptureResponse(True)
+                sendCaptureResponse(True, serviceObj.encryptedid)
                 serviceObj.startCapture()
         elif command == api.command_stop:
             if not serviceObj.capturing:
                 responseDict["result"] = api.status_no_capture_started
             else:
-                sendCaptureResponse(False)
+                sendCaptureResponse(False, serviceObj.encryptedid)
                 res = serviceObj.stopCapture()
                 if 'videoKey' in res.keys():
                     responseDict["result"] = api.status_stop_success
@@ -275,7 +276,7 @@ class ClientService(object):
                 if timeDiff >= self.timeout:
                     responseDict = {}
                     LOG.info ("Timeout stopping the capturing")
-                    sendCaptureResponse(False)
+                    sendCaptureResponse(False, self.encryptedid)
                     res = self.stopCapture()
                     if 'videoKey' in res.keys():
                         responseDict["result"] = api.status_stop_success
