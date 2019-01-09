@@ -1,0 +1,11 @@
+sudo apt-get update
+sudo apt-get install unzip
+sudo apt-get install build-essential libpcre3 libpcre3-dev libssl-dev
+wget http://nginx.org/download/nginx-1.8.0.tar.gz
+tar -zxvf nginx-1.8.0.tar.gz
+wget https://github.com/arut/nginx-rtmp-module/archive/master.zip
+unzip master.zip
+cd nginx-1.8.0
+./configure --with-http_ssl_module --with-http_auth_request_module –add-module=../nginx-rtmp-module-master
+make
+sudo make install
