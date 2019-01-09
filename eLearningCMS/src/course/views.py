@@ -346,6 +346,11 @@ class authPublish(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
+        print("authPublish called")
+        if request.user.is_authenticated:
+            print("authPublish: Authenticated")
+        else:
+            print("authPublish:Not Authenticated")
         return HttpResponse(status=201)
         
         chapterid = request.GET.get('chapter', '')
@@ -370,5 +375,26 @@ class authPlay(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
+        print("AuthPlay called")
+        chapterid = request.GET['chapterid']
+        providerid = request.GET['providerid']
+        print("chapterid is : " + chapterid)
+        print("providerid is : " + providerid)
+        if request.user.is_authenticated:
+            print("AuthPlay: Authenticated")
+        else:
+            print("AuthPlay:Not Authenticated")
+        return HttpResponse(status=201)
+
+# Authenticate live streaming view by user
+class on_publish_done(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        print("on_publish_done called")
+        if request.user.is_authenticated:
+            print("on_publish_done:Authenticated")
+        else:
+            print("on_publish_done:Not Authenticated")
         return HttpResponse(status=201)
 
