@@ -19,7 +19,8 @@ import websocket
 import enum
 import json
 import base64
-
+import student
+from django.db.models import Q
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
@@ -53,6 +54,62 @@ def getActiveSchedules(providerId):
         if sessionsCount < schedule.eventcount:
             activeCount = activeCount+1
     return activeCount
+
+def isAnyEventLive(request):
+    scheduleObj = models.Schedule.objects.filter(running=1)
+    if request.user.is_staff:
+        # Get Live events of Scheduled courses
+        providerObj = getProvider(request)
+        scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+    else:
+        # Get live events of enrolled courses
+        studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+        scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+
+    if scheduleObj :
+        return True
+    return False
+
+class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
+    template_name = "showLiveEvents.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        
+        scheduleObj = models.Schedule.objects.filter(running=1)
+        
+        if request.user.is_staff:
+            # Get Live events of Scheduled courses
+            providerObj = getProvider(request)
+            scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+        else:
+            # Get live events of enrolled courses
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+
+        if scheduleObj :
+            schedules = []
+            kwargs["live"] = 'on'
+            for schedule in scheduleObj:
+                scheduleInfo = model_to_dict(schedule)
+                chapterObj = course.models.CourseChapter.objects.filter(id=schedule.chapter_id)[0]
+                sessions = chapterObj.sessions
+                sessionsCount = 0
+                if sessions != '':
+                    sessionsCount = len(sessions.split(','))
+
+                scheduleInfo['id'] = schedule.id
+                scheduleInfo['chapterName'] = chapterObj.name
+                scheduleInfo['subjectName'] = chapterObj.subject
+                scheduleInfo['courseName'] = course.models.Course.objects.filter(id=chapterObj.course_id)[0].name
+                scheduleInfo['courseId'] = chapterObj.course_id
+                schedules.append(scheduleInfo)
+            kwargs['schedules'] = schedules
+        return super().get(request, *args, **kwargs)
 
 class addShowSchedule(showProviderHome):
     template_name = "addShowSchedule.html"

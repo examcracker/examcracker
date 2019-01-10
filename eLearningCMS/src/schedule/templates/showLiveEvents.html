@@ -1,0 +1,51 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+  <!-- Breadcrumbs-->
+  <nav class="navbar">
+  <div class="mr-lg-auto">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Event Scheduler</li>
+  </ol>
+  </div>
+    
+  </nav>
+
+
+   <div class="container-fluid">
+        {% if schedules|length > 0 %}
+        <h5>Live Events Running</h5>
+        <div style="overflow-x:auto;">
+        <table class="table" id="liveEventsTable">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Course</th>
+                <th scope="col">Subject</th>
+                <th scope="col">Chapter</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for schedule in schedules %}
+              <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td> {{schedule.courseName}} </td>
+                <td>{{schedule.subjectName}}</td>
+                <td >{{schedule.chapterName}}</td>
+                <td><button class="btn btn-info btn-sm mx-2 px-2" aria-pressed="true" ><i class="fa fa-play fa-sm" title="Play"></i></td>
+              </tr>
+              {% endfor %}    
+            </tbody>
+          </table>
+          </div>
+        
+        {% else %}
+        <h5>No Event Live</h5>
+        {% endif %}
+    </div>
+{% endblock active %}
+

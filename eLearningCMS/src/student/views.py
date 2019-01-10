@@ -20,6 +20,7 @@ import payments
 import notification
 from math import ceil
 User = get_user_model()
+from schedule.views import isAnyEventLive
 
 def getStudent(request):
     studentObj = models.Student.objects.filter(user_id=request.user.id)
@@ -44,6 +45,9 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
         kwargs["allCourses"] = algos.getCourseDetailsForCards(request, allCourses)
         kwargs["category"] = category
+        
+        if isAnyEventLive(request):
+            kwargs['live'] = 'on'
         return super().get(request, *args, **kwargs)
 
 class StudentProfile(profiles.views.MyProfile):

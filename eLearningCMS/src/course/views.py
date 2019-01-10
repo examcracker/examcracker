@@ -342,28 +342,25 @@ def updateDuration(request, enrolledcourseid, duration, format=None):
     return Response({"result":True})
 
 # Authenticate that provider has rights to publish live streaming
-class authPublish(generic.TemplateView):
+class on_publish(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        print("authPublish called")
-        if request.user.is_authenticated:
-            print("authPublish: Authenticated")
-        else:
-            print("authPublish:Not Authenticated")
         return HttpResponse(status=201)
-        
         chapterid = request.GET.get('chapter', '')
         providerid = request.GET.get('provider', '')
+        sessionKey = request.GET.get('sessionKey', '')
 
-        if chapterid == '' or providerid == '':
+        if chapterid == '' or providerid == '' or sessionKey == '':
             HttpResponse(status=404)
+        else:
+            HttpResponse(status=201)
 
         chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)
         if chapterObj:
             chapterObj = chapterObj[0]
             providerObj = getProviderFromChapterId(chapterId)
-            if providerid == providerObj.id:
+            if providerid == providerObj.id and sessionkey == chapterObj.sessionkey:
                 HttpResponse(status=201)
             else:
                HttpResponse(status=404) 
@@ -371,19 +368,14 @@ class authPublish(generic.TemplateView):
             HttpResponse(status=404)
 
 # Authenticate live streaming view by user
-class authPlay(generic.TemplateView):
+class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        print("AuthPlay called")
-        chapterid = request.GET['chapterid']
-        providerid = request.GET['providerid']
-        print("chapterid is : " + chapterid)
-        print("providerid is : " + providerid)
         if request.user.is_authenticated:
-            print("AuthPlay: Authenticated")
+            print("on_play: Authenticated")
         else:
-            print("AuthPlay:Not Authenticated")
+            print("on_play:Not Authenticated")
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
