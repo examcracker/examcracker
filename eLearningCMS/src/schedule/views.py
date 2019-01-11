@@ -207,6 +207,9 @@ def createDictSchedule(scheduleObj, command):
     dictObj["chapterid"] = scheduleObj.chapter_id
     dictObj["publish"] = scheduleObj.autopublish
     dictObj["machine"] = scheduleObj.system
+    dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
+    dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
+    dictObj["live"] = False
     return dictObj
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
@@ -279,6 +282,8 @@ class captureState(generic.TemplateView):
 
         state = dictBody["state"]
         scheduleObj.running = state
+        if 'streamName' in dictBody:
+            scheduleObj.streamname = dictBody["streamName"]
         scheduleObj.save()
 
         return HttpResponseNoContent()
