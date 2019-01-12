@@ -311,6 +311,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
+        kwargs["ContentHeading"] = 'Contents'
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

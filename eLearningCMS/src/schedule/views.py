@@ -212,6 +212,46 @@ def createDictSchedule(scheduleObj, command):
     dictObj["live"] = False
     return dictObj
 
+def getStreamUrl(streamname):
+    hlsurl = 'http://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
+    return hlsurl
+
+class playStream(LoginRequiredMixin, generic.TemplateView):
+    template_name="playSchedule.html"
+    http_method_names = ['get']
+
+    def get(self, request, scheduleid, *args, **kwargs):
+        
+        scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
+
+        OFUSCATE_JW = True
+        if not scheduleObj:
+            return Http404()
+
+        if OFUSCATE_JW:
+            kwargs["offuscate"] = True
+        else:
+            kwargs["offuscate"] = False
+
+        if request.user.is_staff:
+            # Get Live events of Scheduled courses
+            providerObj = getProvider(request)
+            #scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+            kwargs["isOwner"] = 'yes'
+        else:
+            # Get live events of enrolled courses
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+            kwargs["isOwner"] = 'no'
+        if not scheduleObj:
+            return Http404()
+        scheduleObj = scheduleObj[0]
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
+        return super().get(request, scheduleid, *args, **kwargs)
+
+
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
 
