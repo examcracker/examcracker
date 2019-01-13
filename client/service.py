@@ -71,6 +71,9 @@ def on_message(message):
         elif command == api.command_stop:
             if not serviceObj.capturing:
                 responseDict["result"] = api.status_no_capture_started
+                serviceObj.scheduleid = messageDict["id"]
+                sendCaptureResponse(False, serviceObj.encryptedid)
+                res = serviceObj.stopCapture()
             else:
                 sendCaptureResponse(False, serviceObj.encryptedid)
                 res = serviceObj.stopCapture()
