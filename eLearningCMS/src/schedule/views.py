@@ -76,8 +76,8 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        userDevice = parse_user_agents(request)
-        print(userDevice)
+        #userDevice = parse_user_agents(request)
+        #print(userDevice)
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
