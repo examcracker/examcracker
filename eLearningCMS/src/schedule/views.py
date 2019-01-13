@@ -22,6 +22,8 @@ import base64
 import student
 from django.db.models import Q
 
+from access.views import parse_user_agents
+
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
@@ -74,7 +76,8 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-
+        userDevice = parse_user_agents(request)
+        print(userDevice)
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
@@ -271,7 +274,6 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
-       
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
