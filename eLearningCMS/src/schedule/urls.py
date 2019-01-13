@@ -10,4 +10,6 @@ urlpatterns = [
      path("stopCapture/<int:scheduleid>", views.stopCapture.as_view(), name="stopCapture"),
      path("systemName", views.addSystem.as_view(), name="systemName"),
      path("captureState/<int:scheduleid>", views.captureState.as_view(), name="captureState"),
+     path("showLiveEvents", views.showLiveEvents.as_view(), name="showLiveEvents"),
+     path('playStream/<int:scheduleid>', views.playStream.as_view(), name="playStream"),
 ]

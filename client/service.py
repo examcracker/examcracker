@@ -34,11 +34,13 @@ systemname = platform.node()
 # Log file
 LOG = logger.getLogFile(__name__)
 
-def sendCaptureResponse(state, id):
+def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
     data = {}
     data["state"] = state
     data["id"] = id
+    if streamName != None:
+        data["streamName"] = streamName
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
 
 def on_message(message):
@@ -65,8 +67,13 @@ def on_message(message):
                 serviceObj.scheduleid = messageDict["id"]
                 serviceObj.chapterid = messageDict["chapterid"]
                 serviceObj.publish = messageDict["publish"]
+                serviceObj.mediaServer = messageDict["mediaServer"]
+                serviceObj.mediaServerApp = messageDict["mediaServerApp"]
+                serviceObj.live = messageDict["live"]
                 serviceObj.timeout = int(messageDict["duration"])*60
-                sendCaptureResponse(True, serviceObj.encryptedid)
+                serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
+                serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
+                sendCaptureResponse(True, serviceObj.encryptedid,serviceObj.liveStreamName)
                 serviceObj.startCapture()
         elif command == api.command_stop:
             if not serviceObj.capturing:
@@ -149,6 +156,10 @@ class ClientService(object):
     pusherobj = None
     url = None
     scheduleid = None
+    mediaServer = None
+    mediaServerApp = None
+    live = False
+    liveStreamName = ''
 
     def __init__(self):
         websocket.enableTrace(True)

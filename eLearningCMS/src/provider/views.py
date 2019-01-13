@@ -96,7 +96,9 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
             kwargs["not_approved"] = True
         else:
             kwargs["statsInfo"] = getProviderStats(providerObj.id)
-
+         
+        if schedule.views.isAnyEventLive(request):
+            kwargs["live"] = 'on'
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):

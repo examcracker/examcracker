@@ -72,6 +72,16 @@
             <span class="nav-link-text">My Courses</span>
           </a>
         </li>
+        
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Running Live">
+          <a class="nav-link" href="{% url 'schedule:showLiveEvents' %}">
+                <i class="fas fa-chalkboard-teacher fa-lg"></i>
+            <span class="nav-link-text">Running Live</span>
+            {% if live %}
+            <span class="badge badge-danger">live</span>
+            {% endif %}
+          </a>
+        </li>
         {% if user.is_staff %}
 		{% if not not_approved %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Create Course">

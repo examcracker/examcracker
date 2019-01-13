@@ -19,7 +19,8 @@ import websocket
 import enum
 import json
 import base64
-
+import student
+from django.db.models import Q
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
@@ -53,6 +54,62 @@ def getActiveSchedules(providerId):
         if sessionsCount < schedule.eventcount:
             activeCount = activeCount+1
     return activeCount
+
+def isAnyEventLive(request):
+    scheduleObj = models.Schedule.objects.filter(running=1)
+    if request.user.is_staff:
+        # Get Live events of Scheduled courses
+        providerObj = getProvider(request)
+        scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+    else:
+        # Get live events of enrolled courses
+        studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+        scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+
+    if scheduleObj :
+        return True
+    return False
+
+class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
+    template_name = "showLiveEvents.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        
+        scheduleObj = models.Schedule.objects.filter(running=1)
+        
+        if request.user.is_staff:
+            # Get Live events of Scheduled courses
+            providerObj = getProvider(request)
+            scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+        else:
+            # Get live events of enrolled courses
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+
+        if scheduleObj :
+            schedules = []
+            kwargs["live"] = 'on'
+            for schedule in scheduleObj:
+                scheduleInfo = model_to_dict(schedule)
+                chapterObj = course.models.CourseChapter.objects.filter(id=schedule.chapter_id)[0]
+                sessions = chapterObj.sessions
+                sessionsCount = 0
+                if sessions != '':
+                    sessionsCount = len(sessions.split(','))
+
+                scheduleInfo['id'] = schedule.id
+                scheduleInfo['chapterName'] = chapterObj.name
+                scheduleInfo['subjectName'] = chapterObj.subject
+                scheduleInfo['courseName'] = course.models.Course.objects.filter(id=chapterObj.course_id)[0].name
+                scheduleInfo['courseId'] = chapterObj.course_id
+                schedules.append(scheduleInfo)
+            kwargs['schedules'] = schedules
+        return super().get(request, *args, **kwargs)
 
 class addShowSchedule(showProviderHome):
     template_name = "addShowSchedule.html"
@@ -150,7 +207,50 @@ def createDictSchedule(scheduleObj, command):
     dictObj["chapterid"] = scheduleObj.chapter_id
     dictObj["publish"] = scheduleObj.autopublish
     dictObj["machine"] = scheduleObj.system
+    dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
+    dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
+    dictObj["live"] = False
     return dictObj
+
+def getStreamUrl(streamname):
+    hlsurl = 'http://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
+    return hlsurl
+
+class playStream(LoginRequiredMixin, generic.TemplateView):
+    template_name="playSchedule.html"
+    http_method_names = ['get']
+
+    def get(self, request, scheduleid, *args, **kwargs):
+        
+        scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
+
+        OFUSCATE_JW = True
+        if not scheduleObj:
+            return Http404()
+
+        if OFUSCATE_JW:
+            kwargs["offuscate"] = True
+        else:
+            kwargs["offuscate"] = False
+
+        if request.user.is_staff:
+            # Get Live events of Scheduled courses
+            providerObj = getProvider(request)
+            #scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+            kwargs["isOwner"] = 'yes'
+        else:
+            # Get live events of enrolled courses
+            studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+            kwargs["isOwner"] = 'no'
+        if not scheduleObj:
+            return Http404()
+        scheduleObj = scheduleObj[0]
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
+        return super().get(request, scheduleid, *args, **kwargs)
+
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
@@ -222,6 +322,8 @@ class captureState(generic.TemplateView):
 
         state = dictBody["state"]
         scheduleObj.running = state
+        if 'streamName' in dictBody:
+            scheduleObj.streamname = dictBody["streamName"]
         scheduleObj.save()
 
         return HttpResponseNoContent()
