@@ -21,6 +21,7 @@ import json
 import base64
 import student
 from django.db.models import Q
+
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
@@ -73,10 +74,7 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            print("on_play: Authenticated")
-        else:
-            print("on_play:Not Authenticated")
+
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
@@ -138,7 +136,7 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
             scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
 
         if scheduleObj :
@@ -259,7 +257,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["machine"] = scheduleObj.system
     dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
     dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
-    dictObj["live"] = False
+    dictObj["live"] = True
     return dictObj
 
 def getStreamUrl(streamname):
@@ -273,7 +271,7 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
-
+       
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
@@ -283,22 +281,25 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
         else:
             kwargs["offuscate"] = False
 
+        userString = '?'
         if request.user.is_staff:
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
-            #scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+            userString = userString + 'provider='+str(providerObj.id) + '&'
+            scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
             kwargs["isOwner"] = 'yes'
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
             scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
             kwargs["isOwner"] = 'no'
+            userString = userString+'student='+str(studentObj.id)+'&'
         if not scheduleObj:
             return Http404()
         scheduleObj = scheduleObj[0]
-        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
         return super().get(request, scheduleid, *args, **kwargs)
 
 
