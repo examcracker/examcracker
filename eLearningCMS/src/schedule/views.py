@@ -21,6 +21,9 @@ import json
 import base64
 import student
 from django.db.models import Q
+
+from access.views import parse_user_agents
+
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
@@ -41,6 +44,54 @@ class HttpResponseNoContent(HttpResponse):
     status_code = 200
 
 # Create your views here.
+# Authenticate that provider has rights to publish live streaming
+class on_publish(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=201)
+
+        chapterid = request.GET.get('scheduleid', '')
+        providerid = request.GET.get('providerid', '')
+        sessionKey = request.GET.get('sessionKey', '')
+
+        if chapterid == '' or providerid == '' or sessionKey == '':
+            HttpResponse(status=404)
+        else:
+            HttpResponse(status=201)
+
+        chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)
+        if chapterObj:
+            chapterObj = chapterObj[0]
+            providerObj = getProviderFromChapterId(chapterId)
+            if providerid == providerObj.id and sessionkey == chapterObj.sessionkey:
+                HttpResponse(status=201)
+            else:
+               HttpResponse(status=404) 
+        else:
+            HttpResponse(status=404)
+
+# Authenticate live streaming view by user
+class on_play(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        #userDevice = parse_user_agents(request)
+        #print(userDevice)
+        return HttpResponse(status=201)
+
+# Authenticate live streaming view by user
+class on_publish_done(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        print("on_publish_done called")
+        if request.user.is_authenticated:
+            print("on_publish_done:Authenticated")
+        else:
+            print("on_publish_done:Not Authenticated")
+        return HttpResponse(status=201)
+
 
 def getActiveSchedules(providerId):
     scheduleObj = models.Schedule.objects.filter(provider_id=providerId)
@@ -88,7 +139,7 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
             scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
 
         if scheduleObj :
@@ -209,7 +260,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["machine"] = scheduleObj.system
     dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
     dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
-    dictObj["live"] = False
+    dictObj["live"] = True
     return dictObj
 
 def getStreamUrl(streamname):
@@ -223,7 +274,6 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
-
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
@@ -233,22 +283,25 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
         else:
             kwargs["offuscate"] = False
 
+        userString = '?'
         if request.user.is_staff:
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
-            #scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+            userString = userString + 'provider='+str(providerObj.id) + '&'
+            scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
             kwargs["isOwner"] = 'yes'
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
             scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
             kwargs["isOwner"] = 'no'
+            userString = userString+'student='+str(studentObj.id)+'&'
         if not scheduleObj:
             return Http404()
         scheduleObj = scheduleObj[0]
-        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
         return super().get(request, scheduleid, *args, **kwargs)
 
 
@@ -324,6 +377,8 @@ class captureState(generic.TemplateView):
         scheduleObj.running = state
         if 'streamName' in dictBody:
             scheduleObj.streamname = dictBody["streamName"]
+        if 'streamKey' in dictBody:
+            scheduleObj.streamkey = dictBody["streamKey"]
         scheduleObj.save()
 
         return HttpResponseNoContent()

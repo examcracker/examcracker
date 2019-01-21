@@ -13,7 +13,7 @@ root.setLevel(logging.INFO)
 ch = logging.StreamHandler(sys.stdout)
 root.addHandler(ch)
 
-pusher = pysher.Pusher('app key','put cluser code here')
+pusher = pysher.Pusher('3ff394e3371be28d8abd','ap2')
 
 def  my_func(*args, **kwargs):
     print("processing Args:", args)
