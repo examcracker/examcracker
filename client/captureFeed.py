@@ -35,6 +35,8 @@ class captureFeed:
         self.mediaServerApp = None
         self.liveStreamName = ''
         self.liveFlag = False
+
+        self.ffmpegProcLive = None
     
     def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName):
         self.mediaServer = mediaServer
@@ -51,19 +53,21 @@ class captureFeed:
 
         if self.mediaServer != None and self.liveFlag == True:
             rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName
-            print(rtmpUrl)
-            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vcodec','libx264' , '-acodec', 'aac' ,'-f' , 'flv' , rtmpUrl], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.LOG.debug(rtmpUrl)
+            self.ffmpegProcLive = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vcodec','libx264' , '-acodec', 'aac' ,'-f' , 'flv' , rtmpUrl], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
+        #else:
+            #self.LOG.info("Live streaming flag is false")
+        if self.videoFramerate:
+            self.LOG.info("Start capturing")
+            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
-            print("Live streaming flag is false")
-            if self.videoFramerate:
-                self.LOG.info("Start capturing")
-                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-            else:
-                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
     def stopCapturing(self):
     	try:
+            if self.ffmpegProcLive:
+                os.kill(self.ffmpegProcLive.pid, signal.CTRL_BREAK_EVENT)
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
     	except Exception as ex:
             self.LOG.error("Exception in killing ffmpeg process: ", str(ex))
