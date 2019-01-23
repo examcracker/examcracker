@@ -22,6 +22,7 @@ class captureFeed:
 
         self.videoResolution = config.get("config","videoResolution")
         self.videoFramerate = config.get("config","videoFramerate")
+        self.captureBitRate = config.get("config","captureBitRate")
 
         self.outputFolder = config.get("config","outputFolder")
         self.loglevel = config.get("config","loglevel")
@@ -49,20 +50,20 @@ class captureFeed:
 
     def startCapturing(self):
 
-        self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_') + '.mp4')
-
+        self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
         if self.mediaServer != None and self.liveFlag == True:
+            self.outputFileName = self.outputFileName.replace('\\','/')
             rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName
             self.LOG.debug(rtmpUrl)
-            self.ffmpegProcLive = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vcodec','libx264' , '-acodec', 'aac' ,'-f' , 'flv' , rtmpUrl], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v \'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
-        #else:
-            #self.LOG.info("Live streaming flag is false")
-        if self.videoFramerate:
-            self.LOG.info("Start capturing")
-            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
         else:
-            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.LOG.info("Live streaming flag is false")
+            if self.videoFramerate:
+                self.LOG.info("Start capturing")
+                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            else:
+                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
     def stopCapturing(self):
     	try:
