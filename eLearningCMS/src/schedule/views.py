@@ -92,6 +92,12 @@ class on_publish_done(generic.TemplateView):
             print("on_publish_done:Not Authenticated")
         return HttpResponse(status=201)
 
+# Authenticate live streaming view by user
+class on_play_done(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=201)
 
 def getActiveSchedules(providerId):
     scheduleObj = models.Schedule.objects.filter(provider_id=providerId)
@@ -266,8 +272,8 @@ def createDictSchedule(scheduleObj, command):
 def getStreamUrl(streamname):
     hlsurl = 'http://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
     return hlsurl
-
-class playStream(LoginRequiredMixin, generic.TemplateView):
+#LoginRequiredMixin
+class playStream(generic.TemplateView):
     template_name="playSchedule.html"
     http_method_names = ['get']
 
@@ -282,6 +288,10 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             kwargs["offuscate"] = True
         else:
             kwargs["offuscate"] = False
+        scheduleObj = scheduleObj[0]
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
+        kwargs["isOwner"] = 'yes'
+        return super().get(request, scheduleid, *args, **kwargs)
 
         userString = '?'
         if request.user.is_staff:
