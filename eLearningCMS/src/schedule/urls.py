@@ -15,5 +15,4 @@ urlpatterns = [
      path('on_play', views.on_play.as_view(), name="on_play"),
      path('on_publish', views.on_publish.as_view(), name="on_publish"),
      path('on_publish_done', views.on_publish_done.as_view(), name="on_publish_done"),
-     path('on_play_done', views.on_play_done.as_view(), name="on_play_done"),
 ]

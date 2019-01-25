@@ -92,13 +92,6 @@ class on_publish_done(generic.TemplateView):
             print("on_publish_done:Not Authenticated")
         return HttpResponse(status=201)
 
-# Authenticate live streaming view by user
-class on_play_done(generic.TemplateView):
-    http_method_names = ['get']
-
-    def get(self, request, *args, **kwargs):
-        return HttpResponse(status=201)
-
 def getActiveSchedules(providerId):
     scheduleObj = models.Schedule.objects.filter(provider_id=providerId)
     activeCount = 0
