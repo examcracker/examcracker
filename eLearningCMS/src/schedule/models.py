@@ -1,6 +1,7 @@
 from django.db import models
 import provider
 import course
+import student
 
 # Create your models here.
 
@@ -17,3 +18,7 @@ class Schedule(models.Model):
     streamkey = models.CharField(default='',max_length=256)
     streamname = models.CharField(default='',max_length=256)
 
+class Schedule_liveaccess(models.Model):
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
+    student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
+    ip = models.CharField(default='', max_length=100)

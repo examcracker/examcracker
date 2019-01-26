@@ -51,33 +51,57 @@ class on_publish(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         return HttpResponse(status=201)
 
-        chapterid = request.GET.get('scheduleid', '')
+        scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
-        sessionKey = request.GET.get('sessionKey', '')
+        #sessionKey = request.GET.get('sessionKey', '')
 
-        if chapterid == '' or providerid == '' or sessionKey == '':
-            HttpResponse(status=404)
-        else:
-            HttpResponse(status=201)
+        if scheduleid == '' or providerid == '':
+            return HttpResponse(status=404)
 
-        chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)
-        if chapterObj:
-            chapterObj = chapterObj[0]
-            providerObj = getProviderFromChapterId(chapterId)
-            if providerid == providerObj.id and sessionkey == chapterObj.sessionkey:
-                HttpResponse(status=201)
-            else:
-               HttpResponse(status=404) 
-        else:
-            HttpResponse(status=404)
+        scheduleObj = models.Schedule.objects.filter(provider_id=providerId,id=scheduleid)
+        if not scheduleObj:
+            return HttpResponse(status=404)
+        scheduleObj = scheduleObj[0]
+
+        # clear stream_access table for this schedule id
+        schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleObj.id)
+        schedule_liveaccessObj.delete()
+        return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
 class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
+        return HttpResponse(status=201)
+        
+        scheduleid = request.GET.get('scheduleid', '')
+        providerid = request.GET.get('providerid', '')
+        studentid = request.GET.get('studentid', '')
+        ipaddr = request.GET.get('addr', '')
+        schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
+        if scheduleid == '' and studentid == '' and providerid == '':
+            if not schedule_liveaccessObj:
+                return HttpResponse(status=404)
+
+        scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
+        # allow provider to play this stream
+        if providerid != '' and scheduleObj.provider_id == providerid:
+            return HttpResponse(status=201)
+      
+        if studentid == '':
+            return HttpResponse(status=404)
+
+        schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleObj.id,student_id=studentid)
+
+        if schedule_liveaccessObj :
+            schedule_liveaccessObj = schedule_liveaccessObj[0]
+            if schedule_liveaccessObj.ip != ipaddr:
+                return HttpResponse(status=404)
         #userDevice = parse_user_agents(request)
         #print(userDevice)
+        # 1. check ip address in table and ip coming from media server
+        # 2. check that stream is played from browser PC or tablet or mobile
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
@@ -85,11 +109,6 @@ class on_publish_done(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        print("on_publish_done called")
-        if request.user.is_authenticated:
-            print("on_publish_done:Authenticated")
-        else:
-            print("on_publish_done:Not Authenticated")
         return HttpResponse(status=201)
 
 def getActiveSchedules(providerId):
@@ -265,6 +284,7 @@ def createDictSchedule(scheduleObj, command):
 def getStreamUrl(streamname):
     hlsurl = 'http://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
     return hlsurl
+
 #LoginRequiredMixin
 class playStream(generic.TemplateView):
     template_name="playSchedule.html"
@@ -273,6 +293,7 @@ class playStream(generic.TemplateView):
     def get(self, request, scheduleid, *args, **kwargs):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
+        
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
@@ -281,7 +302,9 @@ class playStream(generic.TemplateView):
             kwargs["offuscate"] = True
         else:
             kwargs["offuscate"] = False
+
         scheduleObj = scheduleObj[0]
+
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
         kwargs["isOwner"] = 'yes'
         return super().get(request, scheduleid, *args, **kwargs)
@@ -290,20 +313,38 @@ class playStream(generic.TemplateView):
         if request.user.is_staff:
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
-            userString = userString + 'provider='+str(providerObj.id) + '&'
-            scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
+            userString = userString + 'providerid='+str(providerObj.id) + '&'
+            if scheduleObj.provider_id != providerObj.id:
+                return Http404()
             kwargs["isOwner"] = 'yes'
         else:
-            # Get live events of enrolled courses
+            # check if student is enrolled for this schedule
+            courseChapterObj = course.models.CourseChapter.objects.filter(id=scheduleObj.chapter_id)
+            if not courseChapterObj:
+                return Http404()
+            courseChapterObj = courseChapterObj[0]
+
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
-            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id)
+
+            if not enrolledCourseObj:
+                return Http404()
+
             kwargs["isOwner"] = 'no'
-            userString = userString+'student='+str(studentObj.id)+'&'
-        if not scheduleObj:
-            return Http404()
-        scheduleObj = scheduleObj[0]
+            userString = userString+'studentid='+str(studentObj.id)+'&'
+
+            # delete all access enteries for this student for this schedule
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleObj.id,student_id=studentObj.id)
+            schedule_liveaccessObj.delete()
+
+            # add new IP entry for this student in schedule access table
+            ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
+            schedule_liveaccessObj = models.Schedule_liveaccess()
+            schedule_liveaccessObj.ip = ip
+            schedule_liveaccessObj.schedule_id = scheduleObj.id
+            schedule_liveaccessObj.student_id = studentObj.id
+            schedule_liveaccessObj.save()
+            
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
         return super().get(request, scheduleid, *args, **kwargs)
 
