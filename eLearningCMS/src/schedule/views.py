@@ -282,7 +282,7 @@ def createDictSchedule(scheduleObj, command):
     return dictObj
 
 def getStreamUrl(streamname):
-    hlsurl = 'http://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
+    hlsurl = 'https://' + settings.MEDIA_SERVER_IP + ':' + settings.MEDIA_SERVER_HTTP_PORT + '/hls/' + streamname + '.m3u8'
     return hlsurl
 
 #LoginRequiredMixin
