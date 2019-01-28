@@ -36,8 +36,6 @@ class captureFeed:
         self.mediaServerApp = None
         self.liveStreamName = ''
         self.liveFlag = False
-
-        self.ffmpegProcLive = None
     
     def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName):
         self.mediaServer = mediaServer
@@ -69,11 +67,22 @@ class captureFeed:
 
     def stopCapturing(self):
     	try:
-            if self.ffmpegProcLive:
-                os.kill(self.ffmpegProcLive.pid, signal.CTRL_BREAK_EVENT)
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+            waitCount = 0
+            retryCount = 0
+            while self.ffmpegProc.poll() is None:
+                time.sleep(0.5)
+                waitCount += 1
+                if waitCount > 60:
+                    if retryCount < 4:
+                        os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+                        retryCount += 1
+                    else:
+                        self.LOG.error("Not able to kill ffmpeg process")
+                        break
+                    waitCount = 0
     	except Exception as ex:
-            self.LOG.error("Exception in killing ffmpeg process: ", str(ex))
+            self.LOG.error("Exception in killing ffmpeg process: "+ str(ex))
 			
 	
 	

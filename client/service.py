@@ -203,6 +203,10 @@ class ClientService(object):
         for root, dirs, files in os.walk(self.outputFolder):
             for file_ in files:
                 try:
+                    extension = file.split('.')[-1]
+                    if extension != 'mp4':
+                        LOG.debug ("Skipping delete since file is not mp4: " + str(file))
+                        continue
                     full_path = os.path.join(root, file_)
                     stat = os.stat(full_path)
                     if stat.st_mtime <= time_in_secs:
