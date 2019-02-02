@@ -16,7 +16,6 @@ def getHost():
     return settings.ALLOWED_HOSTS[0]
 
 def sendMail(toEmail, emailSubj,emailBody):
-    return
     msg = MIMEMultipart()
     msg['From'] = settings.EMAIL_HOST_USER
     msg['To'] = toEmail
