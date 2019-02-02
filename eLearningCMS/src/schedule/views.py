@@ -79,8 +79,6 @@ class on_play(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         #return HttpResponse(status=201)
-        
-
         ipaddr = request.GET.get('addr', '')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
         if schedule_liveaccessObj:
@@ -333,7 +331,10 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
-
+        if settings.DEBUG:
+            kwargs["debug"] = "on"
+        else:
+            kwargs["debug"] = "off"
         if OFUSCATE_JW:
             kwargs["offuscate"] = True
         else:

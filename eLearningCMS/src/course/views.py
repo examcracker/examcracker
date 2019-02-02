@@ -239,7 +239,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             kwargs["offuscate"] = True
         else:
             kwargs["offuscate"] = False
-
+        if settings.DEBUG:
+            kwargs["debug"] = "on"
+        else:
+            kwargs["debug"] = "off"
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
         checkPublished = True
         if len(courseChapterObj) == 0:

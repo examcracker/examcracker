@@ -105,7 +105,12 @@
     function update() {
       var durationdiff = durationplayed - lastdurationsent;
       lastdurationsent = durationplayed;
-      var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
+      var isDebug = "{{debug}}"
+      var url = window.location.protocol + "//" + window.location.hostname;
+      if (isDebug == "on") {
+          url = url + ":" + window.location.port;
+      }
+      url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
       client.get(url)
             .then(function (data) {})
             .catch(function (error) {alert(error);});
@@ -128,7 +133,12 @@
               tracktime = 1;
             } else {
               var deviceJSON = "DUMMYSTRING";
-              var url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/access/allow/{{user.id}}/" + deviceJSON;
+              var isDebug = "{{debug}}"
+              var url = window.location.protocol + "//" + window.location.hostname;
+              if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+              }
+              url = url + "/access/allow/{{user.id}}/" + deviceJSON;
               var xmlHttp = new XMLHttpRequest();
               xmlHttp.open("GET", url, false);
               xmlHttp.send(null);
