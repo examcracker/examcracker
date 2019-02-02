@@ -91,11 +91,13 @@ class on_play(generic.TemplateView):
                 else:
                     return HttpResponse(status=201)
             else:
+                print('scheduleid , studentid, providerid didnt come , but allowed ipaddr present')
                 return HttpResponse(status=201)
 
         scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
         # allow provider to play this stream
         if providerid != '' and scheduleObj.provider_id == providerid:
+            print('I am provider and authenticated with ipaddr')
             return HttpResponse(status=201)
         elif studentid != '':
             schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleObj.id,student_id=studentid)
@@ -104,6 +106,7 @@ class on_play(generic.TemplateView):
                 if schedule_liveaccessObj.ip != ipaddr:
                     return HttpResponse(status=404)
                 else:
+                    print('I am student and authenticated with ipaddr')
                     return HttpResponse(status=201)
             else:
                 return HttpResponse(status=404)
