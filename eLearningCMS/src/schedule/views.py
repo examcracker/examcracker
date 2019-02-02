@@ -80,7 +80,7 @@ class on_play(generic.TemplateView):
         studentid = request.GET.get('studentid', '')
         ipaddr = request.GET.get('addr', '')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
-        print(ipaddr)
+        #print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
             schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
             if not schedule_liveaccessObj:
@@ -97,21 +97,18 @@ class on_play(generic.TemplateView):
         # allow provider to play this stream
         if providerid != '' and scheduleObj.provider_id == providerid:
             return HttpResponse(status=201)
-      
-        if studentid == '':
-            return HttpResponse(status=404)
-
-        schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleObj.id,student_id=studentid)
-
-        if schedule_liveaccessObj :
-            schedule_liveaccessObj = schedule_liveaccessObj[0]
-            if schedule_liveaccessObj.ip != ipaddr:
+        elif studentid != '':
+            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleObj.id,student_id=studentid)
+            if schedule_liveaccessObj :
+                schedule_liveaccessObj = schedule_liveaccessObj[0]
+                if schedule_liveaccessObj.ip != ipaddr:
+                    return HttpResponse(status=404)
+                else:
+                    return HttpResponse(status=201)
+            else:
                 return HttpResponse(status=404)
-        #userDevice = parse_user_agents(request)
-        #print(userDevice)
-        # 1. check ip address in table and ip coming from media server
-        # 2. check that stream is played from browser PC or tablet or mobile
-        return HttpResponse(status=201)
+        else:
+            return HttpResponse(status=404)
 
 # Authenticate live streaming view by user
 class on_publish_done(generic.TemplateView):
