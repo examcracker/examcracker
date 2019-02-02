@@ -73,16 +73,25 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        return HttpResponse(status=201)
+        #return HttpResponse(status=201)
         
         scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
         studentid = request.GET.get('studentid', '')
         ipaddr = request.GET.get('addr', '')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
+        print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
             if not schedule_liveaccessObj:
-                return HttpResponse(status=404)
+                # for provider check streamkey as ip address
+                scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
+                if not scheduleObj:
+                    return HttpResponse(status=404)
+                else:
+                    return HttpResponse(status=201)
+            else:
+                return HttpResponse(status=201)
 
         scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
         # allow provider to play this stream
@@ -302,15 +311,20 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             kwargs["offuscate"] = True
         else:
             kwargs["offuscate"] = False
-
+        
+        ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
+        
         scheduleObj = scheduleObj[0]
         userString = '?'
         if request.user.is_staff:
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
-            userString = userString + 'providerid='+str(providerObj.id) + '&'
             if scheduleObj.provider_id != providerObj.id:
                 return Http404()
+            
+            scheduleObj.streamkey = ip
+            scheduleObj.save()
+            userString = userString + 'providerid='+str(providerObj.id) + '&'
             kwargs["isOwner"] = 'yes'
         else:
             # check if student is enrolled for this schedule
@@ -338,7 +352,6 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             schedule_liveaccessObj.delete()
 
             # add new IP entry for this student in schedule access table
-            ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
             schedule_liveaccessObj = models.Schedule_liveaccess()
             schedule_liveaccessObj.ip = ip
             schedule_liveaccessObj.schedule_id = scheduleObj.id
