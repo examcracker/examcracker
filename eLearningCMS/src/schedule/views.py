@@ -85,11 +85,14 @@ class on_play(generic.TemplateView):
         studentid = request.GET.get('studentid', '')
         ipaddr = request.GET.get('addr', '')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
+        if schedule_liveaccessObj:
+            return HttpResponse(status=201)
         #print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
             scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
             if scheduleObj:
                 return HttpResponse(status=201)
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
             else:
@@ -106,12 +109,15 @@ class on_play(generic.TemplateView):
                 #print('ipaddr match')
                 #return HttpResponse(status=201)
         # allow provider to play this stream
-        if providerid != '' :
-            scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
-            if scheduleObj.provider_id == providerid:
+        #if providerid != '' :
+        #    scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
+        #    if scheduleObj:
+        #        return HttpResponse(status=201)
+            #scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
+            #if scheduleObj.provider_id == providerid:
             #print('I am provider and authenticated with ipaddr')
-                return HttpResponse(status=201)
-        elif studentid != '':
+            #    return HttpResponse(status=201)
+        if studentid != '':
             schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
             if schedule_liveaccessObj :
                 schedule_liveaccessObj = schedule_liveaccessObj[0]
@@ -125,6 +131,10 @@ class on_play(generic.TemplateView):
                 #print('student: ipadd not authenticated ')
                 #print(ipaddr)
                 return HttpResponse(status=404)
+        elif providerid != '' :
+            scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
+            if scheduleObj:
+                return HttpResponse(status=201)
         else:
             #print('student: studentid is blank')
             return HttpResponse(status=404)
