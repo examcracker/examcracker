@@ -358,11 +358,11 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             schedule_liveaccessObj.delete()
 
             # add new IP entry for this student in schedule access table
-            schedule_liveaccessObj = models.Schedule_liveaccess()
-            schedule_liveaccessObj.ip = ip
-            schedule_liveaccessObj.schedule_id = scheduleObj.id
-            schedule_liveaccessObj.student_id = studentObj.id
-            schedule_liveaccessObj.save()
+            schedule_liveaccessObjNew = models.Schedule_liveaccess()
+            schedule_liveaccessObjNew.ip = ip
+            schedule_liveaccessObjNew.schedule_id = scheduleObj.id
+            schedule_liveaccessObjNew.student_id = studentObj.id
+            schedule_liveaccessObjNew.save()
             
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
         return super().get(request, scheduleid, *args, **kwargs)
