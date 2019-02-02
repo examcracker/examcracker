@@ -87,11 +87,13 @@ class on_play(generic.TemplateView):
                 # for provider check streamkey as ip address
                 scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
                 if not scheduleObj:
+                    print('streakkey not matched')
                     return HttpResponse(status=404)
                 else:
+                    print('streakkey matched')
                     return HttpResponse(status=201)
             else:
-                print('scheduleid , studentid, providerid didnt come , but allowed ipaddr present')
+                print('ipaddr match')
                 return HttpResponse(status=201)
 
         scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
@@ -104,13 +106,17 @@ class on_play(generic.TemplateView):
             if schedule_liveaccessObj :
                 schedule_liveaccessObj = schedule_liveaccessObj[0]
                 if schedule_liveaccessObj.ip != ipaddr:
+                    print('student, Auth failed')
                     return HttpResponse(status=404)
                 else:
                     print('I am student and authenticated with ipaddr')
                     return HttpResponse(status=201)
             else:
+                print('student: ipadd not authenticated ')
+                print(ipaddr)
                 return HttpResponse(status=404)
         else:
+            print('student: studentid is blank')
             return HttpResponse(status=404)
 
 # Authenticate live streaming view by user
