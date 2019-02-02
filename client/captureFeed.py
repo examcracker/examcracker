@@ -6,6 +6,7 @@ import subprocess
 import signal
 import time
 import logger
+import ctypes
 
 class captureFeed:
     def __init__(self, clientId, configPath, ffmpegPath):
@@ -36,6 +37,8 @@ class captureFeed:
         self.mediaServerApp = None
         self.liveStreamName = ''
         self.liveFlag = False
+
+        self.kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
     
     def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName):
         self.mediaServer = mediaServer
@@ -55,13 +58,22 @@ class captureFeed:
             rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName+'?providerid='+self.clientId+'&scheduleid='+scheduleid
             self.LOG.debug(rtmpUrl)
             self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-            #self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac','-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
+            #time.sleep(2)
+            #result = self.kernel32.AttachConsole(self.ffmpegProc.pid)
+            #if not result:
+            #    err = ctypes.get_last_error()
+            #    self.LOG.error("Could not allocate console. Error code:" + err)
         else:
             self.LOG.info("Live streaming flag is false")
             if self.videoFramerate:
                 self.LOG.info("Start capturing")
-                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, shell=True)
+                time.sleep(2)
+                result = self.kernel32.AttachConsole(self.ffmpegProc.pid)
+                if not result:
+                    err = ctypes.get_last_error()
+                    self.LOG.error("Could not allocate console. Error code:" + err)
             else:
                 self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
@@ -87,7 +99,7 @@ class captureFeed:
 	
 	
 def main():
-    capture = captureFeed("testId")
+    capture = captureFeed("testId", r"C:\backup\examcracker\client\arguments.cfg", r"C:\backup\examcracker\client\ffmpeg.exe")
     print ("Start capturing video")
     capture.startCapturing()
     time.sleep(capture.timeout)
