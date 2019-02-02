@@ -49,7 +49,7 @@ class on_publish(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        return HttpResponse(status=201)
+        #return HttpResponse(status=201)
 
         scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
