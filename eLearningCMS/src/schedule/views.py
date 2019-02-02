@@ -80,13 +80,14 @@ class on_play(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         #return HttpResponse(status=201)
         
-        scheduleid = request.GET.get('scheduleid', '')
-        providerid = request.GET.get('providerid', '')
-        studentid = request.GET.get('studentid', '')
+
         ipaddr = request.GET.get('addr', '')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
         if schedule_liveaccessObj:
             return HttpResponse(status=201)
+        scheduleid = request.GET.get('scheduleid', '')
+        providerid = request.GET.get('providerid', '')
+        studentid = request.GET.get('studentid', '')
         #print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
             scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
