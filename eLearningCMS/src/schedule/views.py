@@ -133,8 +133,8 @@ def isAnyEventLive(request):
     else:
         # Get live events of enrolled courses
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-        courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=course_id))
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).values('course_id')
+        courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
         scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
 
     if scheduleObj :
@@ -156,8 +156,8 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).values('course_id')
+            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj)).values('id')
             scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
 
         if scheduleObj :
@@ -287,14 +287,13 @@ def getStreamUrl(streamname):
     return hlsurl
 
 #LoginRequiredMixin
-class playStream(generic.TemplateView):
+class playStream(LoginRequiredMixin,generic.TemplateView):
     template_name="playSchedule.html"
     http_method_names = ['get']
 
     def get(self, request, scheduleid, *args, **kwargs):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
-        
         OFUSCATE_JW = True
         if not scheduleObj:
             return Http404()
@@ -305,11 +304,6 @@ class playStream(generic.TemplateView):
             kwargs["offuscate"] = False
 
         scheduleObj = scheduleObj[0]
-
-        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname)
-        kwargs["isOwner"] = 'yes'
-        return super().get(request, scheduleid, *args, **kwargs)
-
         userString = '?'
         if request.user.is_staff:
             # Get Live events of Scheduled courses
@@ -327,11 +321,16 @@ class playStream(generic.TemplateView):
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id)
-
             if not enrolledCourseObj:
                 return Http404()
-
+            enrolledCourseObj = enrolledCourseObj[0]
+            kwargs["enrolledcourseid"] = enrolledCourseObj.course_id
             kwargs["isOwner"] = 'no'
+            # dont do device verification if restricted viewing for student is set
+            if enrolledCourseObj.viewhours > 0:
+                kwargs["disableaccess"] = True
+            else:
+                kwargs["disableaccess"] = False
             userString = userString+'studentid='+str(studentObj.id)+'&'
 
             # delete all access enteries for this student for this schedule
