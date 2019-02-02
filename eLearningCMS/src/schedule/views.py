@@ -87,41 +87,46 @@ class on_play(generic.TemplateView):
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
         #print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
-            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
-            if not schedule_liveaccessObj:
-                # for provider check streamkey as ip address
-                scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
-                if not scheduleObj:
-                    print('streakkey not matched')
-                    return HttpResponse(status=404)
-                else:
-                    print('streakkey matched')
-                    return HttpResponse(status=201)
-            else:
-                print('ipaddr match')
+            scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
+            if scheduleObj:
                 return HttpResponse(status=201)
-
-        scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
+            if not schedule_liveaccessObj:
+                return HttpResponse(status=404)
+            else:
+                return HttpResponse(status=201)
+                # for provider check streamkey as ip address
+                #scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
+                #if not scheduleObj:
+                    #print('streakkey not matched')
+                #   return HttpResponse(status=404)
+                #else:
+                    #print('streakkey matched')
+                    #return HttpResponse(status=201)
+            #else:
+                #print('ipaddr match')
+                #return HttpResponse(status=201)
         # allow provider to play this stream
-        if providerid != '' and scheduleObj.provider_id == providerid:
-            print('I am provider and authenticated with ipaddr')
-            return HttpResponse(status=201)
+        if providerid != '' :
+            scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
+            if scheduleObj.provider_id == providerid:
+            #print('I am provider and authenticated with ipaddr')
+                return HttpResponse(status=201)
         elif studentid != '':
-            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleObj.id,student_id=studentid)
+            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
             if schedule_liveaccessObj :
                 schedule_liveaccessObj = schedule_liveaccessObj[0]
                 if schedule_liveaccessObj.ip != ipaddr:
-                    print('student, Auth failed')
+                    #print('student, Auth failed')
                     return HttpResponse(status=404)
                 else:
-                    print('I am student and authenticated with ipaddr')
+                    #print('I am student and authenticated with ipaddr')
                     return HttpResponse(status=201)
             else:
-                print('student: ipadd not authenticated ')
-                print(ipaddr)
+                #print('student: ipadd not authenticated ')
+                #print(ipaddr)
                 return HttpResponse(status=404)
         else:
-            print('student: studentid is blank')
+            #print('student: studentid is blank')
             return HttpResponse(status=404)
 
 # Authenticate live streaming view by user
