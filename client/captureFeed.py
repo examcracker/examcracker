@@ -59,16 +59,16 @@ class captureFeed:
             self.LOG.debug(rtmpUrl)
             self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
-            #time.sleep(2)
-            #result = self.kernel32.AttachConsole(self.ffmpegProc.pid)
-            #if not result:
-            #    err = ctypes.get_last_error()
-            #    self.LOG.error("Could not allocate console. Error code:" + err)
+            time.sleep(2)
+            result = self.kernel32.AttachConsole(self.ffmpegProc.pid)
+            if not result:
+                err = ctypes.get_last_error()
+                self.LOG.error("Could not allocate console. Error code:" + err)
         else:
             self.LOG.info("Live streaming flag is false")
             if self.videoFramerate:
                 self.LOG.info("Start capturing")
-                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, shell=True)
+                self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
                 time.sleep(2)
                 result = self.kernel32.AttachConsole(self.ffmpegProc.pid)
                 if not result:
@@ -79,7 +79,9 @@ class captureFeed:
 
     def stopCapturing(self):
     	try:
+            #self.kernel32.FreeConsole()
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+            self.kernel32.FreeConsole()
             waitCount = 0
             retryCount = 0
             while self.ffmpegProc.poll() is None:
@@ -87,6 +89,7 @@ class captureFeed:
                 waitCount += 1
                 if waitCount > 60:
                     if retryCount < 4:
+                        self.kernel32.FreeConsole()
                         os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
                         retryCount += 1
                     else:

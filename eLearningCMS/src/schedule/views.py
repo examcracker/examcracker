@@ -54,23 +54,16 @@ class on_publish(generic.TemplateView):
         scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
         #sessionKey = request.GET.get('sessionKey', '')
-        print('on_publish, scheduleid : '+scheduleid)
-        print('on_publish, providerid : '+providerid)
         if scheduleid == '' or providerid == '':
-            print('on_publish, failed : ')
             return HttpResponse(status=404)
-
         scheduleObj = models.Schedule.objects.filter(id=scheduleid,provider_id=providerid)
         if not scheduleObj:
-            print('on_publish, failed : ')
             return HttpResponse(status=404)
         scheduleObj = scheduleObj[0]
-
         # clear stream_access table for this schedule id
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleObj.id)
         if schedule_liveaccessObj:
             schedule_liveaccessObj.delete()
-        print('on_publish, passed : ')
         return HttpResponse(status=201)
 
 # Authenticate live streaming view by user
