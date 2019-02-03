@@ -93,7 +93,6 @@
 
     var coreapi = window.coreapi;
     var client = new coreapi.Client();
-
     var lasttime = 0;
     var lastplayertime = 0;
     var now = 0;
@@ -111,9 +110,11 @@
           url = url + ":" + window.location.port;
       }
       url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
-      client.get(url)
-            .then(function (data) {})
-            .catch(function (error) {alert(error);});
+      var xmlHttp = new XMLHttpRequest();
+	  xmlHttp.open("GET", url, false);
+      //client.get(url)
+      //      .then(function (data) {})
+      //      .catch(function (error) {alert(error);});
     }
 
     window.onload = function() {
