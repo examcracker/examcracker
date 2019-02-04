@@ -111,7 +111,8 @@
       }
       url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
       var xmlHttp = new XMLHttpRequest();
-	  xmlHttp.open("GET", url, false);
+	  xmlHttp.open("GET", url, true);
+      xmlHttp.send()
       //client.get(url)
       //      .then(function (data) {})
       //      .catch(function (error) {alert(error);});
