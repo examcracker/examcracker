@@ -24,7 +24,7 @@
 
                    console.log(durationplayed);
 
-                   if(durationplayed - lastdurationplayed > 6) {
+                   if(durationplayed - lastdurationplayed > 60) {
                      lastdurationplayed = durationplayed;
                      update();
                    }
@@ -41,7 +41,7 @@
                   lastplayertime = nowplayer;
                   lasttime = now;
 
-                  if(durationplayed - lastdurationplayed > 6) {
+                  if(durationplayed - lastdurationplayed > 60) {
                      lastdurationplayed = durationplayed;
                      update();
                    }
