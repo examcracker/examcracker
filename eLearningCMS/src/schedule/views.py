@@ -359,7 +359,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             if not enrolledCourseObj:
                 return Http404()
             enrolledCourseObj = enrolledCourseObj[0]
-            kwargs["enrolledcourseid"] = enrolledCourseObj.course_id
+            kwargs["enrolledcourseid"] = enrolledCourseObj.id
             kwargs["isOwner"] = 'no'
             # dont do device verification if restricted viewing for student is set
             if enrolledCourseObj.viewhours > 0:
