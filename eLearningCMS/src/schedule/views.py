@@ -335,9 +335,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         
         ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
         http_x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        x_forwarded_for = request.META.get('X_FORWARDED_FOR')
         ip2 = request.META.get('REMOTE_ADDR')
-        print('x_forwarded_for is: ' + x_forwarded_for)
         print('http_x_forwarded_for is: ' + http_x_forwarded_for)
         print ('ip2 is : ' + ip2)
         scheduleObj = scheduleObj[0]
