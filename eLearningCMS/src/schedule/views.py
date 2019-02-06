@@ -334,10 +334,10 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             kwargs["offuscate"] = False
         
         ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
-        http_x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        ip2 = request.META.get('REMOTE_ADDR')
-        print('http_x_forwarded_for is: ' + http_x_forwarded_for)
-        print ('ip2 is : ' + ip2)
+        #http_x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        #ip2 = request.META.get('REMOTE_ADDR')
+        #print('http_x_forwarded_for is: ' + http_x_forwarded_for)
+        #print ('ip2 is : ' + ip2)
         scheduleObj = scheduleObj[0]
         userString = '?'
         if request.user.is_staff:
@@ -381,9 +381,12 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             schedule_liveaccessObjNew.schedule_id = scheduleObj.id
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
-            
+        #HttpResponse.set_cookie('GyaanHiveIP', ip)
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
-        return super().get(request, scheduleid, *args, **kwargs)
+        response = super().get(request, scheduleid, *args, **kwargs)
+        response.set_cookie('GyaanHiveIP', ip)
+        return response
+        #return super().get(request, scheduleid, *args, **kwargs)
 
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
