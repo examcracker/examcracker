@@ -334,7 +334,10 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             kwargs["offuscate"] = False
         
         ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
-        
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        ip2 = request.META.get('REMOTE_ADDR')
+        print('x_forwarded_for is: ' + x_forwarded_for)
+        print ('ip2 is : ' + ip2)
         scheduleObj = scheduleObj[0]
         userString = '?'
         if request.user.is_staff:
