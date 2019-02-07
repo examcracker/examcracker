@@ -73,6 +73,10 @@ class on_play(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         #return HttpResponse(status=201)
         ipaddr = request.GET.get('addr', '')
+        if "GyaanHiveIP" in request.COOKIES.keys():
+            print('cookie in on_play found : ' + request.COOKIES.get('GyaanHiveIP'))
+        else:
+            print ('cookie not found')
         schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
         if schedule_liveaccessObj:
             return HttpResponse(status=201)
