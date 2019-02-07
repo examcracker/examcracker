@@ -71,7 +71,7 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        #return HttpResponse(status=201)
+        return HttpResponse(status=201)
         ipaddr = request.GET.get('addr', '')
         if "GyaanHiveIP" in request.COOKIES.keys():
             print('cookie in on_play found : ' + request.COOKIES.get('GyaanHiveIP'))
