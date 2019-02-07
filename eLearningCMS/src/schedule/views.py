@@ -79,6 +79,7 @@ class on_play(generic.TemplateView):
         scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
         studentid = request.GET.get('studentid', '')
+        userIP = request.GET.get('userIP', '')
         #print(ipaddr)
         if scheduleid == '' and studentid == '' and providerid == '':
             scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
@@ -382,7 +383,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
         #HttpResponse.set_cookie('GyaanHiveIP', ip)
-        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         response = super().get(request, scheduleid, *args, **kwargs)
         response.set_cookie('GyaanHiveIP', ip)
         return response
