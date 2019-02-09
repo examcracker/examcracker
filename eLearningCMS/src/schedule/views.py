@@ -357,6 +357,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             # add new IP entry for this student in schedule access table
             schedule_liveaccessObjNew = models.Schedule_liveaccess()
             schedule_liveaccessObjNew.ip = ip
+            schedule_liveaccessObjNew.nginxip = ''
             schedule_liveaccessObjNew.schedule_id = scheduleObj.id
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
