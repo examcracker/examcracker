@@ -85,8 +85,10 @@ class on_play(generic.TemplateView):
                 return HttpResponse(status=201)
             schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(nginxip=ipaddr)
             if schedule_liveaccessObj:
+                print('Going inside when nothing comes and nginx ip not added')
                 return HttpResponse(status=201)
         elif studentid != '' and scheduleid != '' and userIP != '':
+            print('Going inside when studentid, scheduleid and userIP are not blank')
             schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
@@ -94,9 +96,12 @@ class on_play(generic.TemplateView):
             if schedule_liveaccessObj.nginxip == ipaddr and schedule_liveaccessObj.ip == userIP:
                 return HttpResponse(status=201)
             if schedule_liveaccessObj.nginxip == '':
+                print('Going inside when studentid comes and nginx is blank')
                 schedule_liveaccessObj.nginxip = ipaddr
                 schedule_liveaccessObj.save()
                 return HttpResponse(status=201)
+            else:
+                print('Going inside when studentid comes and nginx ip not blank')
         elif providerid != '' and scheduleid != '' and userIP != '':
             scheduleObj = models.Schedule.objects.filter(id=scheduleid,provider_id=providerid)
             if not scheduleObj:
