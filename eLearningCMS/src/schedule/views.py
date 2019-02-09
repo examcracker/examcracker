@@ -89,7 +89,7 @@ class on_play(generic.TemplateView):
                 return HttpResponse(status=201)
         elif studentid != '' and scheduleid != '' and userIP != '':
             print('Going inside when studentid, scheduleid and userIP are not blank')
-            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleid,student_id=studentid)
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
             schedule_liveaccessObj = schedule_liveaccessObj[0]
