@@ -4,3 +4,4 @@ from . import models
 # Register your models here.
 admin.site.register(models.Session)
 admin.site.register(models.Provider)
+admin.site.register(models.System)
