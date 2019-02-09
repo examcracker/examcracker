@@ -91,7 +91,7 @@ class on_play(generic.TemplateView):
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
             schedule_liveaccessObj = schedule_liveaccessObj[0]
-           if schedule_liveaccessObj.nginxip == ipaddr and schedule_liveaccessObj.ip == userIP:
+            if schedule_liveaccessObj.nginxip == ipaddr and schedule_liveaccessObj.ip == userIP:
                 return HttpResponse(status=201)
             if schedule_liveaccessObj.nginxip == '':
                 schedule_liveaccessObj.nginxip = ipaddr
