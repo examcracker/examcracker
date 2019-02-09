@@ -22,3 +22,4 @@ class Schedule_liveaccess(models.Model):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)
     ip = models.CharField(default='', max_length=100)
+    nginxip = models.CharField(default='', max_length=100)
