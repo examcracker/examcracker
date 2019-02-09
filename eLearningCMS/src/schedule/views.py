@@ -71,70 +71,44 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        return HttpResponse(status=201)
+        #return HttpResponse(status=201)
+        # this is client ip received from nginx
         ipaddr = request.GET.get('addr', '')
-        if "GyaanHiveIP" in request.COOKIES.keys():
-            print('cookie in on_play found : ' + request.COOKIES.get('GyaanHiveIP'))
-        else:
-            print ('cookie not found')
-        schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
-        if schedule_liveaccessObj:
-            return HttpResponse(status=201)
         scheduleid = request.GET.get('scheduleid', '')
         providerid = request.GET.get('providerid', '')
         studentid = request.GET.get('studentid', '')
         userIP = request.GET.get('userIP', '')
-        #print(ipaddr)
+        
         if scheduleid == '' and studentid == '' and providerid == '':
             scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
             if scheduleObj:
                 return HttpResponse(status=201)
-            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(ip=ipaddr)
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(nginxip=ipaddr)
+            if schedule_liveaccessObj:
+                return HttpResponse(status=201)
+        elif studentid != '' and scheduleid != '' and userIP != '':
+            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
-            else:
+            schedule_liveaccessObj = schedule_liveaccessObj[0]
+           if schedule_liveaccessObj.nginxip == ipaddr and schedule_liveaccessObj.ip == userIP:
                 return HttpResponse(status=201)
-                # for provider check streamkey as ip address
-                #scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
-                #if not scheduleObj:
-                    #print('streakkey not matched')
-                #   return HttpResponse(status=404)
-                #else:
-                    #print('streakkey matched')
-                    #return HttpResponse(status=201)
-            #else:
-                #print('ipaddr match')
-                #return HttpResponse(status=201)
-        # allow provider to play this stream
-        #if providerid != '' :
-        #    scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
-        #    if scheduleObj:
-        #        return HttpResponse(status=201)
-            #scheduleObj = models.Schedule.objects.filter(id=scheduleid)[0]
-            #if scheduleObj.provider_id == providerid:
-            #print('I am provider and authenticated with ipaddr')
-            #    return HttpResponse(status=201)
-        if studentid != '':
-            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
-            if schedule_liveaccessObj :
-                schedule_liveaccessObj = schedule_liveaccessObj[0]
-                if schedule_liveaccessObj.ip != ipaddr:
-                    #print('student, Auth failed')
-                    return HttpResponse(status=404)
-                else:
-                    #print('I am student and authenticated with ipaddr')
-                    return HttpResponse(status=201)
-            else:
-                #print('student: ipadd not authenticated ')
-                #print(ipaddr)
+            if schedule_liveaccessObj.nginxip == '':
+                schedule_liveaccessObj.nginxip = ipaddr
+                schedule_liveaccessObj.save()
+                return HttpResponse(status=201)
+        elif providerid != '' and scheduleid != '' and userIP != '':
+            scheduleObj = models.Schedule.objects.filter(id=scheduleid,provider_id=providerid)
+            if not scheduleObj:
                 return HttpResponse(status=404)
-        elif providerid != '' :
-            scheduleObj = models.Schedule.objects.filter(streamkey=ipaddr)
-            if scheduleObj:
+            scheduleObj = scheduleObj[0]
+            if scheduleObj.streamkey == ipaddr:
                 return HttpResponse(status=201)
-        else:
-            #print('student: studentid is blank')
-            return HttpResponse(status=404)
+            if scheduleObj.streamkey == '':
+                scheduleObj.streamkey = ipaddr
+                scheduleObj.save()
+                return HttpResponse(status=201)
+        return HttpResponse(status=404)
 
 # Authenticate live streaming view by user
 class on_publish_done(generic.TemplateView):
@@ -351,7 +325,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             if scheduleObj.provider_id != providerObj.id:
                 return Http404()
             
-            scheduleObj.streamkey = ip
+            scheduleObj.streamkey = ''
             scheduleObj.save()
             userString = userString + 'providerid='+str(providerObj.id) + '&'
             kwargs["isOwner"] = 'yes'
