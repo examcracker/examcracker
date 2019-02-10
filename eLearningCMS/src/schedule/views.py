@@ -71,7 +71,7 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        #return HttpResponse(status=201)
+        return HttpResponse(status=201)
         # this is client ip received from nginx
         ipaddr = request.GET.get('addr', '')
         scheduleid = request.GET.get('scheduleid', '')
