@@ -81,6 +81,7 @@ class captureFeed:
     	try:
             #self.kernel32.FreeConsole()
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+            time.sleep(5)
             self.kernel32.FreeConsole()
             waitCount = 0
             retryCount = 0
@@ -89,13 +90,17 @@ class captureFeed:
                 waitCount += 1
                 if waitCount > 60:
                     if retryCount < 4:
-                        self.kernel32.FreeConsole()
+                        self.LOG.info("Retring to kill the ffmpeg process")
                         os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
+                        time.sleep(3)
+                        self.LOG.info("Retring to free the console")
+                        self.kernel32.FreeConsole()
                         retryCount += 1
                     else:
                         self.LOG.error("Not able to kill ffmpeg process")
                         break
                     waitCount = 0
+					
     	except Exception as ex:
             self.LOG.error("Exception in killing ffmpeg process: "+ str(ex))
 			
