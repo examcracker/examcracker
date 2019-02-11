@@ -71,7 +71,7 @@ class on_play(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        return HttpResponse(status=201)
+        #return HttpResponse(status=201)
         # this is client ip received from nginx
         ipaddr = request.GET.get('addr', '')
         scheduleid = request.GET.get('scheduleid', '')
@@ -87,7 +87,7 @@ class on_play(generic.TemplateView):
             if schedule_liveaccessObj:
                 return HttpResponse(status=201)
         elif studentid != '' and scheduleid != '' and userIP != '':
-            schedule_liveaccessObj = schedule_liveaccessObj.filter(schedule_id=scheduleid,student_id=studentid)
+            schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleid,student_id=studentid)
             if not schedule_liveaccessObj:
                 return HttpResponse(status=404)
             schedule_liveaccessObj = schedule_liveaccessObj[0]
@@ -357,6 +357,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             # add new IP entry for this student in schedule access table
             schedule_liveaccessObjNew = models.Schedule_liveaccess()
             schedule_liveaccessObjNew.ip = ip
+            schedule_liveaccessObjNew.nginxip = ''
             schedule_liveaccessObjNew.schedule_id = scheduleObj.id
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
