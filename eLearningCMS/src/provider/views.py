@@ -560,3 +560,33 @@ class liveCapture(showProviderHome):
 
         kwargs['mycourses'] = courseDict
         return super().get(request, *args, **kwargs)
+
+class addStudents(showProviderHome):
+    template_name = "add_students.html"
+    http_method_names = ['get', 'post']
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        providerObj = getProvider(request)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        providerObj = getProvider(request)
+        emails = self.request.POST.get('email', '')
+
+        subject = 'Welcome to Gyaanhive'
+        emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + '. Sign up at https://www.gyaanhive.com/signup to register.\n\
+                    If you have already registered, then log in at https://www.gyaanhive.com/login to view the courses.\
+                    Thanks\n\
+                    Gyaanhive Team'
+
+        for email in str.split(emails, ','):
+            profiles.signals.sendMail(email, subject, emailBody)
+
+        return super().get(request, *args, **kwargs)
+

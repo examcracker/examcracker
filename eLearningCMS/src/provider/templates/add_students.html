@@ -1,0 +1,22 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+  <!-- Breadcrumbs-->
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Enroll Students</li>
+  </ol>
+  
+  <form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<p>
+	    <h3>Enter emails separated by ,</h3>
+		<input type="email" name="email" multiple cols=100 rows=5><br><br>
+		<button type="submit">Submit</button><br>
+	</p>
+</form>
+
+{% endblock active %}
