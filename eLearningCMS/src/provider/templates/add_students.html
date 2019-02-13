@@ -15,6 +15,11 @@
 	<p>
 	    <h3>Enter emails separated by ,</h3>
 		<input type="email" name="email" multiple cols=100 rows=5><br><br>
+		<select name = "courselist">
+		{% for c in courses %}
+			<option value = "{{c.id}}">{{c.name}}</option>
+		{% endfor %}
+        </select>
 		<button type="submit">Submit</button><br>
 	</p>
 </form>

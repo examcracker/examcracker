@@ -570,6 +570,8 @@ class addStudents(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
+        courses = course.models.Course.objects.filter(provider_id=providerObj.id)
+        kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -579,14 +581,21 @@ class addStudents(showProviderHome):
         providerObj = getProvider(request)
         emails = self.request.POST.get('email', '')
 
+        courseid = self.request.POST.get('courselist', '')
+        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+
+        courseUrl = 'https://www.gyaanhive.com/course/coursePage/' + str(courseObj.id)
+
         subject = 'Welcome to Gyaanhive'
-        emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + '. Sign up at https://www.gyaanhive.com/signup to register.\n\
-                    If you have already registered, then log in at https://www.gyaanhive.com/login to view the courses.\
-                    Thanks\n\
-                    Gyaanhive Team'
+        emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + ' for ' + courseObj.name + '.\
+Sign up at https://www.gyaanhive.com to register. After registering login and Join at ' + courseUrl + ' after registering and login.\n\
+If you have already enrolled, then view the contents at ' + courseUrl + '\n.\
+Thanks\n\
+Gyaanhive Team'
 
         for email in str.split(emails, ','):
-            profiles.signals.sendMail(email, subject, emailBody)
+            if len(email) > 0:
+                profiles.signals.sendMail(email, subject, emailBody)
 
-        return super().get(request, *args, **kwargs)
+        return self.get(request, *args, **kwargs)
 
