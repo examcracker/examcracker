@@ -148,7 +148,7 @@ def saveSession(videoKey, chapterId, publish=False):
     GyaanHive Team\
     '
 
-    sendMail(userObj.email, subject,emailBody)
+    #sendMail(userObj.email, subject,emailBody)
 
 def saveLiveSessionInt(videoKey, chapterId):
     saveSession(videoKey, chapterId)
