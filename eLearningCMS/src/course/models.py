@@ -82,7 +82,7 @@ def course_directory_path(instance, filename):
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=1000,blank=True)
     provider = models.ForeignKey(provider.models.Provider, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     exam = models.CharField(choices=EXAM_CHOICES, max_length=10)
@@ -100,6 +100,7 @@ class EnrolledCourse(models.Model):
     sessions = models.CharField(max_length=10000, blank=True)
     viewhours = models.IntegerField(default=0) # 0 => no restriction in view hours
     completedminutes = models.FloatField(default=0)
+    chapteraccess = models.CharField(max_length=1000, blank=True) # => Blank means full course access
 
 class SessionStats(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)

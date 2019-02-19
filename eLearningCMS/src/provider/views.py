@@ -20,6 +20,7 @@ import os
 from examcracker import thread
 import cdn
 import schedule
+from django.contrib.auth import get_user_model
 
 def getDelimiter(subject=False):
     if not subject:
@@ -568,34 +569,122 @@ class addStudents(showProviderHome):
     def get(self, request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-
+        # get courses and chapters of all the courses to enroll students for courses
+        # with module level access.
+        
         providerObj = getProvider(request)
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
+        courseDict = []
+        for c in courses:
+            courseDetails = course.algos.getCourseDetails(c.id, False,False)
+            courseInfo = {}
+            courseInfo['name'] = c.name
+            courseInfo['cid'] = c.id
+            courseInfo['details'] = courseDetails
+            courseDict.append(courseInfo)
+
+        kwargs['mycourses'] = courseDict
+            
+            # store 3 info , name, subject and id
         kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        
         if not request.user.is_staff:
             raise Http404()
 
         providerObj = getProvider(request)
         emails = self.request.POST.get('email', '')
+        viewhours = self.request.POST.get('viewHours','')
+        emailsList = str.split(emails, ',')
+        if len(emailsList) == 0:
+            return self.get(request, *args, **kwargs)
+        
+        fullCourses = ''
+        if 'course' in self.request.POST:
+            fullCourses = self.request.POST.getlist('course')
+        modules = [k for k, v in request.POST.items() if k.startswith('modules')]
 
-        courseid = self.request.POST.get('courselist', '')
-        courseObj = course.models.Course.objects.filter(id=courseid)[0]
+        if len(modules) == 0 and fullCourses == '':
+            return self.get(request, *args, **kwargs)
 
-        courseUrl = 'https://www.gyaanhive.com/course/coursePage/' + str(courseObj.id)
+        #return self.get(request, *args, **kwargs)
+        # create users and students from emails
+        User = get_user_model()
+        for email in emailsList:
+            userObj = User.objects.filter(email=email)
+            studentObj = ''
+            if not userObj:
+                userObj = User(email = email)
+                userObj.set_password(email)
+                userObj.name = email
+                userObj.save()
+                studentObj = student.models.Student()
+                studentObj.user_id = userObj.id
+                studentObj.save()
+            else:
+                userObj = userObj[0]
 
-        subject = 'Welcome to Gyaanhive'
-        emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + ' for ' + courseObj.name + '.\
-Sign up at https://www.gyaanhive.com to register. After registering login and Join at ' + courseUrl + ' after registering and login.\n\
-If you have already enrolled, then view the contents at ' + courseUrl + '\n.\
-Thanks\n\
-Gyaanhive Team'
+            if userObj.is_staff or userObj.is_superuser:
+                continue
+            else:
+                studentObj = student.models.Student.objects.filter(user_id=userObj.id)
+                if not studentObj:
+                    studentObj = student.models.Student()
+                    studentObj.user_id = userObj.id
+                    studentObj.save()
+                else:
+                    studentObj = studentObj[0]
+            # now enroll courses and modules to this student
+            # first enroll full course
+            subject = 'Welcome to Gyaanhive'
+            emailBody = 'Dear Student,\nYou have been enrolled as a student by ' + request.user.name + '.\
+                    Login with your email as password. Kindly change your password from profile page.\n\
+                    Checkout your dashboard for the enrolled coursed.\n.\
+                    Thanks\n\
+                    Gyaanhive Team'
 
-        for email in str.split(emails, ','):
-            if len(email) > 0:
-                profiles.signals.sendMail(email, subject, emailBody)
+            for fc in fullCourses:
+                enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=fc,student_id=studentObj.id)
+                if not enrolledCourse:
+                    enrolledCourse = course.models.EnrolledCourse()
+                    enrolledCourse.course_id = fc
+                    enrolledCourse.student_id = studentObj.id
+                    if viewhours != '':
+                        enrolledCourse.viewhours = viewhours
+                    enrolledCourse.save()
+            for module in modules:
+                chapterList = request.POST.getlist(module)
+                courseid = module.split('modules')[1]
+                enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseid,student_id=studentObj.id)
+                if enrolledCourse:
+                    continue
+                enrolledCourse = course.models.EnrolledCourse()
+                enrolledCourse.course_id = courseid
+                enrolledCourse.student_id = studentObj.id
+                if viewhours != '':
+                    enrolledCourse.viewhours = viewhours
+                enrolledCourse.chapteraccess = list(map(int,chapterList))
+                enrolledCourse.save()
+                # creare user
+            profiles.signals.sendMail(email, subject, emailBody)
 
+
+        #courseid = self.request.POST.get('courselist', '')
+        #courseObj = course.models.Course.objects.filter(id=courseid)[0]
+
+        #courseUrl = 'https://www.gyaanhive.com/course/coursePage/' + str(courseObj.id)
+
+        #subject = 'Welcome to Gyaanhive'
+        #emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + ' for ' + courseObj.name + '.\
+#Sign up at https://www.gyaanhive.com to register. After registering login and Join at ' + courseUrl + ' after registering and login.\n\
+#If you have already enrolled, then view the contents at ' + courseUrl + '\n.\
+#Thanks\n\
+#Gyaanhive Team'
+
+#        for email in str.split(emails, ','):
+#            if len(email) > 0:
+#                profiles.signals.sendMail(email, subject, emailBody)
         return self.get(request, *args, **kwargs)
 

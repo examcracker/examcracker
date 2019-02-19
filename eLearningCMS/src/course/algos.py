@@ -124,7 +124,7 @@ def getAllChildCoursesbyExamsFromProvider(pId):
 def parseAndGetSubjectsArr(subjects):
     return subjects.split(SUBJECTS_DELIMITER)
 
-def getCourseDetails(courseid, published=True):
+def getCourseDetails(courseid, published=True, getSessions = True):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     courseDetails = {}
     # take map of course name to course details
@@ -135,19 +135,19 @@ def getCourseDetails(courseid, published=True):
             subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
             i=0
             while(i<len(subjects)):
-                courseDetails[subjects[i]] = getCourseDetailsBySubject(child,subjects[i],published)
+                courseDetails[subjects[i]] = getCourseDetailsBySubject(child,subjects[i],published, getSessions)
                 i=i+1
     else:
         childCourseObj = models.Course.objects.filter(id=courseid)[0]
         subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
         i=0
         while(i<len(subjects)):
-            courseDetails[subjects[i]] = getCourseDetailsBySubject(courseid,subjects[i],published)
+            courseDetails[subjects[i]] = getCourseDetailsBySubject(courseid,subjects[i],published, getSessions)
             i=i+1
     return courseDetails
 
 # get course content
-def getCourseDetailsBySubject(courseid, subj, onlyPublished = True):
+def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions = True):
     courseDetailMap = []
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
     if len(chapters) > 0:
@@ -169,7 +169,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True):
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
             i = 0
-            while (i < len(sessions)):
+            while ( (i < len(sessions)) and (getSessions == True) ):
                 sess = sessions[i]
                 pos = i
                 i = i+1

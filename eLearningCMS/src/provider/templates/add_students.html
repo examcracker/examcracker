@@ -7,14 +7,80 @@
     <li class="breadcrumb-item">
       <a href="#">Dashboard</a>
     </li>
-    <li class="breadcrumb-item active">Enroll Students</li>
+    <li class="breadcrumb-item active">Enroll Students with course and modules</li>
   </ol>
   
   <form action="" method="post" enctype="multipart/form-data">
 	{% csrf_token %}
+	<div class="form-group row">
+    <label for="inputEmail3" class="col-sm-2 col-form-label">Emails (separated by comma)</label>
+    <div class="col-sm-10">
+			<input type="text" class="form-control" name="email" id="inputEmail3" placeholder="Email">
+    </div>
+	</div>
+	<div class="form-group row">
+    <label for="inputEmail3" class="col-sm-2 col-form-label">View hours</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours">
+    </div>
+	</div>
+	<h4>Assign Course and permissions</h2>
+		<br>
+	{% for course in mycourses %}
+<div class="container">
+
+	<div class="row">
+		<div class="col-6">
+		<h4> Enroll for Course {{ course.name }}<strong>
+	</strong></h4>
+	</div>
+	<div class="col-3">
+			<input class="form-check-input" name="course" type="checkbox" id="gridCheck1" value="{{course.cid}}" onclick="enableDisableModules(this);">
+			<small class="form-text text-muted">click here for full course access. If clicked , module level access will be ignored</small>
+	</div>
+</div>
+		<div class="row">
+		{% for sub, subDetails in course.details.items %}
+		
+		<div class="col-sm-3">
+				<h5>{{sub}}</h5>
+		{% for subject in subDetails %}
+	
+			{% for chapId, chapDetails in subject.items %}
+			<div class="row-sm-3">
+					<input class="form-check-input" name="modules{{course.cid}}" type="checkbox" id="gridCheck1" value="{{chapId}}" >
+					<label class="form-check-label" for="gridCheck1">
+							{{ chapDetails.name }}
+					</label>
+				</div>
+
+			{% endfor %}	
+	
+	{% endfor %}
+</div>
+	{% endfor %}
+	</div>
+	<hr>
+</div>
+{% endfor %}
+
+
+	<!--
+	<div class="form-group row">
+		<div class="col-sm-2">Select courses : </div>
+		{% for c in courses %}
+    <div class="col-sm-3">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="courses" value = "{{c.id}}" id="gridCheck1">
+        <label class="form-check-label" for="gridCheck1">
+          {{c.name}}
+        </label>
+      </div>
+		</div>
+		{% endfor %}
+	</div>
+
 	<p>
-	    <h3>Enter emails separated by ,</h3>
-		<input type="email" name="email" multiple cols=100 rows=5><br><br>
 		<select name = "courselist">
 		{% for c in courses %}
 			<option value = "{{c.id}}">{{c.name}}</option>
@@ -22,6 +88,23 @@
         </select>
 		<button type="submit">Submit</button><br>
 	</p>
+-->
+<button type="submit">Submit</button><br>
 </form>
 
+<script>
+	function enableDisableModules(e) {
+  $(this).click(function() {
+		var value = e.value;
+		var modules = document.getElementsByName('modules'+value);
+		for(i = 0;i < modules.length; i++) {
+    	if (e.checked == true) {
+      	modules[i].disabled = true;
+    	} else {
+      	modules[i].disabled = false;
+    	}
+		}
+  });
+}
+</script>
 {% endblock active %}
