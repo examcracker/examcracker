@@ -124,7 +124,7 @@ def getAllChildCoursesbyExamsFromProvider(pId):
 def parseAndGetSubjectsArr(subjects):
     return subjects.split(SUBJECTS_DELIMITER)
 
-def getCourseDetails(courseid, published=True, getSessions = True):
+def getCourseDetails(courseid, published=True, getSessions = True,allowedModules = []):
     courseObj = models.LinkCourse.objects.filter(parent_id=courseid)
     courseDetails = {}
     # take map of course name to course details
@@ -142,17 +142,22 @@ def getCourseDetails(courseid, published=True, getSessions = True):
         subjects = parseAndGetSubjectsArr(childCourseObj.subjects)
         i=0
         while(i<len(subjects)):
-            courseDetails[subjects[i]] = getCourseDetailsBySubject(courseid,subjects[i],published, getSessions)
+            courseDetails[subjects[i]] = getCourseDetailsBySubject(courseid,subjects[i],published, getSessions,allowedModules)
             i=i+1
     return courseDetails
 
 # get course content
-def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions = True):
+def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions = True,allowedModules=[]):
     courseDetailMap = []
+    allowedModulesList = allowedModules
+    if len(allowedModules)>0:
+      allowedModulesList = list(map(int,allowedModules))
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
     if len(chapters) > 0:
         courseIdNameMap = {}
         for item in chapters:
+            if len(allowedModulesList) > 0 and (item.id not in allowedModulesList):
+              continue
             courseIdNameMap[item.id] = item.name
             sessions = strToIntList(item.sessions)
             publishedStatus = strToBoolList(item.published)

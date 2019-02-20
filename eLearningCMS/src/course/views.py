@@ -131,9 +131,9 @@ class courseDetails(fillCartCourses):
 
         ##########################################################
 
-        courseDetailMap = algos.getCourseDetails(id,checkPublished)
-        kwargs["course_detail"] = courseDetailMap
-
+        
+        allowedModules = []
+        populateCourseDetails = False
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
@@ -146,7 +146,8 @@ class courseDetails(fillCartCourses):
                     durationCompleted = 0
                     totalDuration = 0
                     enrolledCourseObj = enrolledCourse[0]
-
+                    if enrolledCourseObj.chapteraccess != '':
+                        allowedModules = enrolledCourseObj.chapteraccess.split(',')
                     # check for view hours restriction
                     if enrolledCourseObj.viewhours > 0:
                         courseOverviewMap["viewhours"] = enrolledCourseObj.viewhours
@@ -157,7 +158,10 @@ class courseDetails(fillCartCourses):
                         for s in sessionsPlayed:
                             sessionObj = provider.models.Session.objects.filter(id=s)[0]
                             durationCompleted = durationCompleted + sessionObj.duration
+                    populateCourseDetails = True
 
+                    courseDetailMap = algos.getCourseDetails(id,checkPublished,True,allowedModules)
+                    kwargs["course_detail"] = courseDetailMap
                     for subj in courseDetailMap:
                         chapters = courseDetailMap[subj]
                         for chapDetails in chapters:
@@ -176,7 +180,9 @@ class courseDetails(fillCartCourses):
             else:
                 if courseObj.provider_id == providerObj.id:
                     courseOverviewMap["myCourse"] = True
-
+        if populateCourseDetails == False:
+            courseDetailMap = algos.getCourseDetails(id,checkPublished,True,allowedModules)
+            kwargs["course_detail"] = courseDetailMap
         courseOverviewMap["Name"] = courseObj.name
         courseOverviewMap["Description"] = courseObj.description
         courseOverviewMap["Subject"] = courseObj.subjects

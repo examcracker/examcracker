@@ -665,7 +665,8 @@ class addStudents(showProviderHome):
                 enrolledCourse.student_id = studentObj.id
                 if viewhours != '':
                     enrolledCourse.viewhours = viewhours
-                enrolledCourse.chapteraccess = list(map(int,chapterList))
+                modulelist = list(map(int,chapterList))
+                enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()
                 # creare user
             profiles.signals.sendMail(email, subject, emailBody)
