@@ -123,6 +123,7 @@ def on_message(message):
             if 'videoKey' in res.keys():
                 responseDict["result"] = api.status_upload_sucess
                 responseDict["videokey"] = res["videoKey"]
+                httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
             else:
                 responseDict["result"] = api.status_upload_fail
                 responseDict["fail_response"] = res
@@ -130,7 +131,7 @@ def on_message(message):
             responseDict["chapterid"] = messageDict["chapterid"]
             responseDict["publish"] = messageDict["publish"]
             responseDict["id"] = messageDict["id"]
-            httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+            httpReq.send(serviceObj.url, "/cdn/uploadFileStatus/", json.dumps(responseDict))
             
         elif command == api.command_check_client_active:
             responseDict['result'] = api.status_client_active

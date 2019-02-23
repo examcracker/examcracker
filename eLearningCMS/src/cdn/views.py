@@ -39,6 +39,7 @@ User = get_user_model()
 
 command_upload_logs = 2
 command_get_recent_capture_file_details = 3
+command_upload_file = 4
 command_check_client_active = 5
 
 # methods to go here
@@ -280,6 +281,50 @@ class saveFileDetails(generic.TemplateView):
         else:
             fileDetObj = fileDetObj[0]
         fileDetObj.providerencryptedid = encryptedId
-        fileDetObj.state = state
+        fileDetObj.details = details
         fileDetObj.save()
         return schedule.views.HttpResponseNoContent()
+
+def sendUploadFileReq(scheduleId, machineName, fileName):
+    scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleId)[0]
+    providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
+
+    reqDict = {}
+    reqDict["filePath"] = fileName
+    reqDict["command"] = command_upload_file
+    reqDict["id"] = providerObj.encryptedid
+    reqDict["machine"] = machineName
+    reqDict["publish"] = scheduleObj.autopublish
+    reqDict["chapterid"] = scheduleObj.chapter_id
+
+    pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
+    pusherObj.trigger(str(providerObj.id), str(providerObj.id), reqDict)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def postUploadFile(request, scheduleId, machineName, fileName):
+    if not request.user.is_superuser:
+        return Response({"status":False})
+
+    sendUploadFileReq(scheduleId, machineName, fileName)
+    return Response({"status":True})
+
+class saveFileUpload(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        jsonObj = json.loads(request.body.decode())
+        encryptedId = jsonObj["id"]
+        details = request.body.decode()
+        fileUploadObj = models.FileUpload.objects.filter(providerencryptedid=encryptedId)
+        if len(fileUploadObj) == 0:
+            fileUploadObj = models.FileUpload()
+        else:
+            fileUploadObj = fileUploadObj[0]
+
+        fileUploadObj.providerencryptedid = encryptedId
+        fileUploadObj.status = details
+        fileUploadObj.save()
+        return schedule.views.HttpResponseNoContent()
+

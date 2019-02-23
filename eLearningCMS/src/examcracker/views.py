@@ -129,10 +129,12 @@ class DebugPage(generic.TemplateView, LoginRequiredMixin):
     def get(self, request, providerid, *args, **kwargs):
         if not request.user.is_superuser:
             raise Http404()
+
         providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
         fileObj = cdn.models.FileDetails.objects.filter(providerencryptedid=providerObj.encryptedid)
         stateObj = cdn.models.ClientState.objects.filter(providerencryptedid=providerObj.encryptedid)
         logObj = cdn.models.Logs.objects.filter(providerencryptedid=providerObj.encryptedid)
+        fileuploadObj = cdn.models.FileUpload.objects.filter(providerencryptedid=providerObj.encryptedid)
         system = provider.models.System.objects.filter(id=providerid)[0].name
 
         if len(fileObj) > 0:
@@ -141,6 +143,8 @@ class DebugPage(generic.TemplateView, LoginRequiredMixin):
             kwargs["clientstate"] = stateObj[0]
         if len(logObj) > 0:
             kwargs["log"] = logObj[0]
+        if len(fileuploadObj) > 0:
+            kwargs["fileupload"] = fileuploadObj[0]
 
         cdn.views.getLogData(request, providerid, system)
         cdn.views.getFileDetails(request, providerid, system)
@@ -148,3 +152,13 @@ class DebugPage(generic.TemplateView, LoginRequiredMixin):
         kwargs["providerid"] = providerid
         return super().get(request, *args, **kwargs)
 
+    def post(self, request, providerid, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise Http404()
+
+        scheduleid = request.POST.get('schedueid','')
+        filename = request.POST.get('filename','')
+        system = provider.models.System.objects.filter(id=providerid)[0].name
+
+        cdn.views.sendUploadFileReq(scheduleid, system, filename)
+        return self.get(request, providerid, *args, **kwargs)

@@ -17,3 +17,8 @@ class FileDetails(models.Model):
     details = models.CharField(max_length=100)
     when = models.DateTimeField(auto_now=True)
 
+class FileUpload(models.Model):
+    providerencryptedid = models.CharField(max_length=10)
+    status = models.CharField(max_length=100)
+    when = models.DateTimeField(auto_now=True)
+
