@@ -312,8 +312,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             checkPublished = False
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
-        if sessionObj.duration == 0:
-            raise Http404()
+        #if sessionObj.duration == 0:
+        #    raise Http404()
 
         kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished)
         kwargs["signedurl"] = cdn.views.getSignedUrl(sessionObj.videoKey)
