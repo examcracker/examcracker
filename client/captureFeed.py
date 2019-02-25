@@ -7,6 +7,7 @@ import signal
 import time
 import logger
 import ctypes
+import psutil
 
 class captureFeed:
     def __init__(self, clientId, configPath, ffmpegPath):
@@ -78,6 +79,15 @@ class captureFeed:
             else:
                 self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
+    def killProcessForcefully(self, pid):
+        try:
+            self.LOG.info("Killing ffmpeg process forcefully by psutil")
+            ffmpegHangProcess = psutil.Process(pid)
+            ffmpegHangProcess.terminate()
+
+        except Exception as ex:
+            self.LOG.error("Exception in killing ffmpeg process by psutil: "+ str(ex))
+
     def stopCapturing(self):
     	try:
             #self.kernel32.FreeConsole()
@@ -101,9 +111,13 @@ class captureFeed:
                         self.LOG.error("Not able to kill ffmpeg process")
                         break
                     waitCount = 0
+
+            if self.ffmpegProc.poll() is None:
+                killProcessForcefully(self.ffmpegProc.pid)
 					
     	except Exception as ex:
             self.LOG.error("Exception in killing ffmpeg process: "+ str(ex))
+            killProcessForcefully(self.ffmpegProc.pid)
 			
 	
 	

@@ -28,11 +28,32 @@ except ImportError:
 aes_key = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
 
-serviceObj = None
-systemname = platform.node()
-
 # Log file
 LOG = logger.getLogFile(__name__)
+
+class WindowsInhibitor:
+    '''Prevent OS sleep/hibernate in windows; code from:
+    https://github.com/h3llrais3r/Deluge-PreventSuspendPlus/blob/master/preventsuspendplus/core.py
+    API documentation:
+    https://msdn.microsoft.com/en-us/library/windows/desktop/aa373208(v=vs.85).aspx'''
+    ES_CONTINUOUS = 0x80000000
+    ES_SYSTEM_REQUIRED = 0x00000001
+
+    def __init__(self):
+        pass
+
+    def inhibit(self):
+        import ctypes
+        LOG.info("Preventing Windows from going to sleep")
+        ctypes.windll.kernel32.SetThreadExecutionState(WindowsInhibitor.ES_CONTINUOUS | WindowsInhibitor.ES_SYSTEM_REQUIRED)
+
+    def uninhibit(self):
+        import ctypes
+        LOG.info("Allowing Windows to go to sleep")
+        ctypes.windll.kernel32.SetThreadExecutionState(WindowsInhibitor.ES_CONTINUOUS)
+
+serviceObj = None
+systemname = platform.node()
 
 def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
@@ -45,12 +66,12 @@ def sendCaptureResponse(state, id, streamName=None):
 
 def on_message(message):
     LOG.info(str(message))
-
+    global serviceObj
     responseDict = {}
     # always add encrypted provider id in response
     responseDict["id"] = serviceObj.encryptedid
     messageDict = json.loads(message)
-    global serviceObj
+
 
     if "command" in messageDict.keys():
         machine = messageDict["machine"]
@@ -145,6 +166,20 @@ def connect_handler(data):
     channel = serviceObj.pusherobj.subscribe(str(serviceObj.clientid))
     channel.bind(str(serviceObj.clientid), on_message)
 
+def checkInternetConnection(hostname):
+	try:
+		# see if we can resolve the host name -- tells us if there is
+		# a DNS listening
+		host = socket.gethostbyname(hostname)
+		# connect to the host -- tells us if the host is actually
+		# reachable
+		s = socket.create_connection((host, 80), 2)
+		return True
+	except:
+		pass
+		
+	return False
+
 class ClientService(object):
 
     wsclient = None
@@ -184,8 +219,12 @@ class ClientService(object):
         self.ffmpegProcName = "ffmpeg.exe"
 
         self.uploadRetryCount = 5
+
+        self.internetCheckTimeout = 10*60 # 30 mins
        
         self.checkFolderInterval = 60*60*1 # 1 hours
+
+        self.TEST_REMOTE_SERVER = "www.google.com"
 
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
@@ -232,29 +271,52 @@ class ClientService(object):
         self.capture.startCapturing()
 
     def uploadFileToCDN(self, filePath):
-        LOG.info ("Uploading file to server: " + str(filePath))
-        retryCount = 0
-        uploadResponse = {}
-        if not os.path.isfile(filePath):
-            uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
-            return uploadResponse 
+        # Stopping windows to go in sleep mode while we upload a file
+        try:
+            osleep = WindowsInhibitor()
+            osleep.inhibit()
+            LOG.info ("Uploading file to server: " + str(filePath))
+            retryCount = 0
+            uploadResponse = {}
+            if not os.path.isfile(filePath):
+                uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
+                return uploadResponse 
 
-        if os.stat(filePath).st_size == 0:
-            uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+            if os.stat(filePath).st_size == 0:
+                uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+                return uploadResponse
+
+            while retryCount < self.uploadRetryCount:
+                try:
+                    uploadResponse = self.upload.uploadVideoJW(filePath)
+                    LOG.info ("Uploading done")
+                    LOG.debug("Video Server response: " + str(uploadResponse))
+                    break
+                except Exception as ex:
+                    retryCount += 1
+                    if retryCount < self.uploadRetryCount:
+                        internetCheckWait = 5
+                        loopCount = self.internetCheckTimeout/internetCheckWait
+                        status = checkInternetConnection(self.TEST_REMOTE_SERVER)
+                        while loopCount > 0 and status == False:
+                            time.sleep(internetCheckWait) 
+                            loopCount = loopCount - 1
+                            status = checkInternetConnection(self.TEST_REMOTE_SERVER)
+
+                        LOG.info("Internet conectivity status: " + str(status))
+
+                    LOG.error("Exception in uploading the file: " + str(ex))
+                    uploadResponse['fail_reason'] = str(ex)
+                    continue
             return uploadResponse
+        except Exception as ex:
+             LOG.error("Exception in uploading the file: " + str(ex))
+             uploadResponse['fail_reason'] = str(ex)
+             return uploadResponse
 
-        while retryCount < self.uploadRetryCount:
-            try:
-                uploadResponse = self.upload.uploadVideoJW(filePath)
-                LOG.info ("Uploading done")
-                LOG.debug("Video Server response: " + str(uploadResponse))
-                break
-            except Exception as ex:
-                LOG.error("Exception in uploading the file: " + str(ex))
-                uploadResponse['fail_reason'] = str(ex)
-                retryCount += 1
-                continue
-        return uploadResponse
+        finally:
+            osleep.uninhibit()
+
 
 
     def stopCapture(self):
@@ -267,8 +329,9 @@ class ClientService(object):
         self.timeout = 0
         self.capture.stopCapturing()
         time.sleep(5)
-        
+                
         uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
+
         return uploadResponse
 
     def run(self):
@@ -288,12 +351,18 @@ class ClientService(object):
         httpReq.send(self.url, "/schedule/systemName", json.dumps(initDict))
 
         waitCounterForCleaningFiles = self.checkFolderInterval
+        count = 0
         while True:
             time.sleep(1)
+            count += 1
+            if count > 1800:
+                LOG.info ("Client is running")
+                count = 0
+
             if self.capturing and self.timeout > 0:
                 timeDiff = int(round(time.time())) - self.captureStartTime
                 if timeDiff >= self.timeout:
-                    responseDict = {}
+                    responseDict = {}                                                        
                     LOG.info ("Timeout stopping the capturing")
                     sendCaptureResponse(False, self.encryptedid)
                     res = self.stopCapture()
