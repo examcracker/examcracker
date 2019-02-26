@@ -1,4 +1,4 @@
-from channels.generic.websocket import WebsocketConsumer
+#from channels.generic.websocket import WebsocketConsumer
 import json
 from . import api
 import cdn
@@ -6,7 +6,7 @@ import cdn
 # list of connected clients through web socket
 connectedConsumerClients = {}
 
-class ClientConsumer(WebsocketConsumer):
+class ClientConsumer():
     id = None
 
     def connect(self):

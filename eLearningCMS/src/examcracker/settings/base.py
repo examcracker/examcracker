@@ -124,7 +124,6 @@ INSTALLED_APPS = (
     'snowpenguin.django.recaptcha2',
     'paypal.standard.ipn',
     'django_user_agents',
-    'channels',
 
     # applications
     'profiles',
