@@ -355,6 +355,9 @@ class ClientService(object):
         while True:
             time.sleep(1)
             count += 1
+            if count > 900:
+                status = checkInternetConnection(self.TEST_REMOTE_SERVER)
+                LOG.info ("Client internet connection status: " + str(status))
             if count > 1800:
                 LOG.info ("Client is running")
                 count = 0
@@ -387,8 +390,14 @@ class ClientService(object):
 
 def main():
     global serviceObj
-    serviceObj = ClientService()
-    serviceObj.run()
+    while True:
+        try:
+            serviceObj = ClientService()
+            serviceObj.run()
+        except Exception as ex:
+            LOG.error("Exception in main function: " + str(ex))
+            time.sleep(60)
+            continue
 
 if __name__ == "__main__":
     main()
