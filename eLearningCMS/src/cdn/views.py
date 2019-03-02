@@ -43,7 +43,8 @@ command_upload_file = 4
 command_check_client_active = 5
 
 # methods to go here
-EXPIRY_BANDWIDTH = 3600*5
+#EXPIRY_BANDWIDTH = 3600*5
+EXPIRY_BANDWIDTH = 30
 
 def getJWClient():
     return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
