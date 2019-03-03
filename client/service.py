@@ -19,6 +19,7 @@ import logger
 import psutil
 from collections import deque
 import glob
+import socket
 
 try:
     import thread
@@ -226,6 +227,8 @@ class ClientService(object):
 
         self.TEST_REMOTE_SERVER = "www.google.com"
 
+        self.osleep = WindowsInhibitor()
+
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
             self.waitBeforeDelete = int(config.get("config", "waitBeforeDelete"))
@@ -256,6 +259,7 @@ class ClientService(object):
                     pass
 
     def checkAndKillProcess(self):
+        self.osleep.uninhibit()
         for proc in psutil.process_iter():
             # check whether the process name matches
             if proc.name() == self.ffmpegProcName:
@@ -266,6 +270,9 @@ class ClientService(object):
             LOG.warn ("Already capturing")
             return
 
+        # disable sleep
+        self.osleep.inhibit()
+
         self.capturing = True
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
@@ -273,8 +280,7 @@ class ClientService(object):
     def uploadFileToCDN(self, filePath):
         # Stopping windows to go in sleep mode while we upload a file
         try:
-            osleep = WindowsInhibitor()
-            osleep.inhibit()
+            self.osleep.inhibit()
             LOG.info ("Uploading file to server: " + str(filePath))
             retryCount = 0
             uploadResponse = {}
@@ -315,7 +321,7 @@ class ClientService(object):
              return uploadResponse
 
         finally:
-            osleep.uninhibit()
+            self.osleep.uninhibit()
 
 
 
@@ -355,7 +361,7 @@ class ClientService(object):
         while True:
             time.sleep(1)
             count += 1
-            if count > 900:
+            if (count % 900) ==  1:
                 status = checkInternetConnection(self.TEST_REMOTE_SERVER)
                 LOG.info ("Client internet connection status: " + str(status))
             if count > 1800:
@@ -395,6 +401,7 @@ def main():
             serviceObj = ClientService()
             serviceObj.run()
         except Exception as ex:
+            serviceObj.osleep.uninhibit()
             LOG.error("Exception in main function: " + str(ex))
             time.sleep(60)
             continue
