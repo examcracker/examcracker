@@ -30,6 +30,9 @@ class captureFeed:
         self.loglevel = config.get("config","loglevel")
 
         self.outputFileName = ''
+
+        self.ffmpegLogPath = os.path.join(self.dir_path, "Capturing.log")
+        self.ffmpegLog = None
 		
         # capturing timeout in seconds
         self.timeout = 30
@@ -59,7 +62,8 @@ class captureFeed:
             rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName+'?providerid='+self.clientId+'&scheduleid='+scheduleid
             self.LOG.debug(rtmpUrl)
             #self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'scale=854x480,setsar=1,yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-b', self.captureBitRate,'-vf', 'scale=720*406,setsar=1,yadif','-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[onfail=ignore]{}|[select=v,\'a:0\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.ffmpegLog = open(self.ffmpegLogPath, 'w')
+            self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-b', self.captureBitRate,'-vf', 'scale=720*406,setsar=1,yadif','-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[onfail=ignore]{}|[select=v,\'a:0\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP, stdout=self.ffmpegLog, stderr=self.ffmpegLog)
             #self.ffmpegProc = subprocess.Popen([self.ffmpegPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource,'-b', self.captureBitRate,'-filter_complex','[0:v]split=2[s0][s1];[s0]scale=1280*720,setsar=1,yadif[v0];[s1]scale=640x360,setsar=1,yadif[v1]','-threads', '2', '-map','[v0]','-map','[v1]','-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-map', '0:a','-f', 'tee', '-flags', '+global_header',r'[select=\'v:0,a\']{}|[select=\'v:0,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
             time.sleep(2)
@@ -98,6 +102,7 @@ class captureFeed:
             self.kernel32.FreeConsole()
             waitCount = 0
             retryCount = 0
+            
             while self.ffmpegProc.poll() is None:
                 time.sleep(0.5)
                 waitCount += 1
@@ -116,7 +121,8 @@ class captureFeed:
 
             if self.ffmpegProc.poll() is None:
                 killProcessForcefully(self.ffmpegProc.pid)
-					
+            
+            self.ffmpegLog.close()		
     	except Exception as ex:
             self.LOG.error("Exception in killing ffmpeg process: "+ str(ex))
             killProcessForcefully(self.ffmpegProc.pid)

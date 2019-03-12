@@ -20,6 +20,7 @@ import psutil
 from collections import deque
 import glob
 import socket
+import sendMail
 
 try:
     import thread
@@ -54,7 +55,8 @@ class WindowsInhibitor:
         ctypes.windll.kernel32.SetThreadExecutionState(WindowsInhibitor.ES_CONTINUOUS)
 
 serviceObj = None
-systemname = platform.node()
+#systemname = platform.node()
+systemname = "DESKTOP-GASTUIC"
 
 def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
@@ -335,6 +337,20 @@ class ClientService(object):
         self.timeout = 0
         self.capture.stopCapturing()
         time.sleep(5)
+
+        toAddr = 'heman.t021@gmail.com'
+        fromAddr = 'mygyaanhive@yahoo.com'
+        pwd = 'examcracker2018'
+        subject = 'Client Logs'
+        mailBody = 'Client logs are attached with this mail'
+        attachmentPath = self.capture.ffmpegLogPath
+
+        try:
+            sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
+            attachmentPath = logger.logFileName
+            sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
+        except Exception as ex:
+            LOG.error("Exception in sending mail: " + str(ex))
                 
         uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
 
@@ -401,8 +417,8 @@ def main():
             serviceObj = ClientService()
             serviceObj.run()
         except Exception as ex:
-            serviceObj.osleep.uninhibit()
             LOG.error("Exception in main function: " + str(ex))
+            serviceObj.osleep.uninhibit()
             time.sleep(60)
             continue
 
