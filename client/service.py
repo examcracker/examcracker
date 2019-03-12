@@ -55,8 +55,7 @@ class WindowsInhibitor:
         ctypes.windll.kernel32.SetThreadExecutionState(WindowsInhibitor.ES_CONTINUOUS)
 
 serviceObj = None
-#systemname = platform.node()
-systemname = "DESKTOP-GASTUIC"
+systemname = platform.node()
 
 def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
@@ -338,7 +337,7 @@ class ClientService(object):
         self.capture.stopCapturing()
         time.sleep(5)
 
-        toAddr = 'heman.t021@gmail.com'
+        toAddr = ['heman.t021@gmail.com', 'kunaldceit@gmail.com', 'kghoshnitk@gmail.com']
         fromAddr = 'mygyaanhive@yahoo.com'
         pwd = 'examcracker2018'
         subject = 'Client Logs'

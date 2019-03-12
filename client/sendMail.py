@@ -19,7 +19,7 @@ def sendEmail(toAddr, fromAddr, password, attachmentPath, subject, mailBody):
 	msg['From'] = fromAddr 
 
 	# storing the receivers email address 
-	msg['To'] = toAddr 
+	msg['To'] = ", ".join(toAddr) 
 
 	# storing the subject 
 	msg['Subject'] = subject
