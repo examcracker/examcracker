@@ -316,11 +316,15 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         #    raise Http404()
 
         kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished)
-        kwargs["signedurl"] = cdn.views.getSignedUrl(sessionObj.videoKey)
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
         kwargs["ContentHeading"] = 'Contents'
+
+        urldict = cdn.views.getSignedUrl(sessionObj.videoKey)
+        kwargs["jwid"] = sessionObj.videoKey
+        kwargs["expiry"] = urldict["expiry"]
+        kwargs["digest"] = urldict["digest"]
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 

@@ -119,12 +119,13 @@
     }
 
     window.onload = function() {
-        var offuscate = "{{offuscate}}";
+        // offuscate 1
+        var _0x4a30=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x6A\x77\x70\x6C\x61\x74\x66\x6F\x72\x6D\x2E\x63\x6F\x6D\x2F\x6D\x61\x6E\x69\x66\x65\x73\x74\x73\x2F","\x2E\x6D\x33\x75\x38"];var cdnBase=_0x4a30[0];var ext=_0x4a30[1]
 
         var isOwner = "{{isOwner}}";
         if (isOwner == "yes") {
             jwplayer("jwplayerDiv").setup({
-                file: "{{ signedurl }}"
+                file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
             });
         }  else {
             var accepted = 0;
@@ -148,10 +149,12 @@
             }
 
             if (accepted) {
-                jwplayer("jwplayerDiv").setup({file: "{{ signedurl }}"});
+                jwplayer("jwplayerDiv").setup({file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"});
+
                 if(tracktime) {
-				    var _0x4c4a=['log','position','abs'];(function(_0x2cefb1,_0x3d9021){var _0x1b18ed=function(_0x4f8ab3){while(--_0x4f8ab3){_0x2cefb1['push'](_0x2cefb1['shift']());}};_0x1b18ed(++_0x3d9021);}(_0x4c4a,0x1c0));var _0x3b15=function(_0x801e9f,_0x6902d1){_0x801e9f=_0x801e9f-0x0;var _0x37d4fb=_0x4c4a[_0x801e9f];return _0x37d4fb;};jwplayer()['on']('time',_0x2d0b60=>{now=getUTCTimeSecs();nowplayer=_0x2d0b60[_0x3b15('0x0')];if(lasttime==0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x4041da=nowplayer-lastplayertime;if(_0x4041da<0x0){lastplayertime=nowplayer;lasttime=now;return;}var _0x562c93=now-lasttime;if(Math[_0x3b15('0x1')](_0x562c93-_0x4041da)<0x3){durationplayed=durationplayed+_0x4041da;lastplayertime=nowplayer;lasttime=now;console[_0x3b15('0x2')](durationplayed);if(durationplayed-lastdurationplayed>0x3c){lastdurationplayed=durationplayed;update();}return;}if(_0x562c93>_0x4041da){durationplayed=durationplayed+_0x4041da;}console[_0x3b15('0x2')](durationplayed);lastplayertime=nowplayer;lasttime=now;if(durationplayed-lastdurationplayed>0x3c){lastdurationplayed=durationplayed;update();}});
-                 }
+                  // offuscate 2
+				  var _0x6d84=["\x74\x69\x6D\x65","\x70\x6F\x73\x69\x74\x69\x6F\x6E","\x61\x62\x73","\x6C\x6F\x67","\x6F\x6E"];jwplayer()[_0x6d84[4]](_0x6d84[0],(_0x4785x1)=>{now= getUTCTimeSecs();nowplayer= _0x4785x1[_0x6d84[1]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x2=nowplayer- lastplayertime;if(_0x4785x2< 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x3=now- lasttime;if(Math[_0x6d84[2]](_0x4785x3- _0x4785x2)< 3){durationplayed= durationplayed+ _0x4785x2;lastplayertime= nowplayer;lasttime= now;console[_0x6d84[3]](durationplayed);if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()};return};if(_0x4785x3> _0x4785x2){durationplayed= durationplayed+ _0x4785x2};console[_0x6d84[3]](durationplayed);lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()}})
+              }
             }
             else {
                   alert("This device is unknown. Authenticate yourself by the link sent to your email.");

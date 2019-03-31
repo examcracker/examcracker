@@ -1,4 +1,11 @@
- jwplayer().on('time', (data) =>
+https://javascriptobfuscator.com/Javascript-Obfuscator.aspx
+
+off 1
+var cdnBase = "https://content.jwplatform.com/manifests/";
+var ext = ".m3u8";
+
+off 2
+jwplayer().on('time', (data) =>
                 {
                   now = getUTCTimeSecs();
                   nowplayer = data.position;
