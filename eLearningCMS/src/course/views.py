@@ -328,6 +328,13 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
+class playSessionEnc(playSession):
+    http_method_names = ['get']
+    template_name = 'playSessionEnc.html'
+
+    def get(self, request, chapterid, sessionid, *args, **kwargs):
+        return super().get(request, chapterid, sessionid, *args, **kwargs)
+
 class addReview(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['post']
 

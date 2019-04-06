@@ -1,0 +1,4 @@
+mp4fragment.exe <source> <dest>
+mp4encrypt --method MPEG-CENC --key 1:<32 hex key>:0000000000000000 --property 1:KID:<32 hex keyid>  \
+        --global-option mpeg-cenc.eme-pssh:true --key 2:<32 hex key>:0000000000000000 --property 2:KID:<32 hex keyid> \
+		<source> <dest>
