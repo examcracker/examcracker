@@ -22,13 +22,13 @@ function swapNodes(a, b) {
     aparent.insertBefore(b, asibling);
 }
 
-function filterFunction(filterType) {
+function filterFunction(filterType,elemId) {
   // Declare variables 
   var input, filter, table, tr, td, i;
   input = document.getElementById(filterType);
   cellIndex = input.parentNode.cellIndex;
   filter = input.value.toUpperCase();
-  table = document.getElementById("schedulesTable");
+  table = document.getElementById(elemId);
   tr = table.getElementsByTagName("tr");
   var filterIndex = cellIndex-1;
   // Loop through all table rows, and hide those who don't match the search query

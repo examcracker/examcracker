@@ -10,18 +10,18 @@
     <li class="breadcrumb-item active">Enroll Students with course and modules</li>
   </ol>
   
-  <form action="" method="post" enctype="multipart/form-data">
+  <form action="" method="post" enctype="multipart/form-data" id="enrollStudents">
 	{% csrf_token %}
 	<div class="form-group row">
-    <label for="inputEmail3" class="col-sm-2 col-form-label">Emails (separated by comma)</label>
+    <label for="inputEmail3" class="col-sm-2 col-form-label">Emails (separated by comma) </label>
     <div class="col-sm-10">
-			<input type="text" class="form-control" name="email" id="inputEmail3" placeholder="Email">
+			<input type="text" class="form-control" name="email" id="inputEmail3" placeholder="Email" {% if email %} value = "{{email}}" readonly {% endif %}>
     </div>
 	</div>
 	<div class="form-group row">
     <label for="inputEmail3" class="col-sm-2 col-form-label">View hours</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours">
+      <input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" {% if viewhours %} value = "{{viewhours}}" {% endif %}>
     </div>
 	</div>
 	<h4>Assign Course and permissions</h2>
@@ -35,7 +35,8 @@
 	</strong></h4>
 	</div>
 	<div class="col-3">
-			<input class="form-check-input" name="course" type="checkbox" id="gridCheck1" value="{{course.cid}}" onclick="enableDisableModules(this);">
+			<input class="form-check-input" name="course" type="checkbox" id="gridCheck1" value="{{course.cid}}" onclick="enableDisableModules(this);"
+			{% if course.fullaccess == 1 %} checked {% endif %} >
 			<small class="form-text text-muted">click here for full course access. If clicked , module level access will be ignored</small>
 	</div>
 </div>
@@ -48,7 +49,8 @@
 	
 			{% for chapId, chapDetails in subject.items %}
 			<div class="row-sm-3">
-					<input class="form-check-input" name="modules{{course.cid}}" type="checkbox" id="gridCheck1" value="{{chapId}}" >
+					<input class="form-check-input" name="modules{{course.cid}}" type="checkbox" id="gridCheck1" value="{{chapId}}"
+					{% if chapDetails.access  %} checked {% endif %} {% if course.fullaccess == 1 %} disabled {% endif %}>
 					<label class="form-check-label" for="gridCheck1">
 							{{ chapDetails.name }}
 					</label>
@@ -64,36 +66,16 @@
 </div>
 {% endfor %}
 
-
-	<!--
-	<div class="form-group row">
-		<div class="col-sm-2">Select courses : </div>
-		{% for c in courses %}
-    <div class="col-sm-3">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="courses" value = "{{c.id}}" id="gridCheck1">
-        <label class="form-check-label" for="gridCheck1">
-          {{c.name}}
-        </label>
-      </div>
-		</div>
-		{% endfor %}
-	</div>
-
-	<p>
-		<select name = "courselist">
-		{% for c in courses %}
-			<option value = "{{c.id}}">{{c.name}}</option>
-		{% endfor %}
-        </select>
-		<button type="submit">Submit</button><br>
-	</p>
--->
-<button type="submit">Submit</button><br>
+<button type="submit" >Submit</button><br>
 </form>
 
 <script>
-	function enableDisableModules(e) {
+	$('#enrollStudents').submit(function() {
+    var c = confirm("Do you want to continue?");
+    return c; //you can just return c because it will be true or false
+});
+
+function enableDisableModules(e) {
   $(this).click(function() {
 		var value = e.value;
 		var modules = document.getElementsByName('modules'+value);

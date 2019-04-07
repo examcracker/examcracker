@@ -170,6 +170,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 chapterDetailMap[chapterId]["hasLiveSessionsSchedules"] = 1
                 
             chapterDetailMap[chapterId]["name"] = item.name
+            chapterDetailMap[chapterId]["access"] = 0
             chapterDetailMap[chapterId]["sessions"] = []
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
@@ -281,6 +282,7 @@ def getUserNameAndPic(user_id):
         User = get_user_model()
         user = User.objects.filter(id=user_id)[0]
         userDetails['name'] = user.name
+        userDetails['email'] = user.email
     except:
         userDetails['name'] = 'Anonymous'
 
