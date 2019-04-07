@@ -48,6 +48,9 @@ EXPIRY_BANDWIDTH = 30
 def getJWClient():
     return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
 
+def getDevAccJWClient():
+    return jwplatform.Client(settings.JWPLAYER_DEV_ACC_API_KEY, settings.JWPLAYER_DEV_ACC_API_SECRET)
+
 def getCourse(courseid):
     return course.models.Course.objects.filter(id=courseid)[0]
 
@@ -56,6 +59,27 @@ def getCdnSession(cdnsessionid):
 
 def getCdnSessionForSession(sessionid):
     return models.CdnSession.objects.filter(session_id=sessionid)[0]
+
+def getEncryptedVideoUrl(jwid):
+    jwc = getDevAccJWClient()
+
+    try:
+        conversions = jwc.videos.conversions.list(video_key=jwid)
+        if conversions['status'] != 'ok':
+            return None
+
+        passthrough = {}
+        for c in conversions["conversions"]:
+            if c['template']['format']['key'] == 'passthrough':
+                passthrough = c
+                break
+
+        url = 'https://content.jwplatform.com/videos/' + jwid + '-' + passthrough['template']['key'] + '.mp4'
+        return url
+
+    except jwplatform.errors.JWPlatformError as e:
+        logger.error("Encountered an error querying for videos passthrough url.\n{}".format(e))
+        return None
 
 def getSignedUrl(jwid):
     path = 'manifests/' + jwid + '.m3u8'

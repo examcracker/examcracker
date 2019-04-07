@@ -328,11 +328,18 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
+KEY_ID = "a7e61c373e219033c21091fa607bf3b8"
+KEY = "76a6c65c5ea762046bd749a2e632ccbb"
+
 class playSessionEnc(playSession):
     http_method_names = ['get']
     template_name = 'playSessionEnc.html'
 
     def get(self, request, chapterid, sessionid, *args, **kwargs):
+        sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
+        kwargs["url"] = cdn.views.getEncryptedVideoUrl(sessionObj.videoKey)
+        kwargs["keyid"] = KEY_ID
+        kwargs["key"] = KEY
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):

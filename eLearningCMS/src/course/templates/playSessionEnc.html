@@ -84,8 +84,8 @@
 </div>
 
     <script type="text/javascript">
-    var keys = {"a7e61c373e219033c21091fa607bf3b8":"76a6c65c5ea762046bd749a2e632ccbb",}
-	var videoFragments = ["https://content.jwplatform.com/videos/1efAPYq9-YEhgpGO8.mp4",];
+    var keys = {"{{ keyid }}":"{{ key }}"};
+    var videoFragments = ["{{ url }}"];
 
     function MSELoadTrack(fragments, type, mediaSource, name) {
 			return new Promise(function(resolve, reject) {
@@ -108,19 +108,8 @@
 		});
 	}
 
-    function getUTCTimeSecs() {
-     return new Date().getTime()/1000;
-    }
-
     var coreapi = window.coreapi;
     var client = new coreapi.Client();
-    var lasttime = 0;
-    var lastplayertime = 0;
-    var now = 0;
-    var nowplayer = 0;
-    var durationplayed = 0;
-    var lastdurationplayed = 0;
-    var lastdurationsent = 0;
 
     window.onload = function() {
       const KEYSYSTEM_TYPE = "org.w3.clearkey";

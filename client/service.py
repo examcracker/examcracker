@@ -21,6 +21,7 @@ from collections import deque
 import glob
 import socket
 import sendMail
+import subprocess
 
 try:
     import thread
@@ -29,6 +30,9 @@ except ImportError:
 
 aes_key = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
+
+KEY_ID = "a7e61c373e219033c21091fa607bf3b8"
+KEY = "76a6c65c5ea762046bd749a2e632ccbb"
 
 # Log file
 LOG = logger.getLogFile(__name__)
@@ -201,6 +205,8 @@ class ClientService(object):
     mediaServerApp = None
     live = False
     liveStreamName = ''
+    mp4fragpath = ''
+    mp4encryptpath = ''
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -218,6 +224,9 @@ class ClientService(object):
         self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
+        self.mp4fragpath = os.path.join(dir_path, "mp4fragment.exe")
+        self.mp4encryptpath = os.path.join(dir_path, "mp4encrypt.exe")
+
         self.upload = uploadVideo.uploadVideo(self.clientid)
         self.timeout = 0
         self.captureStartTime = -1
@@ -285,6 +294,23 @@ class ClientService(object):
         # Stopping windows to go in sleep mode while we upload a file
         try:
             self.osleep.inhibit()
+
+            # check if encrypted is True, then fragment & encrypt
+            if self.encrypted:
+                dirname = os.path.dirname(filePath)
+                fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
+                mp4fragmentProc = subprocess.Popen([self.mp4fragpath, filePath, fragfilepath])
+                mp4fragmentProc.communicate()
+
+                encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
+                mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
+                                                   "--key", "1:" + KEY + ":0000000000000000", "--property", "1:KID:" + KEY_ID,
+                                                   "--global-option", "mpeg-cenc.eme-pssh:true",
+                                                   "--key", "2:" + KEY + ":0000000000000000", "--property", "2:KID:" + KEY_ID,
+                                                   fragfilepath, encfilepath])
+                mp4encryptProc.communicate()
+                filePath = encfilepath
+
             LOG.info ("Uploading file to server: " + str(filePath))
             retryCount = 0
             uploadResponse = {}
@@ -326,7 +352,6 @@ class ClientService(object):
 
         finally:
             self.osleep.uninhibit()
-
 
 
     def stopCapture(self):
