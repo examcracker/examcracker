@@ -511,6 +511,7 @@ class myStudents(showProviderHome):
             for studentItem in studentsObj:
                 studentInfo = {}
                 studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
+                studentInfo['id'] = studentDetails.id
                 studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
                 studentInfo['enrolled_date'] = studentItem.enrolled
 
@@ -566,12 +567,12 @@ class addStudents(showProviderHome):
     template_name = "add_students.html"
     http_method_names = ['get', 'post']
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, slug,*args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
         # get courses and chapters of all the courses to enroll students for courses
         # with module level access.
-        
+        studentid = int(slug)
         providerObj = getProvider(request)
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         courseDict = []
@@ -579,10 +580,29 @@ class addStudents(showProviderHome):
             courseDetails = course.algos.getCourseDetails(c.id, False,False)
             courseInfo = {}
             courseInfo['name'] = c.name
+            courseInfo['fullaccess'] = 0
             courseInfo['cid'] = c.id
+            
+            # do changes in course details map
+            if studentid > 0:
+                studentObj = student.models.Student.objects.filter(id=studentid)[0]
+                kwargs['email'] = course.algos.getUserNameAndPic(studentObj.user_id)['email']
+                enrolledCourseObj = course.models.EnrolledCourse.objects.filter(course_id=c.id,student_id=studentid)
+                if enrolledCourseObj:
+                    enrolledCourseObj = enrolledCourseObj[0]
+                    kwargs['viewhours'] = enrolledCourseObj.viewhours
+                    if enrolledCourseObj.chapteraccess == '':
+                        courseInfo['fullaccess'] = 1
+                    else:
+                        # extract module level access here for student
+                        allowedModules = enrolledCourseObj.chapteraccess.split(',')
+                        for sub, subDetails in courseDetails.items():
+                            for chapterdetails in subDetails:
+                                for chapterid,chapter in chapterdetails.items():
+                                    if str(chapterid) in allowedModules:
+                                        chapter["access"] = 1
             courseInfo['details'] = courseDetails
             courseDict.append(courseInfo)
-
         kwargs['mycourses'] = courseDict
             
             # store 3 info , name, subject and id
@@ -590,7 +610,6 @@ class addStudents(showProviderHome):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        
         if not request.user.is_staff:
             raise Http404()
 
@@ -651,16 +670,21 @@ class addStudents(showProviderHome):
                     enrolledCourse = course.models.EnrolledCourse()
                     enrolledCourse.course_id = fc
                     enrolledCourse.student_id = studentObj.id
-                    if viewhours != '':
+                else:
+                    enrolledCourse = enrolledCourse[0]
+                    enrolledCourse.chapteraccess = ''
+                if viewhours != '':
                         enrolledCourse.viewhours = viewhours
-                    enrolledCourse.save()
+                enrolledCourse.save()
             for module in modules:
                 chapterList = request.POST.getlist(module)
                 courseid = module.split('modules')[1]
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseid,student_id=studentObj.id)
                 if enrolledCourse:
-                    continue
-                enrolledCourse = course.models.EnrolledCourse()
+                    enrolledCourse = enrolledCourse[0]
+                else:
+                    enrolledCourse = course.models.EnrolledCourse()
+               
                 enrolledCourse.course_id = courseid
                 enrolledCourse.student_id = studentObj.id
                 if viewhours != '':
@@ -669,7 +693,7 @@ class addStudents(showProviderHome):
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()
                 # creare user
-            profiles.signals.sendMail(email, subject, emailBody)
+            #profiles.signals.sendMail(email, subject, emailBody)
 
 
         #courseid = self.request.POST.get('courselist', '')
