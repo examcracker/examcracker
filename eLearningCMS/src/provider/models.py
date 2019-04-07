@@ -36,6 +36,7 @@ class Session(models.Model):
     videoKey = models.CharField(max_length=20, default='')
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0)
+    encrypted = models.BooleanField(default=False)
 
 class System(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)

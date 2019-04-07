@@ -147,10 +147,17 @@ courses ( all courses ,course model)
                                         <div class="list-group">
                                             {% for session in value.sessions %}
                                             {% if course_overview.myCourse %}
-                                                <a href="{% url 'course:playSession' chapId session.id %}" class="box-no-border list-group-item">
-                                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
-                                                    {{ session.name }}
-                                                </a>
+										{% if session.encrypted %}
+										   <a href="{% url 'course:playSessionEnc' chapId session.id %}" class="box-no-border list-group-item">
+                                                       <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
+                                                       {{ session.name }}
+                                                   </a>
+										{% else %}
+                                                   <a href="{% url 'course:playSession' chapId session.id %}" class="box-no-border list-group-item">
+                                                       <i class="fa fa-play fa-fw" style="padding-right:10px"></i>
+                                                       {{ session.name }}
+                                                   </a>
+										{% endif %}
                                             {% else %}
                                                 <div class="box-no-border list-group-item">
                                                     <i class="fa fa-lock fa-fw" style="padding-right:10px"></i>

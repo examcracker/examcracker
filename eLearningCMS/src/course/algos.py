@@ -188,6 +188,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 sessionDetails["name"] = sessionObj.name
                 sessionDetails["video"] = sessionObj.video
                 sessionDetails["id"] = sessionObj.id
+                sessionDetails["encrypted"] = sessionObj.encrypted
                 sessionDetails["published"] = publishedStatus[pos]
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration

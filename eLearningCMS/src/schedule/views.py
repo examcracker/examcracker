@@ -234,6 +234,7 @@ class addShowSchedule(showProviderHome):
                 scheduleInfo['eventsOccured'] = sessionsCount
                 scheduleInfo['eventsRemaining'] = schedule.eventcount - sessionsCount
                 scheduleInfo['autoPublish'] = schedule.autopublish
+                scheduleInfo['encrypt'] = schedule.autopublish
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
         return super().get(request, *args, **kwargs)
@@ -263,10 +264,16 @@ class addShowSchedule(showProviderHome):
         scheduleObj.duration = request.POST.get('eventDuration')
         scheduleObj.recurafter = request.POST.get('eventRecur')
         scheduleObj.system = request.POST.get('courseLocation','')
+
         if request.POST.get('autoPublish'):
             scheduleObj.autopublish = True
         else:
             scheduleObj.autopublish = False
+
+        if request.POST.get('encrypt'):
+            scheduleObj.encrypted = True
+        else:
+            scheduleObj.encrypted = False
 
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
@@ -281,6 +288,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["recurafter"] = scheduleObj.recurafter
     dictObj["chapterid"] = scheduleObj.chapter_id
     dictObj["publish"] = scheduleObj.autopublish
+    dictObj["encrypted"] = scheduleObj.encrypted
     dictObj["machine"] = scheduleObj.system
     dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
     dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP

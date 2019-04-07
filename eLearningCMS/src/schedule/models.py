@@ -17,6 +17,7 @@ class Schedule(models.Model):
     system = models.CharField(default='', max_length=100)
     streamkey = models.CharField(default='',max_length=256)
     streamname = models.CharField(default='',max_length=256)
+    encrypted = models.BooleanField(default=False)
 
 class Schedule_liveaccess(models.Model):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)

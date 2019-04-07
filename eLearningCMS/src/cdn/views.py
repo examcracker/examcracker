@@ -43,7 +43,6 @@ command_upload_file = 4
 command_check_client_active = 5
 
 # methods to go here
-#EXPIRY_BANDWIDTH = 3600*5
 EXPIRY_BANDWIDTH = 30
 
 def getJWClient():
@@ -105,10 +104,11 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
+
     # session file Naming convention : chapter_date_sessionNumber
     dateTimeStr = datetime.datetime.now().strftime("%B %d, %Y")
     sessionids = strToIntList(chapterObj.sessions)
@@ -117,6 +117,7 @@ def saveSession(videoKey, chapterId, publish=False):
     sessionObj.videoKey = videoKey
     sessionObj.provider_id = providerObj.id
     sessionObj.tags = chapterObj.subject
+    sessionObj.encrypted = encrypted
     sessionObj.save()
 
     publishstatus = "0"
@@ -187,7 +188,7 @@ class saveClientSession(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
-        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]))
+        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]))
         return schedule.views.HttpResponseNoContent()
 
 @api_view(['GET'])

@@ -1,62 +1,143 @@
+{% extends "__ecBase.html" %}
 <html>
-	{% load staticfiles %}
-    {% load crispy_forms_tags %}
-    {% load thumbnail %}
+    {% load staticfiles %}
 
-    <head>
-	    <script>
-		var keys = {
-		"a7e61c373e219033c21091fa607bf3b8":"76a6c65c5ea762046bd749a2e632ccbb",
-		}
-		var videoFragments = ["https://content.jwplatform.com/videos/1efAPYq9-YEhgpGO8.mp4",];
-		</script>
+    {% block ImageSlider %}
+    {% endblock ImageSlider %}
 
-        <script type="text/javascript" src="{% static 'eme/eme.js' %}"></script>
-        <script>
-		function MSELoadTrack(fragments, type, mediaSource, name) {
+    {% block jumbotronBlock %}
+    {% endblock jumbotronBlock %}
+
+    {% block container %}
+
+    {% block content %}
+    <script src="{% static 'access/access.js' %}"></script>
+    <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
+    <script type="text/javascript" src="{% static 'eme/eme.js' %}"></script>
+
+<div class="container-full">
+    <div class="row">
+            <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ course.name }}</h2>
+                <div id="jwplayerDiv">
+                    <video id="encplayer" controls preload="auto" width="80%" height="80%"></video>
+                </div>
+                <h4>{{ session.name }}</h4>
+
+            </div>
+            <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ ContentHeading }}</h2>
+                <div class="container">
+                <div class="panel-group" id="accordion">
+                {% for subj, subjdetails in coursedetails.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
+                                    <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                    <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                    <font size="4"> {{ subj }}</font>
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="{{ subj }}" class="collapse show">
+                        <div class="panel-body">
+                    {% for s in subjdetails %}
+                    {% for chapid, chapdetails in s.items %}
+
+                    <div class="panel">
+                            <div class="panel-heading">
+                             <h6 class="panel-title">
+                                 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
+                                     <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                     <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                     <font size="3"> {{ chapdetails.name }}</font>
+                                 </a>
+                             </h6>
+                         </div>
+                        <div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
+                            <div class="panel-child-body">
+                                <div class="list-group">
+                        {% for sess in chapdetails.sessions %}
+                        {% if sess.id == session.id %}
+                        <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                            <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                        {% else %}
+                        <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                            <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                        {% endif %}
+                        {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                </div>
+        </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script type="text/javascript">
+    var keys = {"a7e61c373e219033c21091fa607bf3b8":"76a6c65c5ea762046bd749a2e632ccbb",}
+	var videoFragments = ["https://content.jwplatform.com/videos/1efAPYq9-YEhgpGO8.mp4",];
+
+    function MSELoadTrack(fragments, type, mediaSource, name) {
 			return new Promise(function(resolve, reject) {
-			var sourceBuffer;
-			var curFragment = 0;
-			function addNextFragment() {if (mediaSource.readyState == "closed") {return;}
-			if (curFragment >= fragments.length) {resolve();return;}
-			var fragmentFile = fragments[curFragment++];
-			var req = new XMLHttpRequest();
-			req.open("GET", fragmentFile);
-			req.responseType = "arraybuffer";
-			req.addEventListener("load", function() {sourceBuffer.appendBuffer(new Uint8Array(req.response));});
-			req.addEventListener("error", function(){reject();});
-			req.addEventListener("abort", function(){reject();});
-			req.send(null);
-		}
-		sourceBuffer = mediaSource.addSourceBuffer(type);
-		sourceBuffer.addEventListener("updateend", addNextFragment);
-		addNextFragment();
+				var sourceBuffer;
+				var curFragment = 0;
+				function addNextFragment() {if (mediaSource.readyState == "closed") {return;}
+				if (curFragment >= fragments.length) {resolve();return;}
+				var fragmentFile = fragments[curFragment++];
+				var req = new XMLHttpRequest();
+				req.open("GET", fragmentFile);
+				req.responseType = "arraybuffer";
+				req.addEventListener("load", function() {sourceBuffer.appendBuffer(new Uint8Array(req.response));});
+				req.addEventListener("error", function(){reject();});
+				req.addEventListener("abort", function(){reject();});
+				req.send(null);
+			}
+			sourceBuffer = mediaSource.addSourceBuffer(type);
+			sourceBuffer.addEventListener("updateend", addNextFragment);
+			addNextFragment();
 		});
-		}
-		</script>
-    </head>
+	}
 
-    <body>
+    function getUTCTimeSecs() {
+     return new Date().getTime()/1000;
+    }
 
-		<video id="v" controls preload="auto" width="80%" height="80%"></video>
-		<div id="log"></div>
+    var coreapi = window.coreapi;
+    var client = new coreapi.Client();
+    var lasttime = 0;
+    var lastplayertime = 0;
+    var now = 0;
+    var nowplayer = 0;
+    var durationplayed = 0;
+    var lastdurationplayed = 0;
+    var lastdurationsent = 0;
 
-	<script>
+    window.onload = function() {
       const KEYSYSTEM_TYPE = "org.w3.clearkey";
       function Load() {
         if (!navigator.requestMediaKeySystemAccess) {
           return;
         }
-        var video = document.getElementById("v");
+        var video = document.getElementById("encplayer");
         [ "canplay", "canplaythrough", "encrypted", "ended", "error", "loadeddata",
           "loadedmetadata", "loadstart", "pause", "play", "playing", "progress",
           "stalled", "suspend", "waiting",
         ].forEach(function (e) {
-          v.addEventListener(e, function(event) {
+          encplayer.addEventListener(e, function(event) {
           }, false);
         });
         var options = [];
-        const videoContentType = 'video/mp4; codecs="avc1.64001F"'; // High profile level 3.1
+        const videoContentType = 'video/mp4; codecs="avc1.64001F"';
         if (typeof(MediaKeySystemAccess.prototype.getConfiguration) == "undefined") {
           options = [
             {
@@ -84,6 +165,9 @@
         video.addEventListener("canplay", function(){video.play();});
       }
       Load();
+    }
+
     </script>
-    </body>
+    {%  endblock %}
+    {%  endblock container %}
 </html>

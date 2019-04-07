@@ -90,6 +90,7 @@ def on_message(message):
                 serviceObj.scheduleid = messageDict["id"]
                 serviceObj.chapterid = messageDict["chapterid"]
                 serviceObj.publish = messageDict["publish"]
+                serviceObj.encrypted = messageDict["encrypted"]
                 serviceObj.mediaServer = messageDict["mediaServer"]
                 serviceObj.mediaServerApp = messageDict["mediaServerApp"]
                 serviceObj.live = messageDict["live"]
@@ -116,6 +117,7 @@ def on_message(message):
                     
                 responseDict["chapterid"] = serviceObj.chapterid
                 responseDict["publish"] = serviceObj.publish
+                responseDict["encrypted"] = serviceObj.encrypted
 
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
@@ -188,6 +190,7 @@ class ClientService(object):
     capturing = False
     chapterid = None
     publish = False
+    encrypted = False
     debug = False
     encryptedid = None
     clientid = None
