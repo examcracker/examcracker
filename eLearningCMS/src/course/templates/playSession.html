@@ -123,10 +123,17 @@
         var _0x4a30=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x6A\x77\x70\x6C\x61\x74\x66\x6F\x72\x6D\x2E\x63\x6F\x6D\x2F\x6D\x61\x6E\x69\x66\x65\x73\x74\x73\x2F","\x2E\x6D\x33\x75\x38"];var cdnBase=_0x4a30[0];var ext=_0x4a30[1]
 
         var isOwner = "{{isOwner}}";
+        var isLive = "{{isLive}}";
         if (isOwner == "yes") {
+            if (isLive == "true") {
+            jwplayer("jwplayerDiv").setup({
+                file: "{{liveUrl}}"
+            });
+        } else {
             jwplayer("jwplayerDiv").setup({
                 file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
             });
+          }
         }  else {
             var accepted = 0;
             var tracktime = 0;
@@ -149,7 +156,15 @@
             }
 
             if (accepted) {
-                jwplayer("jwplayerDiv").setup({file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"});
+                if (isLive == "true") {
+                    jwplayer("jwplayerDiv").setup({
+                        file: "{{liveUrl}}"
+                    });
+                } else {
+                    jwplayer("jwplayerDiv").setup({
+                        file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
+                    });
+                }
 
                 if(tracktime) {
                   // offuscate 2

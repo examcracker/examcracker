@@ -370,7 +370,9 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
         #HttpResponse.set_cookie('GyaanHiveIP', ip)
+        kwargs["isLive"] = "true"
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
+        kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         response = super().get(request, scheduleid, *args, **kwargs)
         response.set_cookie('GyaanHiveIP', ip)
         return response

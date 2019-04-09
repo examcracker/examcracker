@@ -325,6 +325,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["jwid"] = sessionObj.videoKey
         kwargs["expiry"] = urldict["expiry"]
         kwargs["digest"] = urldict["digest"]
+        kwargs["isLive"] = "false"
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
