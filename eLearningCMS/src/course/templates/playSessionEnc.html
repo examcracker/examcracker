@@ -60,11 +60,21 @@
                                 <div class="list-group">
                         {% for sess in chapdetails.sessions %}
                         {% if sess.id == session.id %}
-                        <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
-                            <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
                         {% else %}
-                        <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
-                            <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
                         {% endif %}
                         {% endfor %}
                                 </div>
@@ -84,8 +94,8 @@
 </div>
 
     <script type="text/javascript">
-    var keys = {"{{ keyid }}":"{{ key }}"};
-    var videoFragments = ["{{ url }}"];
+    var keys = {"a7e61c373e219033c21091fa607bf3b8":"76a6c65c5ea762046bd749a2e632ccbb",}
+	var videoFragments = ["https://content.jwplatform.com/videos/1efAPYq9-YEhgpGO8.mp4",];
 
     function MSELoadTrack(fragments, type, mediaSource, name) {
 			return new Promise(function(resolve, reject) {
@@ -108,8 +118,19 @@
 		});
 	}
 
+    function getUTCTimeSecs() {
+     return new Date().getTime()/1000;
+    }
+
     var coreapi = window.coreapi;
     var client = new coreapi.Client();
+    var lasttime = 0;
+    var lastplayertime = 0;
+    var now = 0;
+    var nowplayer = 0;
+    var durationplayed = 0;
+    var lastdurationplayed = 0;
+    var lastdurationsent = 0;
 
     window.onload = function() {
       const KEYSYSTEM_TYPE = "org.w3.clearkey";
@@ -147,8 +168,9 @@
         video.src = URL.createObjectURL(ms);
         var SourceOpen = function () {
           ms.removeEventListener("sourceopen", SourceOpen);
-          Promise.all([MSELoadTrack(videoFragments, videoContentType, ms, "video")])
+          var p = Promise.all([MSELoadTrack(videoFragments, videoContentType, ms, "video")])
             .then(function(){ms.endOfStream();});
+            console.log(p)
         }
         ms.addEventListener("sourceopen", SourceOpen);
         video.addEventListener("canplay", function(){video.play();});

@@ -62,10 +62,17 @@
                                                 Session {{forloop.counter}}        
                                         </div>
                                         <div class="col-xs-7 col-sm-7">
+                                                {% if session.encrypted %}
+                                                <a href="{% url 'course:playSessionEnc' chapid session.id %}" >
+                                                        <i class="fa fa-play fa-fw" ></i>
+                                                        {{ session.name }}
+                                                    </a>
+                                            {% else %}
                                             <a href="{% url 'course:playSession' chapid session.id %}" >
                                                 <i class="fa fa-play fa-fw" ></i>
                                                 {{ session.name }}
                                             </a>
+                                            {% endif %}
                                             <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
                                             <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
                                         </div>

@@ -63,11 +63,21 @@
                                 <div class="list-group">
                         {% for sess in chapdetails.sessions %}
                         {% if sess.id == session.id %}
-                        <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
-                            <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                    <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
                         {% else %}
-                        <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
-                            <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="box-no-border list-group-item">
+                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                                {% endif %}
                         {% endif %}
                         {% endfor %}
                                 </div>
