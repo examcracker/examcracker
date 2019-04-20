@@ -128,7 +128,7 @@
       //      .catch(function (error) {alert(error);});
     }
 
-    window.onload = function() {
+    function loadMediaPlayer(){
         // offuscate 1
         var _0x4a30=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x6A\x77\x70\x6C\x61\x74\x66\x6F\x72\x6D\x2E\x63\x6F\x6D\x2F\x6D\x61\x6E\x69\x66\x65\x73\x74\x73\x2F","\x2E\x6D\x33\x75\x38"];var cdnBase=_0x4a30[0];var ext=_0x4a30[1]
 
@@ -139,30 +139,31 @@
             jwplayer("jwplayerDiv").setup({
                 file: "{{liveUrl}}"
             });
-        } else {
+        } 
+        else {
             jwplayer("jwplayerDiv").setup({
                 file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
             });
-          }
+        }
         }  else {
             var accepted = 0;
             var tracktime = 0;
 
             if ("{{disableaccess}}") {
-              accepted = 1;
-              tracktime = 1;
+            accepted = 1;
+            tracktime = 1;
             } else {
-              var deviceJSON = "DUMMYSTRING";
-              var isDebug = "{{debug}}"
-              var url = window.location.protocol + "//" + window.location.hostname;
-              if (isDebug == "on") {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = "{{debug}}"
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
                 url = url + ":" + window.location.port;
-              }
-              url = url + "/access/allow/{{user.id}}/" + deviceJSON;
-              var xmlHttp = new XMLHttpRequest();
-              xmlHttp.open("GET", url, false);
-              xmlHttp.send(null);
-              accepted = (/True/).test(xmlHttp.responseText);
+            }
+            url = url + "/access/allow/{{user.id}}/" + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
             }
 
             if (accepted) {
@@ -177,14 +178,61 @@
                 }
 
                 if(tracktime) {
-                  // offuscate 2
-				  var _0x6d84=["\x74\x69\x6D\x65","\x70\x6F\x73\x69\x74\x69\x6F\x6E","\x61\x62\x73","\x6C\x6F\x67","\x6F\x6E"];jwplayer()[_0x6d84[4]](_0x6d84[0],(_0x4785x1)=>{now= getUTCTimeSecs();nowplayer= _0x4785x1[_0x6d84[1]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x2=nowplayer- lastplayertime;if(_0x4785x2< 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x3=now- lasttime;if(Math[_0x6d84[2]](_0x4785x3- _0x4785x2)< 3){durationplayed= durationplayed+ _0x4785x2;lastplayertime= nowplayer;lasttime= now;console[_0x6d84[3]](durationplayed);if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()};return};if(_0x4785x3> _0x4785x2){durationplayed= durationplayed+ _0x4785x2};console[_0x6d84[3]](durationplayed);lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()}})
-              }
+                // offuscate 2
+                var _0x6d84=["\x74\x69\x6D\x65","\x70\x6F\x73\x69\x74\x69\x6F\x6E","\x61\x62\x73","\x6C\x6F\x67","\x6F\x6E"];jwplayer()[_0x6d84[4]](_0x6d84[0],(_0x4785x1)=>{now= getUTCTimeSecs();nowplayer= _0x4785x1[_0x6d84[1]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x2=nowplayer- lastplayertime;if(_0x4785x2< 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x3=now- lasttime;if(Math[_0x6d84[2]](_0x4785x3- _0x4785x2)< 3){durationplayed= durationplayed+ _0x4785x2;lastplayertime= nowplayer;lasttime= now;console[_0x6d84[3]](durationplayed);if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()};return};if(_0x4785x3> _0x4785x2){durationplayed= durationplayed+ _0x4785x2};console[_0x6d84[3]](durationplayed);lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()}})
+            }
             }
             else {
-                  alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+                alert("This device is unknown. Authenticate yourself by the link sent to your email.");
             }
         }
+    }
+
+    window.onload = function() {
+        var isPluginInstalled = false;
+        // ['Stream Video Downloader', 'All Video Downloader Professional', 'Video Downloader professional', 'Video Downloader PLUS', 'Web Video Downloader']
+        var chromePluginToTest = ['imkngaibigegepnlckfcbecjoilcjbhf', 'mhgnbemghokalfakmkhpnbneaoaigpnj', 'jpaglkhbmbmhlnpnehlffkgaaapoicnk', 'fhplmmllnpjjlncfjpbbpjadoeijkogc', 'dakbpnomcpnfffehgdgdcfkaljdfbggj']
+        var maxPluginToTest = chromePluginToTest.length;
+        var checkPluginInstalled = [];
+        for (var i = 0; i < maxPluginToTest; i++) {
+            checkPluginInstalled.push(-1);
+        }
+
+        function Ext_Detect_NotInstalled(index,ExtID) {
+            if (index < maxPluginToTest){
+                alert("checking plugin: "+ chromePluginToTest[index])
+                Ext_Detect(index);
+            }
+            else{
+                loadMediaPlayer();
+            }
+        }
+
+        function Ext_Detect_Installed(index,ExtID) {
+            alert("It seems like you have installed some plugin which can download the video, kindly uninstall them to access this lecture.");
+            location.reload();
+        }
+
+        var Ext_Detect = function(index) {
+            ExtID = chromePluginToTest[index];
+            index++;
+            var s = document.createElement('script');
+            s.onload = function(){Ext_Detect_Installed(index,ExtID);};
+            s.onerror = function(){Ext_Detect_NotInstalled(index,ExtID);};
+            s.src = 'chrome-extension://' + ExtID + '/manifest.json';
+            document.body.appendChild(s);
+        }
+
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+        if (is_chrome==true)
+        {
+            Ext_Detect(0);
+        }
+        else{
+            alert("Please use chrome to play this content!");
+        }
+
     }
 
 
