@@ -200,7 +200,6 @@
 
         function Ext_Detect_NotInstalled(index,ExtID) {
             if (index < maxPluginToTest){
-                alert("checking plugin: "+ chromePluginToTest[index])
                 Ext_Detect(index);
             }
             else{
@@ -209,7 +208,7 @@
         }
 
         function Ext_Detect_Installed(index,ExtID) {
-            alert("It seems like you have installed some plugin which can download the video, kindly uninstall them to access this lecture.");
+            alert("It seems like you have installed some plugin which can download the video, kindly disable them to access this content.");
             location.reload();
         }
 
