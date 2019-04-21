@@ -22,6 +22,8 @@ import glob
 import socket
 import sendMail
 import subprocess
+import boto3
+from botocore.client import Config
 
 try:
     import thread
@@ -207,6 +209,7 @@ class ClientService(object):
     liveStreamName = ''
     mp4fragpath = ''
     mp4encryptpath = ''
+    mp4dashpath = ''
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -224,8 +227,9 @@ class ClientService(object):
         self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
-        self.mp4fragpath = os.path.join(dir_path, "mp4fragment.exe")
-        self.mp4encryptpath = os.path.join(dir_path, "mp4encrypt.exe")
+        self.mp4fragpath = os.path.join(dir_path, "bin","mp4fragment.exe")
+        self.mp4encryptpath = os.path.join(dir_path,"bin" ,"mp4encrypt.exe")
+        self.mp4dashpath = os.path.join(dir_path,"bin" ,"mp4dash.bat")
 
         self.upload = uploadVideo.uploadVideo(self.clientid)
         self.timeout = 0
@@ -290,27 +294,41 @@ class ClientService(object):
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
 
+    def upload_directory_to_DO(self,path,bucketname):
+        # Initialize a session using DigitalOcean Spaces.
+        LOG.info ("Uploading mpd file to Digital ocean space")
+        session = boto3.session.Session()
+        client = session.client('s3',
+                        region_name='sgp1',
+                        endpoint_url='https://sgp1.digitaloceanspaces.com',
+                        aws_access_key_id='V2ERLGS6TEFEJMD7OVYE',
+                        aws_secret_access_key='+Q+Yn9dRjlAgussQ0KDXXPCr0q7d9jCDgq6LJMaZlPw')
+        for root, dirs, files in os.walk(path):
+            nested_dir = root.replace(path, '')
+            if nested_dir:
+                nested_dir = nested_dir.replace('/','',1) + '/'
+            nested_dir = nested_dir.replace('\\','/')
+            if nested_dir.startswith('/'):
+                nested_dir = nested_dir[1:]
+            for file in files:
+                complete_file_path = os.path.join(root, file)
+                file = nested_dir + file if nested_dir else file
+                #print ("[S3_UPLOAD] Going to upload {complete_file_path} to s3 bucket {s3_bucket} as {file}"\
+                #    .format(complete_file_path=complete_file_path, s3_bucket=bucketname, file=file))
+                client.upload_file(complete_file_path, bucketname, file,ExtraArgs={'ACL':'public-read'})
+
+    def removeTempFiles(self,tmpfiles):
+        import shutil
+        for fileDir in tmpfiles:
+            if os.path.isfile(fileDir):
+                os.remove(fileDir)
+            else:
+                shutil.rmtree(fileDir)
+
     def uploadFileToCDN(self, filePath):
         # Stopping windows to go in sleep mode while we upload a file
         try:
             self.osleep.inhibit()
-
-            # check if encrypted is True, then fragment & encrypt
-            if self.encrypted:
-                dirname = os.path.dirname(filePath)
-                fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
-                mp4fragmentProc = subprocess.Popen([self.mp4fragpath, filePath, fragfilepath])
-                mp4fragmentProc.communicate()
-
-                encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
-                mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
-                                                   "--key", "1:" + KEY + ":0000000000000000", "--property", "1:KID:" + KEY_ID,
-                                                   "--global-option", "mpeg-cenc.eme-pssh:true",
-                                                   "--key", "2:" + KEY + ":0000000000000000", "--property", "2:KID:" + KEY_ID,
-                                                   fragfilepath, encfilepath])
-                mp4encryptProc.communicate()
-                filePath = encfilepath
-
             LOG.info ("Uploading file to server: " + str(filePath))
             retryCount = 0
             uploadResponse = {}
@@ -344,6 +362,43 @@ class ClientService(object):
                     LOG.error("Exception in uploading the file: " + str(ex))
                     uploadResponse['fail_reason'] = str(ex)
                     continue
+            # uploading of original file done, so now check encryption flow
+            if self.encrypted:
+                tmpFiles = []
+                dirname = os.path.dirname(filePath)
+                fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
+                tmpFiles.append(fragfilepath)
+                mp4fragmentProc = subprocess.Popen([self.mp4fragpath, filePath, fragfilepath])
+                mp4fragmentProc.communicate()
+
+                encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
+                tmpFiles.append(encfilepath)
+                mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
+                                                   "--key", "1:" + KEY + ":0000000000000000", "--property", "1:KID:" + KEY_ID,
+                                                   "--global-option", "mpeg-cenc.eme-pssh:true",
+                                                   "--key", "2:" + KEY + ":0000000000000000", "--property", "2:KID:" + KEY_ID,
+                                                   fragfilepath, encfilepath])
+                mp4encryptProc.communicate()
+                LOG.info ("Create encrypted mpd file and upload to CDN")
+                videoKey = ''
+                if 'videoKey' in uploadResponse.keys():
+                    videoKey = uploadResponse['videoKey']
+                # create temporary directory and create mpd file in tmp directory
+                tmpfolder = 'tmp'
+                tmpdir = os.path.join(dirname,tmpfolder)
+                if not os.path.isdir(tmpdir):
+                    os.mkdir(tmpdir)
+                
+                mpdoutpath = os.path.join(tmpdir,videoKey)
+                tmpFiles.append(mpdoutpath)
+                mpdfilename = videoKey+'.mpd'
+                mp4dashProc = subprocess.call([self.mp4dashpath, '-o', mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
+                #mp4dashProc.communicate()
+                # upload mpd file to digital ocean
+                self.upload_directory_to_DO(tmpdir,'gyaanhive')
+                # Now remove all temporary files created
+                self.removeTempFiles(tmpFiles)
+                
             return uploadResponse
         except Exception as ex:
              LOG.error("Exception in uploading the file: " + str(ex))

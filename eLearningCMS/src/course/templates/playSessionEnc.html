@@ -95,17 +95,18 @@
 </div>
 
     <script type="text/javascript">
-                jwplayer("jwplayerDiv").setup({
-                file: "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/stream.mpd",
-                drm: {
-        clearkey: {
-          // Remove random bit from key. Base64 version of Key or KID is not needed
-          //key: '7f412f0575f44f718259beef56ec7771:0a8d9e58502141c3',
-          key: '76a6c65c5ea762046bd749a2e632ccbb',
-          keyId: 'a7e61c373e219033c21091fa607bf3b8'
-        }},
-        autostart: false,
-            });
+    jwplayer("jwplayerDiv").setup({
+        file: "{{ url }}", 
+            drm: {
+                clearkey: {
+                    // Remove random bit from key. Base64 version of Key or KID is not needed
+                    //key: '7f412f0575f44f718259beef56ec7771:0a8d9e58502141c3',
+                    key: "{{ key }}",
+                    keyId: "{{ keyid }}"
+                }
+            },
+            autostart: false,
+        });
     </script>
 <!--
 <script type="text/javascript">
