@@ -368,7 +368,7 @@ class ClientService(object):
                 dirname = os.path.dirname(filePath)
                 fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
                 tmpFiles.append(fragfilepath)
-                mp4fragmentProc = subprocess.Popen([self.mp4fragpath, filePath, fragfilepath])
+                mp4fragmentProc = subprocess.Popen([self.mp4fragpath,'--fragment-duration' ,'20000',filePath, fragfilepath])
                 mp4fragmentProc.communicate()
 
                 encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
