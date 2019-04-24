@@ -271,6 +271,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 raise Http404()
+            if enrolledCourse.chapteraccess != '':
+                allowedModules = enrolledCourse.chapteraccess.split(',')
+                if str(chapterid) not in allowedModules:
+                    raise Http404()
             # check if view hours have completed
             ecObj = enrolledCourse[0]
             kwargs["enrolledcourseid"] = ecObj.id

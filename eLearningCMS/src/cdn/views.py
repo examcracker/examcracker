@@ -61,6 +61,8 @@ def getCdnSessionForSession(sessionid):
     return models.CdnSession.objects.filter(session_id=sessionid)[0]
 
 def getEncryptedVideoUrl(jwid):
+    url = 'https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/'+ jwid + '/' + jwid + '.mpd'
+    return url
     jwc = getDevAccJWClient()
 
     try:
