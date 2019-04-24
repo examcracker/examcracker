@@ -321,10 +321,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["chapter"] = courseChapterObj
         kwargs["ContentHeading"] = 'Contents'
 
-        urldict = cdn.views.getSignedUrl(sessionObj.videoKey)
-        kwargs["jwid"] = sessionObj.videoKey
-        kwargs["expiry"] = urldict["expiry"]
-        kwargs["digest"] = urldict["digest"]
+        kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
@@ -338,7 +335,6 @@ class playSessionEnc(playSession):
 
     def get(self, request, chapterid, sessionid, *args, **kwargs):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
-        kwargs["url"] = cdn.views.getEncryptedVideoUrl(sessionObj.videoKey)
         kwargs["keyid"] = KEY_ID
         kwargs["key"] = KEY
         return super().get(request, chapterid, sessionid, *args, **kwargs)
