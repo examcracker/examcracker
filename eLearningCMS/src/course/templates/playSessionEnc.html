@@ -95,71 +95,174 @@
 
 <script type="text/javascript">
 
-	function getPlayTime() {
-	  return new Promise(resolve => {
-		setTimeout(() => {
-		  resolve(player.getStats());
-		}, 5000);
-	  });
+	var video;
+	var manifest;
+	var lastplayertime = 0;
+	var nowplayer = 0;
+	var now = 0;
+	var lasttime = 0;
+	var lastdurationplayed = 0
+	var durationplayed = 0;
+	var coreapi = window.coreapi;
+	var client = new coreapi.Client();
+	var lastdurationsent = 0;
+	var playergap = 0;
+
+	var isOwner = "{{isOwner}}";
+	var isLive = "{{isLive}}";
+
+	function getUTCTimeSecs() {
+		return new Date().getTime()/1000;
 	}
 
-	async function asyncCall() {
-	  while(true) {
-		  var playTime = await getPlayTime();
-		  //console.log(playTime);
-	  }
-	}
-
-    var manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
-
-	function initApp() {
-	  shaka.polyfill.installAll();
-
-	  if (shaka.Player.isBrowserSupported()) {
-		initPlayer();
-	  } else {
-		console.error('Browser not supported!');
-	  }
-	}
-
-	var video = null;
-
-	function initPlayer() {
-	  video = document.getElementById('encplayer');
-	  var player = new shaka.Player(video);
-	  player.configure({
-	   drm: {
-		clearKeys: {
-			"{{ keyid }}": "{{ key }}",
-			"{{ keyid }}": "{{ key }}"
+	function update() {
+		var durationdiff = durationplayed - lastdurationsent;
+		lastdurationsent = durationplayed;
+		var isDebug = "{{debug}}"
+		var url = window.location.protocol + "//" + window.location.hostname;
+		if (isDebug == "on") {
+			url = url + ":" + window.location.port;
 		}
-	   }
-	  });
-
-	  window.player = player;
-
-	  player.addEventListener('error', onErrorEvent);
-	  video.addEventListener('timeupdate', onPlaying);
-
-	  player.load(manifest).then(function() {
-		console.log('The video has now been loaded!');
-		asyncCall();
-	  }).catch(onError);
+		url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", url, true);
+		xmlHttp.send();
 	}
 
 	function onPlaying() {
-	  //console.log(video.currentTime);
+		now = getUTCTimeSecs();
+		nowplayer = video.currentTime;
+
+		if (lasttime == 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		playergap = nowplayer - lastplayertime;
+		if(playergap < 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		var systemgap = now - lasttime;
+		if(Math.abs(systemgap - playergap) < 3) {
+			durationplayed = durationplayed + playergap;
+			lastplayertime = nowplayer;
+			lasttime = now;
+
+			//console.log(durationplayed);
+
+			if(durationplayed - lastdurationplayed > 60) {
+				lastdurationplayed = durationplayed;
+				update();
+			}
+			return;
+		}
+
+		// system time and player time deviations are different, either its paused, stalled or sought forward
+		if(systemgap > playergap) {
+			durationplayed = durationplayed + playergap;
+		}
+
+		//console.log(durationplayed);
+
+		lastplayertime = nowplayer;
+		lasttime = now;
+
+		if(durationplayed - lastdurationplayed > 60) {
+			lastdurationplayed = durationplayed;
+			update();
+		}
 	}
 
 	function onErrorEvent(event) {
-	  onError(event.detail);
+		onError(event.detail);
 	}
 
 	function onError(error) {
-	  console.error('Error code', error.code, 'object', error);
+		console.error('Error code', error.code, 'object', error);
 	}
 
-	document.addEventListener('DOMContentLoaded', initApp);
+	function initApp() {
+		shaka.polyfill.installAll();
+
+		if (shaka.Player.isBrowserSupported()) {
+			initPlayer();
+		} else {
+			console.error('Browser not supported!');
+		}
+	}
+
+	function initPlayer() {
+		video = document.getElementById('encplayer');
+		var player = new shaka.Player(video);
+		player.configure({
+			drm: {
+				clearKeys: {
+					"{{ keyid }}": "{{ key }}",
+					"{{ keyid }}": "{{ key }}"
+				}
+			}
+		});
+
+		if(isOwner != "yes") {
+			video.addEventListener('timeupdate', onPlaying);
+		}
+
+		window.player = player;
+
+		player.addEventListener('error', onErrorEvent);
+		player.load(manifest).then(function() {
+		}).catch(onError);
+	}
+
+    if (isOwner == "yes") {
+        if (isLive == "true") {
+			manifest = "{{liveUrl}}";
+        }
+        else {
+            manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+        }
+		document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+		var accepted = 0;
+        var tracktime = 0;
+
+        if ("{{disableaccess}}") {
+            accepted = 1;
+            tracktime = 1;
+        } else {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = "{{debug}}"
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+            }
+            url = url + "/access/allow/{{user.id}}/" + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
+        }
+
+		if (accepted) {
+			if (isLive == "true") {
+				manifest = "{{liveUrl}}";
+			} else {
+				manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+			}
+
+			if(tracktime) {
+				document.addEventListener('DOMContentLoaded', initApp);
+			}
+        }
+        else {
+            alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+        }
+	}
+
 </script>
 
     {%  endblock %}
