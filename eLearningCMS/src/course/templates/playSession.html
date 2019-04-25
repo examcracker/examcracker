@@ -12,18 +12,15 @@
 
     {% block content %}
     <script src="{% static 'access/access.js' %}"></script>
-    {% if offuscate %}
-    <script src="{% static 'jwplayer/jwplayer_of.js' %}"></script>
-    {% else %}
-    <script src="{% static 'jwplayer/jwplayer.js' %}"></script>
-    {% endif %}
     <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
+    <script src="{% static 'shaka/shaka-player.compiled.js' %}"></script>
 
 <div class="container-full">
     <div class="row">
             <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
-                <div id="jwplayerDiv">
+                <div id="shakaplayer">
+                    <video id="encplayer" controls preload="auto" width="80%" height="80%"></video>
                 </div>
                 <h4>{{ session.name }}</h4>
 
@@ -65,7 +62,7 @@
                         {% if sess.id == session.id %}
                             {% if sess.encrypted %}
                             <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="selected-item box-no-border list-group-item">
-                                    <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
                             {% else %}
                                 <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
                                 <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
@@ -73,11 +70,11 @@
                         {% else %}
                             {% if sess.encrypted %}
                             <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="box-no-border list-group-item">
-                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
                             {% else %}
                                 <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
                                 <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
-                                {% endif %}
+                            {% endif %}
                         {% endif %}
                         {% endfor %}
                                 </div>
@@ -96,63 +93,139 @@
     </div>
 </div>
 
-    <script type="text/javascript">
-    function getUTCTimeSecs() {
-     return new Date().getTime()/1000;
-    }
+<script type="text/javascript">
 
-    var coreapi = window.coreapi;
-    var client = new coreapi.Client();
-    var lasttime = 0;
-    var lastplayertime = 0;
-    var now = 0;
-    var nowplayer = 0;
-    var durationplayed = 0;
-    var lastdurationplayed = 0;
-    var lastdurationsent = 0;
+	var video;
+	var manifest;
+	var lastplayertime = 0;
+	var nowplayer = 0;
+	var now = 0;
+	var lasttime = 0;
+	var lastdurationplayed = 0
+	var durationplayed = 0;
+	var coreapi = window.coreapi;
+	var client = new coreapi.Client();
+	var lastdurationsent = 0;
+	var playergap = 0;
 
-    function update() {
-      var durationdiff = durationplayed - lastdurationsent;
-      lastdurationsent = durationplayed;
-      var isDebug = "{{debug}}"
-      var url = window.location.protocol + "//" + window.location.hostname;
-      if (isDebug == "on") {
-          url = url + ":" + window.location.port;
-      }
-      url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
-      var xmlHttp = new XMLHttpRequest();
-	  xmlHttp.open("GET", url, true);
-      xmlHttp.send()
-      //client.get(url)
-      //      .then(function (data) {})
-      //      .catch(function (error) {alert(error);});
-    }
+	var isOwner = "{{isOwner}}";
+	var isLive = "{{isLive}}";
 
-    function loadMediaPlayer(){
-        // offuscate 1
-        var _0x4a30=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x6A\x77\x70\x6C\x61\x74\x66\x6F\x72\x6D\x2E\x63\x6F\x6D\x2F\x6D\x61\x6E\x69\x66\x65\x73\x74\x73\x2F","\x2E\x6D\x33\x75\x38"];var cdnBase=_0x4a30[0];var ext=_0x4a30[1]
+	function getUTCTimeSecs() {
+		return new Date().getTime()/1000;
+	}
 
-        var isOwner = "{{isOwner}}";
-        var isLive = "{{isLive}}";
-        if (isOwner == "yes") {
-            if (isLive == "true") {
-            jwplayer("jwplayerDiv").setup({
-                file: "{{liveUrl}}"
-            });
-        } 
-        else {
-            jwplayer("jwplayerDiv").setup({
-                file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
-            });
+	function update() {
+		var durationdiff = durationplayed - lastdurationsent;
+		lastdurationsent = durationplayed;
+		var isDebug = "{{debug}}"
+		var url = window.location.protocol + "//" + window.location.hostname;
+		if (isDebug == "on") {
+			url = url + ":" + window.location.port;
+		}
+		url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", url, true);
+		xmlHttp.send();
+	}
+
+	function onPlaying() {
+		now = getUTCTimeSecs();
+		nowplayer = video.currentTime;
+
+		if (lasttime == 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		playergap = nowplayer - lastplayertime;
+		if(playergap < 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		var systemgap = now - lasttime;
+		if(Math.abs(systemgap - playergap) < 3) {
+			durationplayed = durationplayed + playergap;
+			lastplayertime = nowplayer;
+			lasttime = now;
+
+			//console.log(durationplayed);
+
+			if(durationplayed - lastdurationplayed > 60) {
+				lastdurationplayed = durationplayed;
+				update();
+			}
+			return;
+		}
+
+		// system time and player time deviations are different, either its paused, stalled or sought forward
+		if(systemgap > playergap) {
+			durationplayed = durationplayed + playergap;
+		}
+
+		//console.log(durationplayed);
+
+		lastplayertime = nowplayer;
+		lasttime = now;
+
+		if(durationplayed - lastdurationplayed > 60) {
+			lastdurationplayed = durationplayed;
+			update();
+		}
+	}
+
+	function onErrorEvent(event) {
+		onError(event.detail);
+	}
+
+	function onError(error) {
+		console.error('Error code', error.code, 'object', error);
+	}
+
+	function initApp() {
+		shaka.polyfill.installAll();
+
+		if (shaka.Player.isBrowserSupported()) {
+			initPlayer();
+		} else {
+			console.error('Browser not supported!');
+		}
+	}
+
+	function initPlayer() {
+		video = document.getElementById('encplayer');
+		var player = new shaka.Player(video);
+
+		if(isOwner != "yes") {
+			video.addEventListener('timeupdate', onPlaying);
+		}
+
+		window.player = player;
+
+		player.addEventListener('error', onErrorEvent);
+		player.load(manifest).then(function() {
+		}).catch(onError);
+	}
+
+    if (isOwner == "yes") {
+        if (isLive == "true") {
+			manifest = "{{liveUrl}}";
         }
-        }  else {
-            var accepted = 0;
-            var tracktime = 0;
+        else {
+            manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+        }
+		document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+		var accepted = 0;
+        var tracktime = 0;
 
-            if ("{{disableaccess}}") {
+        if ("{{disableaccess}}") {
             accepted = 1;
             tracktime = 1;
-            } else {
+        } else {
             var deviceJSON = "DUMMYSTRING";
             var isDebug = "{{debug}}"
             var url = window.location.protocol + "//" + window.location.hostname;
@@ -164,79 +237,26 @@
             xmlHttp.open("GET", url, false);
             xmlHttp.send(null);
             accepted = (/True/).test(xmlHttp.responseText);
-            }
-
-            if (accepted) {
-                if (isLive == "true") {
-                    jwplayer("jwplayerDiv").setup({
-                        file: "{{liveUrl}}"
-                    });
-                } else {
-                    jwplayer("jwplayerDiv").setup({
-                        file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
-                    });
-                }
-
-                if(tracktime) {
-                // offuscate 2
-                var _0x6d84=["\x74\x69\x6D\x65","\x70\x6F\x73\x69\x74\x69\x6F\x6E","\x61\x62\x73","\x6C\x6F\x67","\x6F\x6E"];jwplayer()[_0x6d84[4]](_0x6d84[0],(_0x4785x1)=>{now= getUTCTimeSecs();nowplayer= _0x4785x1[_0x6d84[1]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x2=nowplayer- lastplayertime;if(_0x4785x2< 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x3=now- lasttime;if(Math[_0x6d84[2]](_0x4785x3- _0x4785x2)< 3){durationplayed= durationplayed+ _0x4785x2;lastplayertime= nowplayer;lasttime= now;console[_0x6d84[3]](durationplayed);if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()};return};if(_0x4785x3> _0x4785x2){durationplayed= durationplayed+ _0x4785x2};console[_0x6d84[3]](durationplayed);lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()}})
-            }
-            }
-            else {
-                alert("This device is unknown. Authenticate yourself by the link sent to your email.");
-            }
-        }
-    }
-
-    window.onload = function() {
-        var isPluginInstalled = false;
-        // ['Stream Video Downloader', 'All Video Downloader Professional', 'Video Downloader professional', 'Video Downloader PLUS', 'Web Video Downloader']
-        var chromePluginToTest = ['imkngaibigegepnlckfcbecjoilcjbhf', 'mhgnbemghokalfakmkhpnbneaoaigpnj', 'jpaglkhbmbmhlnpnehlffkgaaapoicnk', 'fhplmmllnpjjlncfjpbbpjadoeijkogc', 'dakbpnomcpnfffehgdgdcfkaljdfbggj']
-        var maxPluginToTest = chromePluginToTest.length;
-        var checkPluginInstalled = [];
-        for (var i = 0; i < maxPluginToTest; i++) {
-            checkPluginInstalled.push(-1);
         }
 
-        function Ext_Detect_NotInstalled(index,ExtID) {
-            if (index < maxPluginToTest){
-                Ext_Detect(index);
-            }
-            else{
-                loadMediaPlayer();
-            }
+		if (accepted) {
+			if (isLive == "true") {
+				manifest = "{{liveUrl}}";
+			} else {
+				manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+			}
+
+			if(tracktime) {
+				document.addEventListener('DOMContentLoaded', initApp);
+			}
         }
-
-        function Ext_Detect_Installed(index,ExtID) {
-            alert("It seems like you have installed some plugin which can download the video, kindly disable them to access this content.");
-            location.reload();
+        else {
+            alert("This device is unknown. Authenticate yourself by the link sent to your email.");
         }
+	}
 
-        var Ext_Detect = function(index) {
-            ExtID = chromePluginToTest[index];
-            index++;
-            var s = document.createElement('script');
-            s.onload = function(){Ext_Detect_Installed(index,ExtID);};
-            s.onerror = function(){Ext_Detect_NotInstalled(index,ExtID);};
-            s.src = 'chrome-extension://' + ExtID + '/manifest.json';
-            document.body.appendChild(s);
-        }
+</script>
 
-        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-
-        if (is_chrome==true)
-        {
-            Ext_Detect(0);
-        }
-        else{
-            alert("Please use chrome to play this content!");
-        }
-
-    }
-
-
-    </script>
     {%  endblock %}
     {%  endblock container %}
 </html>
-

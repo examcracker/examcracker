@@ -1,0 +1,242 @@
+{% extends "__ecBase.html" %}
+<html>
+    {% load staticfiles %}
+
+    {% block ImageSlider %}
+    {% endblock ImageSlider %}
+
+    {% block jumbotronBlock %}
+    {% endblock jumbotronBlock %}
+
+    {% block container %}
+
+    {% block content %}
+    <script src="{% static 'access/access.js' %}"></script>
+    {% if offuscate %}
+    <script src="{% static 'jwplayer/jwplayer_of.js' %}"></script>
+    {% else %}
+    <script src="{% static 'jwplayer/jwplayer.js' %}"></script>
+    {% endif %}
+    <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
+
+<div class="container-full">
+    <div class="row">
+            <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ course.name }}</h2>
+                <div id="jwplayerDiv">
+                </div>
+                <h4>{{ session.name }}</h4>
+
+            </div>
+            <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ ContentHeading }}</h2>
+                <div class="container">
+                <div class="panel-group" id="accordion">
+                {% for subj, subjdetails in coursedetails.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
+                                    <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                    <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                    <font size="4"> {{ subj }}</font>
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="{{ subj }}" class="collapse show">
+                        <div class="panel-body">
+                    {% for s in subjdetails %}
+                    {% for chapid, chapdetails in s.items %}
+
+                    <div class="panel">
+                            <div class="panel-heading">
+                             <h6 class="panel-title">
+                                 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
+                                     <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                     <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                     <font size="3"> {{ chapdetails.name }}</font>
+                                 </a>
+                             </h6>
+                         </div>
+                        <div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
+                            <div class="panel-child-body">
+                                <div class="list-group">
+                        {% for sess in chapdetails.sessions %}
+                        {% if sess.id == session.id %}
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                    <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
+                        {% else %}
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="box-no-border list-group-item">
+                                    <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                                {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                </div>
+        </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script type="text/javascript">
+    function getUTCTimeSecs() {
+     return new Date().getTime()/1000;
+    }
+
+    var coreapi = window.coreapi;
+    var client = new coreapi.Client();
+    var lasttime = 0;
+    var lastplayertime = 0;
+    var now = 0;
+    var nowplayer = 0;
+    var durationplayed = 0;
+    var lastdurationplayed = 0;
+    var lastdurationsent = 0;
+
+    function update() {
+      var durationdiff = durationplayed - lastdurationsent;
+      lastdurationsent = durationplayed;
+      var isDebug = "{{debug}}"
+      var url = window.location.protocol + "//" + window.location.hostname;
+      if (isDebug == "on") {
+          url = url + ":" + window.location.port;
+      }
+      url = url + "/course/updateDurationPlayed/" + "{{enrolledcourseid}}" + "/" + Math.floor(durationdiff);
+      var xmlHttp = new XMLHttpRequest();
+	  xmlHttp.open("GET", url, true);
+      xmlHttp.send()
+      //client.get(url)
+      //      .then(function (data) {})
+      //      .catch(function (error) {alert(error);});
+    }
+
+    function loadMediaPlayer(){
+        // offuscate 1
+        var _0x4a30=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x6A\x77\x70\x6C\x61\x74\x66\x6F\x72\x6D\x2E\x63\x6F\x6D\x2F\x6D\x61\x6E\x69\x66\x65\x73\x74\x73\x2F","\x2E\x6D\x33\x75\x38"];var cdnBase=_0x4a30[0];var ext=_0x4a30[1]
+
+        var isOwner = "{{isOwner}}";
+        var isLive = "{{isLive}}";
+        if (isOwner == "yes") {
+            if (isLive == "true") {
+            jwplayer("jwplayerDiv").setup({
+                file: "{{liveUrl}}"
+            });
+        } 
+        else {
+            jwplayer("jwplayerDiv").setup({
+                file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
+            });
+        }
+        }  else {
+            var accepted = 0;
+            var tracktime = 0;
+
+            if ("{{disableaccess}}") {
+            accepted = 1;
+            tracktime = 1;
+            } else {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = "{{debug}}"
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+            }
+            url = url + "/access/allow/{{user.id}}/" + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
+            }
+
+            if (accepted) {
+                if (isLive == "true") {
+                    jwplayer("jwplayerDiv").setup({
+                        file: "{{liveUrl}}"
+                    });
+                } else {
+                    jwplayer("jwplayerDiv").setup({
+                        file: cdnBase + "{{jwid}}" + ext + "?exp=" + "{{expiry}}" + "&sig=" + "{{digest}}"
+                    });
+                }
+
+                if(tracktime) {
+                // offuscate 2
+                var _0x6d84=["\x74\x69\x6D\x65","\x70\x6F\x73\x69\x74\x69\x6F\x6E","\x61\x62\x73","\x6C\x6F\x67","\x6F\x6E"];jwplayer()[_0x6d84[4]](_0x6d84[0],(_0x4785x1)=>{now= getUTCTimeSecs();nowplayer= _0x4785x1[_0x6d84[1]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x2=nowplayer- lastplayertime;if(_0x4785x2< 0){lastplayertime= nowplayer;lasttime= now;return};var _0x4785x3=now- lasttime;if(Math[_0x6d84[2]](_0x4785x3- _0x4785x2)< 3){durationplayed= durationplayed+ _0x4785x2;lastplayertime= nowplayer;lasttime= now;console[_0x6d84[3]](durationplayed);if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()};return};if(_0x4785x3> _0x4785x2){durationplayed= durationplayed+ _0x4785x2};console[_0x6d84[3]](durationplayed);lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> 60){lastdurationplayed= durationplayed;update()}})
+            }
+            }
+            else {
+                alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+            }
+        }
+    }
+
+    window.onload = function() {
+        var isPluginInstalled = false;
+        // ['Stream Video Downloader', 'All Video Downloader Professional', 'Video Downloader professional', 'Video Downloader PLUS', 'Web Video Downloader']
+        var chromePluginToTest = ['imkngaibigegepnlckfcbecjoilcjbhf', 'mhgnbemghokalfakmkhpnbneaoaigpnj', 'jpaglkhbmbmhlnpnehlffkgaaapoicnk', 'fhplmmllnpjjlncfjpbbpjadoeijkogc', 'dakbpnomcpnfffehgdgdcfkaljdfbggj']
+        var maxPluginToTest = chromePluginToTest.length;
+        var checkPluginInstalled = [];
+        for (var i = 0; i < maxPluginToTest; i++) {
+            checkPluginInstalled.push(-1);
+        }
+
+        function Ext_Detect_NotInstalled(index,ExtID) {
+            if (index < maxPluginToTest){
+                Ext_Detect(index);
+            }
+            else{
+                loadMediaPlayer();
+            }
+        }
+
+        function Ext_Detect_Installed(index,ExtID) {
+            alert("It seems like you have installed some plugin which can download the video, kindly disable them to access this content.");
+            location.reload();
+        }
+
+        var Ext_Detect = function(index) {
+            ExtID = chromePluginToTest[index];
+            index++;
+            var s = document.createElement('script');
+            s.onload = function(){Ext_Detect_Installed(index,ExtID);};
+            s.onerror = function(){Ext_Detect_NotInstalled(index,ExtID);};
+            s.src = 'chrome-extension://' + ExtID + '/manifest.json';
+            document.body.appendChild(s);
+        }
+
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+        if (is_chrome==true)
+        {
+            Ext_Detect(0);
+        }
+        else{
+            alert("Please use chrome to play this content!");
+        }
+
+    }
+
+
+    </script>
+    {%  endblock %}
+    {%  endblock container %}
+</html>
+

@@ -270,10 +270,13 @@ class addShowSchedule(showProviderHome):
         else:
             scheduleObj.autopublish = False
 
+        '''
         if request.POST.get('encrypt'):
             scheduleObj.encrypted = True
         else:
             scheduleObj.encrypted = False
+        '''
+        scheduleObj.encrypted = True
 
         scheduleObj.save()
         return redirect("schedule:add_show_schedule")
