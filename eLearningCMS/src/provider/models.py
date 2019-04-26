@@ -38,6 +38,11 @@ class Session(models.Model):
     duration = models.IntegerField(default=0)
     encrypted = models.BooleanField(default=False)
 
+class DrmSession(models.Model):
+    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    keyid = models.CharField(max_length=50, default='')
+    key = models.CharField(max_length=50, default='')
+
 class System(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     name = models.CharField(default='', max_length=100)

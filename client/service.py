@@ -80,7 +80,6 @@ def on_message(message):
     responseDict["id"] = serviceObj.encryptedid
     messageDict = json.loads(message)
 
-
     if "command" in messageDict.keys():
         machine = messageDict["machine"]
         # check if this client is intended recipient
@@ -97,6 +96,8 @@ def on_message(message):
                 serviceObj.chapterid = messageDict["chapterid"]
                 serviceObj.publish = messageDict["publish"]
                 serviceObj.encrypted = messageDict["encrypted"]
+                serviceObj.drmkeyid = messageDict["drmkeyid"]
+                serviceObj.drmkey = messageDict["drmkey"]
                 serviceObj.mediaServer = messageDict["mediaServer"]
                 serviceObj.mediaServerApp = messageDict["mediaServerApp"]
                 serviceObj.live = messageDict["live"]
@@ -126,6 +127,8 @@ def on_message(message):
                 responseDict["chapterid"] = serviceObj.chapterid
                 responseDict["publish"] = serviceObj.publish
                 responseDict["encrypted"] = serviceObj.encrypted
+                responseDict["drmkeyid"] = serviceObj.drmkeyid
+                responseDict["drmkey"] = serviceObj.drmkey
 
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
@@ -199,6 +202,8 @@ class ClientService(object):
     chapterid = None
     publish = False
     encrypted = False
+    drmkeyid = ''
+    drmkey = ''
     debug = False
     encryptedid = None
     clientid = None

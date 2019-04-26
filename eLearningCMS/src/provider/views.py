@@ -65,18 +65,7 @@ def getProviderStats(providerId):
     
     providerStatsInfo['totalStudents'] = '{:,}'.format(totalStudents)
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
-
-    # totalSessionPlayed = 0
-    # for session in sessionObj:
-    #     sessionStatsObj = course.models.SessionStats.objects.filter(session_id=session.id)
-    #     if(len(sessionStatsObj) > 0):
-    #         statsDict = json.loads(sessionStatsObj[0].stats)
-    #         for key in statsDict:
-    #             totalSessionPlayed += statsDict[key]
-    #providerStatsInfo['totalSessionPlayed'] = '{:,}'.format(totalSessionPlayed)
-
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
-
     providerStatsInfo['piechartArray'] = courses
     return providerStatsInfo
 
@@ -205,11 +194,6 @@ def saveCourseContent(request,courseId):
                         sessionObj.tags = chapterObj.subject
                         sessionObj.save()
                         sessionId = str(sessionObj.id)
-
-                        # create thread to compute duration
-                        callbackObj = SessionDurationFetch(sessionObj)
-                        t = thread.AppThread(callbackObj, True, 120)
-                        t.start()
 
                     sessionsIdArr.append(sessionId)
                     if course.algos.str2bool(filePublishedArr[j]):
@@ -628,7 +612,6 @@ class addStudents(showProviderHome):
         if len(modules) == 0 and fullCourses == '':
             return self.get(request, *args, **kwargs)
 
-        #return self.get(request, *args, **kwargs)
         # create users and students from emails
         User = get_user_model()
         for email in emailsList:
@@ -693,23 +676,5 @@ class addStudents(showProviderHome):
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()
                 # creare user
-            #profiles.signals.sendMail(email, subject, emailBody)
-
-
-        #courseid = self.request.POST.get('courselist', '')
-        #courseObj = course.models.Course.objects.filter(id=courseid)[0]
-
-        #courseUrl = 'https://www.gyaanhive.com/course/coursePage/' + str(courseObj.id)
-
-        #subject = 'Welcome to Gyaanhive'
-        #emailBody = 'Dear Student,\nYou have been added as a student by ' + request.user.name + ' for ' + courseObj.name + '.\
-#Sign up at https://www.gyaanhive.com to register. After registering login and Join at ' + courseUrl + ' after registering and login.\n\
-#If you have already enrolled, then view the contents at ' + courseUrl + '\n.\
-#Thanks\n\
-#Gyaanhive Team'
-
-#        for email in str.split(emails, ','):
-#            if len(email) > 0:
-#                profiles.signals.sendMail(email, subject, emailBody)
         return self.get(request, *args, **kwargs)
 

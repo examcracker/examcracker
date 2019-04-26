@@ -130,7 +130,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False, encrypted=False):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey=''):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
@@ -146,6 +146,13 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False):
     sessionObj.encrypted = encrypted
     sessionObj.save()
 
+    if encrypted:
+        drmsessionObj = provider.models.DrmSession()
+        drmsessionObj.session_id = sessionObj.id
+        drmsessionObj.keyid = drmkeyid
+        drmsessionObj.key = drmkey
+        drmsessionObj.save()
+
     publishstatus = "0"
     if publish:
         publishstatus = "1"
@@ -159,11 +166,6 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False):
     else:
         chapterObj.published = publishstatus
     chapterObj.save()
-
-    # create thread to compute duration
-    callbackObj = provider.views.SessionDurationFetch(sessionObj)
-    t = thread.AppThread(callbackObj, True, 30)
-    t.start()
 
     # send mail to provider that new session has been added
     userObj = User.objects.filter(id=providerObj.user_id)[0]
@@ -214,7 +216,7 @@ class saveClientSession(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
-        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]))
+        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]),jsonObj["drmkeyid"], jsonObj["drmkey"])
         return schedule.views.HttpResponseNoContent()
 
 @api_view(['GET'])

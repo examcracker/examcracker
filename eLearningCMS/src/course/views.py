@@ -317,9 +317,6 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             checkPublished = False
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
-        #if sessionObj.duration == 0:
-        #    raise Http404()
-
         kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished)
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
@@ -331,17 +328,19 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
-KEY_ID = "a7e61c373e219033c21091fa607bf3b8"
-KEY = "76a6c65c5ea762046bd749a2e632ccbb"
-
 class playSessionEnc(playSession):
     http_method_names = ['get']
     template_name = 'playSessionEnc.html'
 
     def get(self, request, chapterid, sessionid, *args, **kwargs):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
-        kwargs["keyid"] = KEY_ID
-        kwargs["key"] = KEY
+
+        if not sessionObj.encrypted:
+            return Http404()
+
+        drmsessionObj = provider.models.DrmSession.objects.filter(id=sessionObj.id)[0]
+        kwargs["keyid"] = drmsessionObj.keyid
+        kwargs["key"] = drmsessionObj.key
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):

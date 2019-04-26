@@ -28,6 +28,8 @@ PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
 PUSHER_SECRET = "35f5a7cde33cd756c30d"
 PUSHER_CLUSTER = "ap2"
+DRM_KEY_ID = "a7e61c373e219033c21091fa607bf3b8"
+DRM_KEY = "76a6c65c5ea762046bd749a2e632ccbb"
 
 # Commands
 command_start = 0
@@ -298,6 +300,8 @@ def createDictSchedule(scheduleObj, command):
     dictObj["live"] = True
     dictObj["dokey"] = settings.DIGITAL_OCEAN_SPACE_KEY
     dictObj["dokeysecret"] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
+    dictObj["drmkeyid"] = DRM_KEY_ID
+    dictObj["drmkey"] = DRM_KEY
     return dictObj
 
 def getStreamUrl(streamname):
