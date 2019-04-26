@@ -307,9 +307,11 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                     enrolledCourseObj.save()
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
+        courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+        courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
         if request.user.is_staff:
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
-            courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+            
             if courseObj.provider_id != providerObj.id:
                 raise Http404()
 
@@ -322,7 +324,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
         kwargs["ContentHeading"] = 'Contents'
-
+        kwargs["bucketname"] = courseOwnerObj.bucketname
         kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
 

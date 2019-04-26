@@ -17,6 +17,7 @@ class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     approved = models.BooleanField(default=False)
     encryptedid = models.CharField(default='', max_length=30)
+    bucketname = models.CharField(default='', max_length=100)
 
     def save(self):
         super().save()

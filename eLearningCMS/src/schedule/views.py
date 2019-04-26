@@ -396,7 +396,9 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         providerObj = provider.models.Provider.objects.filter(id=scheduleObj.provider_id)[0]
 
         pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
-        pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_start))
+        scheduleDict = createDictSchedule(scheduleObj, command_start)
+        scheduleDict['bucketname'] = providerObj.bucketname
+        pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):

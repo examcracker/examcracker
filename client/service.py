@@ -104,6 +104,7 @@ def on_message(message):
                 serviceObj.timeout = int(messageDict["duration"])*60
                 serviceObj.dokey = messageDict["dokey"]
                 serviceObj.dokeysecret = messageDict["dokeysecret"]
+                serviceObj.bucketname = messageDict["bucketname"]
                 serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                 serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
                 sendCaptureResponse(True, serviceObj.encryptedid,serviceObj.liveStreamName)
@@ -219,6 +220,7 @@ class ClientService(object):
     mp4dashpath = ''
     dokey = ''
     dokeysecret = ''
+    bucketname = ''
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -409,7 +411,7 @@ class ClientService(object):
                 mp4dashProc = subprocess.call([self.mp4dashpath, '-o', mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
                 #mp4dashProc.communicate()
                 # upload mpd file to digital ocean
-                self.upload_directory_to_DO(tmpdir,'gyaanhive')
+                self.upload_directory_to_DO(tmpdir,self.bucketname)
                 # Now remove all temporary files created
                 self.removeTempFiles(tmpFiles)
                 

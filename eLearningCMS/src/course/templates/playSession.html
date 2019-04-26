@@ -110,6 +110,7 @@
 
 	var isOwner = "{{isOwner}}";
 	var isLive = "{{isLive}}";
+    var bucketname = "{{bucketname}}";
 
 	function getUTCTimeSecs() {
 		return new Date().getTime()/1000;
@@ -215,7 +216,7 @@
 			manifest = "{{liveUrl}}";
         }
         else {
-            manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+            manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
         }
 		document.addEventListener('DOMContentLoaded', initApp);
 	} else {
@@ -243,7 +244,7 @@
 			if (isLive == "true") {
 				manifest = "{{liveUrl}}";
 			} else {
-				manifest = "https://gyaanhive.sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
+				manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + "{{ videokey }}" + "/" + "{{ videokey }}" + ".mpd";
 			}
 
 			if(tracktime) {
