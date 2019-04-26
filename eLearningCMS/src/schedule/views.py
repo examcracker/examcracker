@@ -296,12 +296,14 @@ def createDictSchedule(scheduleObj, command):
     dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
     dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
     dictObj["live"] = True
+    dictObj["dokey"] = settings.DIGITAL_OCEAN_SPACE_KEY
+    dictObj["dokeysecret"] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
     return dictObj
 
 def getStreamUrl(streamname):
     #hlsurl = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + ':' + settings.MEDIA_SERVER_HTTPS_PORT + '/hls/' + streamname + '.m3u8'
-    hlsurl = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
-    return hlsurl
+    url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
+    return url
 
 #LoginRequiredMixin
 class playStream(LoginRequiredMixin,generic.TemplateView):

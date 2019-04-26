@@ -101,6 +101,8 @@ def on_message(message):
                 serviceObj.mediaServerApp = messageDict["mediaServerApp"]
                 serviceObj.live = messageDict["live"]
                 serviceObj.timeout = int(messageDict["duration"])*60
+                serviceObj.dokey = messageDict["dokey"]
+                serviceObj.dokeysecret = messageDict["dokeysecret"]
                 serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                 serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
                 sendCaptureResponse(True, serviceObj.encryptedid,serviceObj.liveStreamName)
@@ -210,6 +212,8 @@ class ClientService(object):
     mp4fragpath = ''
     mp4encryptpath = ''
     mp4dashpath = ''
+    dokey = ''
+    dokeysecret = ''
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -294,15 +298,20 @@ class ClientService(object):
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
 
-    def upload_directory_to_DO(self,path,bucketname):
-        # Initialize a session using DigitalOcean Spaces.
-        LOG.info ("Uploading mpd file to Digital ocean space")
+    def getUploadClient(self):
         session = boto3.session.Session()
         client = session.client('s3',
                         region_name='sgp1',
                         endpoint_url='https://sgp1.digitaloceanspaces.com',
-                        aws_access_key_id='V2ERLGS6TEFEJMD7OVYE',
-                        aws_secret_access_key='+Q+Yn9dRjlAgussQ0KDXXPCr0q7d9jCDgq6LJMaZlPw')
+                        aws_access_key_id=self.dokey,
+                        aws_secret_access_key=self.dokeysecret)
+        return client
+
+    def upload_directory_to_DO(self,path,bucketname):
+        # Initialize a session using DigitalOcean Spaces.
+        LOG.info ("Uploading mpd file to Digital ocean space")
+        client = self.getUploadClient()
+
         for root, dirs, files in os.walk(path):
             nested_dir = root.replace(path, '')
             if nested_dir:

@@ -20,7 +20,7 @@
             <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
                 <div id="shakaplayer">
-                    <video id="encplayer" controls preload="auto" width="80%" height="80%"></video>
+                    <video id="encplayer" controls preload="auto" width="80%" height="80%" {% if isLive == "true" %} autoplay {% endif %}></video>
                 </div>
                 <h4>{{ session.name }}</h4>
 
@@ -198,14 +198,16 @@
 	function initPlayer() {
 		video = document.getElementById('encplayer');
 		var player = new shaka.Player(video);
-		player.configure({
-			drm: {
-				clearKeys: {
-					"{{ keyid }}": "{{ key }}",
-					"{{ keyid }}": "{{ key }}"
-				}
-			}
-		});
+    if (isLive == "false") {
+		  player.configure({
+			  drm: {
+				  clearKeys: {
+					  "{{ keyid }}": "{{ key }}",
+					  "{{ keyid }}": "{{ key }}"
+				  }
+			  }
+		  });
+    }
 
 		if(isOwner != "yes") {
 			video.addEventListener('timeupdate', onPlaying);
