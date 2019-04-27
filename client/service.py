@@ -390,9 +390,9 @@ class ClientService(object):
                 encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
                 tmpFiles.append(encfilepath)
                 mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
-                                                   "--key", "1:" + KEY + ":0000000000000000", "--property", "1:KID:" + KEY_ID,
+                                                   "--key", "1:" + self.drmkey + ":0000000000000000", "--property", "1:KID:" + self.drmkeyid,
                                                    "--global-option", "mpeg-cenc.eme-pssh:true",
-                                                   "--key", "2:" + KEY + ":0000000000000000", "--property", "2:KID:" + KEY_ID,
+                                                   "--key", "2:" + self.drmkey + ":0000000000000000", "--property", "2:KID:" + self.drmkeyid,
                                                    fragfilepath, encfilepath])
                 mp4encryptProc.communicate()
                 LOG.info ("Create encrypted mpd file and upload to CDN")

@@ -339,10 +339,15 @@ class playSessionEnc(playSession):
 
         if not sessionObj.encrypted:
             return Http404()
-
-        drmsessionObj = provider.models.DrmSession.objects.filter(id=sessionObj.id)[0]
-        kwargs["keyid"] = drmsessionObj.keyid
-        kwargs["key"] = drmsessionObj.key
+        
+        drmsessionObj = provider.models.DrmSession.objects.filter(id=sessionObj.id)
+        if len(drmsessionObj) != 0 :
+            drmsessionObj = drmsessionObj[0]
+            kwargs["keyid"] = drmsessionObj.keyid
+            kwargs["key"] = drmsessionObj.key
+        else:
+            kwargs["keyid"] = settings.DRM_KEY_ID
+            kwargs["key"] = settings.DRM_KEY
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):
