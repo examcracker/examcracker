@@ -120,7 +120,7 @@
 									</div>
 								</div>
 								<div class="form-row">
-										<div class="col-md-6 mb-3">
+										<div class="col-md-4 mb-2">
 									<label for="cDuration">Duration (months)</label>
 									<div class="input-group">
 										<div class="input-group-prepend">
@@ -130,10 +130,15 @@
 										name="courseDuration" id="cDuration" placeholder="Duration" aria-describedby="cDuration" required>
 									</div>
 									</div>
-									<div class="col-md-6 mb-3">
+									<div class="col-md-4 mb-2">
 										<label for="cCost">Cost (INR)</label>
 										<input type="number" class="form-control" value= {% if editCourse %} "{{editCourse.cost}}" {% else %} 10000 {% endif %}
 										name="courseCost" id="cCost" placeholder="Cost" required>
+									</div>
+									 <div class="col-md-4 mb-2">
+										<label for="cPublic">Visible to Purchase</label>
+										<input type="checkbox" class="form-control md" {% if editCourse %} {% if editCourse.public == 1 %} checked {% endif %} {% else %} checked {% endif %}
+										name="coursePublic" id="cPublic" >
 									</div>
 								</div>
 
