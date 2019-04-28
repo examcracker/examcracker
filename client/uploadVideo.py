@@ -13,6 +13,8 @@ class uploadVideo:
 		self.clientId = clientId
 		api_key = r'03IfLqqB'
 		api_secret = r'AK6y0bBoyEOHASfYwE5xUnWw'
+		#api_key = r'avfMTzPK'
+		#api_secret = r'k7HIvXAueCNF0G7I8A88Ecor'
 		# Setup API client
 		self.jwplatform_client = jwplatform.Client(api_key, api_secret)
 		

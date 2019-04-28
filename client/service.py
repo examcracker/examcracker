@@ -2,6 +2,7 @@ from __future__ import print_function
 from Crypto.Cipher import AES
 import captureFeed
 import uploadVideo
+import uploadVideoDO
 import configparser
 import os
 import sys
@@ -22,8 +23,8 @@ import glob
 import socket
 import sendMail
 import subprocess
-import boto3
-from botocore.client import Config
+import multiprocessing
+
 
 try:
     import thread
@@ -133,6 +134,8 @@ def on_message(message):
 
                 responseDict["id"] = serviceObj.clientid
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName)
+
         elif command == api.command_upload_logs:
             lineCount = 50
             if 'lineCount' in messageDict.keys():
@@ -169,6 +172,8 @@ def on_message(message):
             responseDict["publish"] = messageDict["publish"]
             responseDict["id"] = messageDict["id"]
             httpReq.send(serviceObj.url, "/cdn/uploadFileStatus/", json.dumps(responseDict))
+
+            serviceObj.uploadOriginalFileToCDN(filePath)
             
         elif command == api.command_check_client_active:
             responseDict['result'] = api.status_client_active
@@ -242,7 +247,8 @@ class ClientService(object):
         self.mp4encryptpath = os.path.join(dir_path,"bin" ,"mp4encrypt.exe")
         self.mp4dashpath = os.path.join(dir_path,"bin" ,"mp4dash.bat")
 
-        self.upload = uploadVideo.uploadVideo(self.clientid)
+        self.uploadJW = uploadVideo.uploadVideo(self.clientid)
+        self.upload = uploadVideoDO.uploadVideoDO(self.clientid)
         self.timeout = 0
         self.captureStartTime = -1
         self.ffmpegProcName = "ffmpeg.exe"
@@ -256,6 +262,8 @@ class ClientService(object):
         self.TEST_REMOTE_SERVER = "www.google.com"
 
         self.osleep = WindowsInhibitor()
+
+        self.tmpfolder = 'tmp'
 
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
@@ -305,14 +313,7 @@ class ClientService(object):
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
 
-    def getUploadClient(self):
-        session = boto3.session.Session()
-        client = session.client('s3',
-                        region_name='sgp1',
-                        endpoint_url='https://sgp1.digitaloceanspaces.com',
-                        aws_access_key_id=self.dokey,
-                        aws_secret_access_key=self.dokeysecret)
-        return client
+    
 
     def upload_directory_to_DO(self,path,bucketname):
         # Initialize a session using DigitalOcean Spaces.
@@ -341,7 +342,7 @@ class ClientService(object):
             else:
                 shutil.rmtree(fileDir)
 
-    def uploadFileToCDN(self, filePath):
+    def uploadFileToJWCDN(self, filePath):
         # Stopping windows to go in sleep mode while we upload a file
         try:
             self.osleep.inhibit()
@@ -358,7 +359,7 @@ class ClientService(object):
 
             while retryCount < self.uploadRetryCount:
                 try:
-                    uploadResponse = self.upload.uploadVideoJW(filePath)
+                    uploadResponse = self.uploadJW.uploadVideoJW(filePath)
                     LOG.info ("Uploading done")
                     LOG.debug("Video Server response: " + str(uploadResponse))
                     break
@@ -378,42 +379,87 @@ class ClientService(object):
                     LOG.error("Exception in uploading the file: " + str(ex))
                     uploadResponse['fail_reason'] = str(ex)
                     continue
-            # uploading of original file done, so now check encryption flow
-            if self.encrypted:
-                tmpFiles = []
-                dirname = os.path.dirname(filePath)
-                fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
-                tmpFiles.append(fragfilepath)
-                mp4fragmentProc = subprocess.Popen([self.mp4fragpath,'--fragment-duration' ,'20000',filePath, fragfilepath])
-                mp4fragmentProc.communicate()
-
-                encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
-                tmpFiles.append(encfilepath)
-                mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
-                                                   "--key", "1:" + self.drmkey + ":0000000000000000", "--property", "1:KID:" + self.drmkeyid,
-                                                   "--global-option", "mpeg-cenc.eme-pssh:true",
-                                                   "--key", "2:" + self.drmkey + ":0000000000000000", "--property", "2:KID:" + self.drmkeyid,
-                                                   fragfilepath, encfilepath])
-                mp4encryptProc.communicate()
-                LOG.info ("Create encrypted mpd file and upload to CDN")
-                videoKey = ''
-                if 'videoKey' in uploadResponse.keys():
-                    videoKey = uploadResponse['videoKey']
-                # create temporary directory and create mpd file in tmp directory
-                tmpfolder = 'tmp'
-                tmpdir = os.path.join(dirname,tmpfolder)
-                if not os.path.isdir(tmpdir):
-                    os.mkdir(tmpdir)
                 
-                mpdoutpath = os.path.join(tmpdir,videoKey)
-                tmpFiles.append(mpdoutpath)
-                mpdfilename = videoKey+'.mpd'
-                mp4dashProc = subprocess.call([self.mp4dashpath, '-o', mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
-                #mp4dashProc.communicate()
+            return uploadResponse
+        except Exception as ex:
+             LOG.error("Exception in uploading the file: " + str(ex))
+             uploadResponse['fail_reason'] = str(ex)
+             return uploadResponse
+
+        finally:
+            self.osleep.uninhibit()
+
+    def encryptTheContent(self, filePath):
+        self.tmpFiles = []
+        dirname = os.path.dirname(filePath)
+        fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
+        self.tmpFiles.append(fragfilepath)
+        mp4fragmentProc = subprocess.Popen([self.mp4fragpath,'--fragment-duration' ,'20000',filePath, fragfilepath])
+        mp4fragmentProc.communicate()
+
+        encfilepath = os.path.join(dirname, os.path.basename(fragfilepath).split("_frag.mp4")[0] + "_enc.mp4")
+        self.tmpFiles.append(encfilepath)
+        mp4encryptProc = subprocess.Popen([self.mp4encryptpath, "--method", "MPEG-CENC",
+                                        "--key", "1:" + self.drmkey + ":0000000000000000", "--property", "1:KID:" + self.drmkeyid,
+                                        "--global-option", "mpeg-cenc.eme-pssh:true",
+                                        "--key", "2:" + self.drmkey + ":0000000000000000", "--property", "2:KID:" + self.drmkeyid,
+                                        fragfilepath, encfilepath])
+        mp4encryptProc.communicate()
+        LOG.info ("Create encrypted mpd file and upload to CDN")
+        self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(serviceObj.clientid)
+        # create temporary directory and create mpd file in tmp directory
+        self.tmpdir = os.path.join(dirname,self.tmpfolder)
+        if not os.path.isdir(self.tmpdir):
+            os.mkdir(self.tmpdir)
+        
+        self.mpdoutpath = os.path.join(self.tmpdir,self.videoKey)
+        self.tmpFiles.append(self.mpdoutpath)
+        mpdfilename = self.videoKey+'.mpd'
+        mp4dashProc = subprocess.call([self.mp4dashpath, '-o', self.mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
+        #mp4dashProc.communicate()
+
+    def uploadOriginalFileToCDN(self, filePath):
+        # Stopping windows to go in sleep mode while we upload a file
+        try:
+            self.osleep.inhibit()
+            self.upload.uploadOriginalVideo(self.bucketname, self.dokey, self.dokeysecret, filePath, self.videoKey)
+        except Exception as ex:
+             LOG.error("Exception in uploading the original file: " + str(ex))
+
+        finally:
+            self.osleep.uninhibit()
+
+    def uploadFileToCDN(self, filePath):
+        # Stopping windows to go in sleep mode while we upload a file
+        try:
+            self.osleep.inhibit()
+            LOG.info ("Uploading file to server: " + str(filePath))
+            uploadResponse = {}
+            if not os.path.isfile(filePath):
+                uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
+                return uploadResponse 
+
+            if os.stat(filePath).st_size == 0:
+                uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
+                return uploadResponse
+
+            self.upload.alreadyUploadedList = []
+
+            try:
+                # Start encryption
+                self.encryptTheContent(filePath)
                 # upload mpd file to digital ocean
-                self.upload_directory_to_DO(tmpdir,self.bucketname)
+                self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
+                uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
                 # Now remove all temporary files created
-                self.removeTempFiles(tmpFiles)
+                self.removeTempFiles(self.tmpFiles)
+                LOG.info ("Uploading done")
+                LOG.debug("Video Server response: " + str(uploadResponse))
+
+            except Exception as ex:
+                LOG.error("Exception in uploading the file: " + str(ex))
+                uploadResponse['fail_reason'] = str(ex)
+                self.removeTempFiles(self.tmpFiles)
                 
             return uploadResponse
         except Exception as ex:
@@ -499,6 +545,7 @@ class ClientService(object):
                     responseDict["chapterid"] = self.chapterid
                     responseDict["publish"] = self.publish
                     httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                    self.uploadOriginalFileToCDN(self.capture.outputFileName)
             
             waitCounterForCleaningFiles += 1
             if waitCounterForCleaningFiles > self.checkFolderInterval:

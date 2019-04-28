@@ -54,8 +54,7 @@ class captureFeed:
         self.timeout = timeout
 
     def startCapturing(self):
-
-        self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
+		#os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
         if self.mediaServer != None and self.liveFlag == True:
             self.outputFileName = self.outputFileName.replace('\\','/')
             scheduleid = self.liveStreamName.split('__')[1]
@@ -95,7 +94,7 @@ class captureFeed:
             self.LOG.error("Exception in killing ffmpeg process by psutil: "+ str(ex))
 
     def stopCapturing(self):
-    	try:
+        try:
             #self.kernel32.FreeConsole()
             os.kill(self.ffmpegProc.pid, signal.CTRL_BREAK_EVENT)
             time.sleep(5)
@@ -122,8 +121,8 @@ class captureFeed:
             if self.ffmpegProc.poll() is None:
                 self.killProcessForcefully(self.ffmpegProc.pid)
             
-            self.ffmpegLog.close()		
-    	except Exception as ex:
+            self.ffmpegLog.close()
+        except Exception as ex:
             self.LOG.error("Exception in killing ffmpeg process: "+ str(ex))
             self.killProcessForcefully(self.ffmpegProc.pid)
 			
