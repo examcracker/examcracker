@@ -1,55 +1,155 @@
 https://javascriptobfuscator.com/Javascript-Obfuscator.aspx
 
-off 1
-var cdnBase = "https://content.jwplatform.com/manifests/";
-var ext = ".m3u8";
+function getUTCTimeSecs() {
+		return new Date().getTime()/1000;
+	}
 
-off 2
-jwplayer().on('time', (data) =>
-                {
-                  now = getUTCTimeSecs();
-                  nowplayer = data.position;
+	function update() {
+		var durationdiff = durationplayed - lastdurationsent;
+		lastdurationsent = durationplayed;
+		var isDebug = debug;
+		var url = window.location.protocol + "//" + window.location.hostname;
+		if (isDebug == "on") {
+			url = url + ":" + window.location.port;
+		}
+		url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff);
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", url, true);
+		xmlHttp.send();
+	}
 
-                  if (lasttime == 0) {
-                    lastplayertime = nowplayer;
-                    lasttime = now;
-                    return;
-                  }
+	function onPlaying() {
+		now = getUTCTimeSecs();
+		nowplayer = video.currentTime;
 
-                  var playergap = nowplayer - lastplayertime;
-                  if(playergap < 0) {
-                    lastplayertime = nowplayer;
-                    lasttime = now;
-                    return;
-                  }
+		if (lasttime == 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
 
-                  var systemgap = now - lasttime;
-                  if(Math.abs(systemgap - playergap) < 3) {
-                   durationplayed = durationplayed + playergap;
-                   lastplayertime = nowplayer;
-                   lasttime = now;
+		playergap = nowplayer - lastplayertime;
+		if(playergap < 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
 
-                   console.log(durationplayed);
+		var systemgap = now - lasttime;
+		if(Math.abs(systemgap - playergap) < 3) {
+			durationplayed = durationplayed + playergap;
+			lastplayertime = nowplayer;
+			lasttime = now;
 
-                   if(durationplayed - lastdurationplayed > 60) {
-                     lastdurationplayed = durationplayed;
-                     update();
-                   }
-                   return;
-                  }
+			//console.log(durationplayed);
 
-                  // system time and player time deviations are different, either its paused, stalled or sought forward
-                  if(systemgap > playergap) {
-                   durationplayed = durationplayed + playergap;
-                  }
+			if(durationplayed - lastdurationplayed > 60) {
+				lastdurationplayed = durationplayed;
+				update();
+			}
+			return;
+		}
 
-                  console.log(durationplayed);
+		// system time and player time deviations are different, either its paused, stalled or sought forward
+		if(systemgap > playergap) {
+			durationplayed = durationplayed + playergap;
+		}
 
-                  lastplayertime = nowplayer;
-                  lasttime = now;
+		//console.log(durationplayed);
 
-                  if(durationplayed - lastdurationplayed > 60) {
-                     lastdurationplayed = durationplayed;
-                     update();
-                   }
-                });
+		lastplayertime = nowplayer;
+		lasttime = now;
+
+		if(durationplayed - lastdurationplayed > 60) {
+			lastdurationplayed = durationplayed;
+			update();
+		}
+	}
+
+	function onErrorEvent(event) {
+		onError(event.detail);
+	}
+
+	function onError(error) {
+		console.error('Error code', error.code, 'object', error);
+	}
+
+	function initApp() {
+		shaka.polyfill.installAll();
+
+		if (shaka.Player.isBrowserSupported()) {
+			initPlayer();
+		} else {
+			console.error('Browser not supported!');
+		}
+	}
+
+	function initPlayer() {
+		video = document.getElementById('encplayer');
+		var player = new shaka.Player(video);
+		if (isLive == "false") {
+			player.configure({
+				drm: {
+					clearKeys: {
+						keyid: key,
+						keyid: key
+					}
+				}
+			});
+		}
+
+		if(isOwner != "yes") {
+			video.addEventListener('timeupdate', onPlaying);
+		}
+
+		window.player = player;
+
+		player.addEventListener('error', onErrorEvent);
+		player.load(manifest).then(function() {
+		}).catch(onError);
+	}
+
+    if (isOwner == "yes") {
+        if (isLive == "true") {
+			manifest = liveUrl;
+        }
+        else {
+            manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + videokey + "/" + videokey + ".mpd";
+        }
+		document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+		var accepted = 0;
+        var tracktime = 0;
+
+        if (disableaccess) {
+            accepted = 1;
+            tracktime = 1;
+        } else {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = debug;
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+            }
+            url = url + accessurl + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
+        }
+
+		if (accepted) {
+			if (isLive == "true") {
+				manifest = iveUrl;
+			} else {
+				manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + videokey + "/" + videokey + ".mpd";
+			}
+
+			if(tracktime) {
+				document.addEventListener('DOMContentLoaded', initApp);
+			}
+        }
+        else {
+            alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+        }
+	}
