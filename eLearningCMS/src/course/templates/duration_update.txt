@@ -91,8 +91,8 @@ function getUTCTimeSecs() {
 			player.configure({
 				drm: {
 					clearKeys: {
-						keyid: key,
-						keyid: key
+						keyid : key,
+						keyid : key
 					}
 				}
 			});
@@ -140,7 +140,7 @@ function getUTCTimeSecs() {
 
 		if (accepted) {
 			if (isLive == "true") {
-				manifest = iveUrl;
+				manifest = liveUrl;
 			} else {
 				manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + videokey + "/" + videokey + ".mpd";
 			}

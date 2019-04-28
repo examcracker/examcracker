@@ -42,7 +42,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notifications"] = reversed(notifications)
             
         category = "ALL Courses"
-        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 ORDER BY created')
+        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and public = 1 ORDER BY created')
         kwargs["allCourses"] = algos.getCourseDetailsForCards(request, allCourses)
         kwargs["category"] = category
         
@@ -70,7 +70,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
+        notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and public = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
         kwargs["remaining_courses"] = algos.getCourseDetailsForCards(request, notJoinedCourses)
         return super().get(request, *args, **kwargs)
 

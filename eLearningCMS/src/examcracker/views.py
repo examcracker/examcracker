@@ -59,6 +59,7 @@ class listCourses(fillCartCourses):
     
     def get(self, request, *args, **kwargs):
         courseList = getPublishedCourses()
+        courseList = courseList.filter(public=1)
         providerObj = getProvider(request)
         if providerObj:
             kwargs["providerId"] = providerObj.id
@@ -74,6 +75,7 @@ class HomePage(fillCartCourses):
     def get(self, request, *args, **kwargs):
         examsList = getExams()
         courseList = getPublishedCourses()
+        courseList = courseList.filter(public=1)
         providerObj = getProvider(request)
         if providerObj:
             kwargs["providerId"] = providerObj.id

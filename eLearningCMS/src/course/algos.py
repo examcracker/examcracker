@@ -230,7 +230,7 @@ def searchCourseByText(searchText,examText=None,providerText=None):
     User = get_user_model()
     
     # get all courses and providers, then apply filter queries on them
-    courseList = models.Course.objects.filter(published=1)
+    courseList = models.Course.objects.filter(published=1,public=1)
     allProviders = getProviders(True)
 
     if examText is not None:

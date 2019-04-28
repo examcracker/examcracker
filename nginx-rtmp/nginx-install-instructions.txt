@@ -9,3 +9,20 @@ cd nginx-1.8.0
 ./configure --with-http_ssl_module --with-http_auth_request_module –add-module=../nginx-rtmp-module-master
 make
 sudo make install
+
+
+./configure --add-module=/root/working/nginx-rtmp-module-master --with-http_ssl_module --with-http_auth_request_module
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo add-apt-repository universe
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get install certbot python-certbot-nginx 
+make
+sudo make install
+sudo apt update
+mkdir dash
+sudo /usr/local/nginx/sbin/nginx -s stop
+sudo /usr/local/nginx/sbin/nginx
+sudo certbot --nginx -d www.live.gyaanhive.com
+/usr/bin/certbot renew --quiet --pre-hook "/bin/systemctl stop nginx" --post-hook "/bin/systemctl start nginx"

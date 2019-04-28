@@ -279,6 +279,11 @@ class createCourse(coursePageBase):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
+        if 'coursePublic' in self.request.POST:
+            courseObj.public = True
+        else:
+            courseObj.public = False
+        
 
         defaultPic = "course_pics/1.jpg"
         currentPic = ""
