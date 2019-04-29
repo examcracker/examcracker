@@ -54,6 +54,7 @@ class captureFeed:
         self.timeout = timeout
 
     def startCapturing(self):
+        self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
 		#os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
         if self.mediaServer != None and self.liveFlag == True:
             self.outputFileName = self.outputFileName.replace('\\','/')
