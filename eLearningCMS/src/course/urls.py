@@ -11,4 +11,5 @@ urlpatterns = [
      path('playSession/<int:chapterid>/<int:sessionid>', views.playSession.as_view(), name="playSession"),
      path('playSessionEnc/<int:chapterid>/<int:sessionid>', views.playSessionEnc.as_view(), name="playSessionEnc"),
      path('updateDurationPlayed/<int:enrolledcourseid>/<int:duration>', views.updateDuration),
+     path('updateDurationPlayedProvider/<int:courseid>/<int:duration>', views.updateDurationProvider),
 ]

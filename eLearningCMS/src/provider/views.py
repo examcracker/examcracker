@@ -54,12 +54,14 @@ def getProviderStats(providerId):
     providerStatsInfo['totalSessions'] = '{:,}'.format(len(sessionObj))
     totalStudents = 0
     totalRevenue = 0
+    totalViewedMinutes = 0
     for courseObj in coursesObj:
         courseStat = []
         courseStat.append(courseObj.name)
         studentsPerCourse = len(course.models.EnrolledCourse.objects.filter(course_id=courseObj.id))
         totalStudents += studentsPerCourse
         totalRevenue += int(studentsPerCourse*courseObj.cost)
+        totalViewedMinutes += int(courseObj.completedseconds/60)
         courseStat.append(studentsPerCourse)
         courses.append(courseStat)
     
@@ -67,6 +69,7 @@ def getProviderStats(providerId):
     providerStatsInfo['totalRevenue'] = '{:,}'.format(totalRevenue)
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
     providerStatsInfo['piechartArray'] = courses
+    providerStatsInfo['completedtime'] = str(int(totalViewedMinutes/60)) + " : " + str(int(totalViewedMinutes%60))
     return providerStatsInfo
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):

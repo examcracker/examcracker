@@ -53,6 +53,25 @@
                 </div>
           </div>
           </div>
+		  <div class="card text-white bg-info clickableCard">
+		    <a href="{% url 'provider:view_courses' %}"></a>
+            <div class="card-body">
+                  <div class="row">
+                      <div class="col-md-5">
+                          <h1 class="text-center display-2">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                          </h1>
+                          </div>
+                          <div class="col-md-7">
+                              <h1 class="text-center display-4">
+                                  {{ statsInfo.completedtime }}
+                              </h1>
+                              <p class="text-center">Sessions Played Time</p>
+                          </div>
+                </div>
+                </div>
+          </div>
+          </div>
           <div class="col-md-4">
           <div class="card text-white bg-success clickableCard">
             <a href="{% url 'provider:my_students' %}"></a>
