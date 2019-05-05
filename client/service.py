@@ -488,15 +488,16 @@ class ClientService(object):
         subject = 'Client Logs'
         mailBody = 'Client logs are attached with this mail'
         attachmentPath = self.capture.ffmpegLogPath
-
+                
+        uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
+        
         try:
             sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
             attachmentPath = logger.logFileName
             sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
         except Exception as ex:
             LOG.error("Exception in sending mail: " + str(ex))
-                
-        uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
+
 
         return uploadResponse
 

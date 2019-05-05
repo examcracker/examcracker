@@ -7,6 +7,7 @@ import logger
 from boto3.s3.transfer import TransferConfig
 import threading
 import time
+import socket
 
 # Log file
 LOG = logger.getLogFile(__name__)
@@ -67,6 +68,7 @@ class uploadVideoDO:
 						loopCount = self.internetCheckTimeout/internetCheckWait
 						status = self.checkInternetConnection()
 						while loopCount > 0 and status == False:
+							LOG.info("Waiting for internet connection")
 							time.sleep(internetCheckWait) 
 							loopCount = loopCount - 1
 							status = self.checkInternetConnection()
@@ -116,6 +118,7 @@ class uploadVideoDO:
 								loopCount = self.internetCheckTimeout/internetCheckWait
 								status = self.checkInternetConnection()
 								while loopCount > 0 and status == False:
+									LOG.info("Waiting for internet connection")
 									time.sleep(internetCheckWait) 
 									loopCount = loopCount - 1
 									status = self.checkInternetConnection()
