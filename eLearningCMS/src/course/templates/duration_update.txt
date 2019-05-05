@@ -12,7 +12,13 @@ function getUTCTimeSecs() {
 		if (isDebug == "on") {
 			url = url + ":" + window.location.port;
 		}
-		url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff);
+
+		if (isOwner != "yes") {
+			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff);
+		}
+		else {
+			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(durationdiff);
+		}
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.open("GET", url, true);
 		xmlHttp.send();
@@ -43,7 +49,7 @@ function getUTCTimeSecs() {
 
 			//console.log(durationplayed);
 
-			if(durationplayed - lastdurationplayed > 60) {
+			if(durationplayed - lastdurationplayed > gap) {
 				lastdurationplayed = durationplayed;
 				update();
 			}
@@ -60,7 +66,7 @@ function getUTCTimeSecs() {
 		lastplayertime = nowplayer;
 		lasttime = now;
 
-		if(durationplayed - lastdurationplayed > 60) {
+		if(durationplayed - lastdurationplayed > gap) {
 			lastdurationplayed = durationplayed;
 			update();
 		}
@@ -98,9 +104,7 @@ function getUTCTimeSecs() {
 			});
 		}
 
-		if(isOwner != "yes") {
-			video.addEventListener('timeupdate', onPlaying);
-		}
+		video.addEventListener('timeupdate', onPlaying);
 
 		window.player = player;
 

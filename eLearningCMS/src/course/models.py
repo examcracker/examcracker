@@ -93,6 +93,7 @@ class Course(models.Model):
     sessions = models.IntegerField(default=0)
     picture = models.ImageField('Course picture', upload_to='course_directory_path', default='course_pics/1.jpg')
     public = models.BooleanField(default=True)
+    completedseconds = models.IntegerField(default=0) # time viewed by provider
 
 class EnrolledCourse(models.Model):
     student = models.ForeignKey(student.models.Student, on_delete=models.CASCADE)

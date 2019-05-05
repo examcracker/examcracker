@@ -376,3 +376,12 @@ def updateDuration(request, enrolledcourseid, duration, format=None):
     enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
     enrolledCourseObj.save()
     return Response({"result":True})
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def updateDurationProvider(request, courseid, duration, format=None):
+    courseObj = models.Course.objects.filter(id=courseid)[0]
+    courseObj.completedseconds = courseObj.completedseconds + duration
+    courseObj.save()
+    return Response({"result":True})

@@ -48,3 +48,10 @@ class System(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     name = models.CharField(default='', max_length=100)
 
+class Plan(models.Model):
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    cost = models.IntegerField(default=0)
+    bandwidth = models.IntegerField(default=0) # per month or year
+    space = models.IntegerField(default=0) # per year
+
+
