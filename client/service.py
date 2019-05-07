@@ -74,7 +74,7 @@ def sendCaptureResponse(state, id, streamName=None):
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
 
 def on_message(message):
-    LOG.info(str(message))
+    #LOG.info(str(message))
     global serviceObj
     responseDict = {}
     # always add encrypted provider id in response
@@ -88,6 +88,7 @@ def on_message(message):
             LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
             return
         command = messageDict["command"]
+        LOG.info("Command recieved: " + str(command))
         if command == api.command_start:
             if serviceObj.capturing:
                 responseDict["result"] = api.status_capture_started
