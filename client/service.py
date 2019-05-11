@@ -64,6 +64,26 @@ class WindowsInhibitor:
 serviceObj = None
 systemname = platform.node()
 
+def getmp4CoversionCommand(inputfile,outputFileName):
+    command = 'ffmpeg -i '+inputfile + ' -vcodec '
+    filedetails = subprocess.check_output(['bin\mp4info.exe','--format' ,'json',inputfile])
+    filedict = json.loads(filedetails.decode("utf-8"))
+    vcodec = 'copy'
+    acodec = 'copy'
+    for track in filedict["tracks"]:
+        tracktype = track['type']
+        for t in track["sample_descriptions"]:
+            if tracktype.lower() == 'video':
+                if 'avc' not in t['coding'] or 'h.264' not in t['coding_name'].lower():
+                    vcodec = 'libx264'
+            if tracktype.lower() == 'audio':
+                if 'mp4a' not in t['coding'] or 'mpeg-4 audio' not in t['coding_name'].lower():
+                    acodec = 'aac'
+    if vcodec == 'copy' and acodec == 'copy':
+        return 'false'
+    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputFileName
+    return command
+
 def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
     data = {}
@@ -452,15 +472,12 @@ class ClientService(object):
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
-                # Now remove all temporary files created
-                self.removeTempFiles(self.tmpFiles)
                 LOG.info ("Uploading done")
                 LOG.debug("Video Server response: " + str(uploadResponse))
 
             except Exception as ex:
                 LOG.error("Exception in uploading the file: " + str(ex))
                 uploadResponse['fail_reason'] = str(ex)
-                self.removeTempFiles(self.tmpFiles)
                 
             return uploadResponse
         except Exception as ex:
@@ -469,6 +486,8 @@ class ClientService(object):
              return uploadResponse
 
         finally:
+            # Now remove all temporary files created
+            self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
 
