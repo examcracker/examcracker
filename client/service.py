@@ -64,6 +64,26 @@ class WindowsInhibitor:
 serviceObj = None
 systemname = platform.node()
 
+def getmp4CoversionCommand(inputfile,outputFileName):
+    command = 'ffmpeg -i '+inputfile + ' -vcodec '
+    filedetails = subprocess.check_output(['bin\mp4info.exe','--format' ,'json',inputfile])
+    filedict = json.loads(filedetails.decode("utf-8"))
+    vcodec = 'copy'
+    acodec = 'copy'
+    for track in filedict["tracks"]:
+        tracktype = track['type']
+        for t in track["sample_descriptions"]:
+            if tracktype.lower() == 'video':
+                if 'avc' not in t['coding'] or 'h.264' not in t['coding_name'].lower():
+                    vcodec = 'libx264'
+            if tracktype.lower() == 'audio':
+                if 'mp4a' not in t['coding'] or 'mpeg-4 audio' not in t['coding_name'].lower():
+                    acodec = 'aac'
+    if vcodec == 'copy' and acodec == 'copy':
+        return 'false'
+    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputFileName
+    return command
+
 def sendCaptureResponse(state, id, streamName=None):
     global serviceObj
     data = {}
