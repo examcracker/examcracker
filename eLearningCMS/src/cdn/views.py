@@ -130,7 +130,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey=''):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
@@ -144,6 +144,9 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid=''
     sessionObj.provider_id = providerObj.id
     sessionObj.tags = chapterObj.subject
     sessionObj.encrypted = encrypted
+    sessionObj.duration = duration
+    if duration > 0:
+        sessionObj.ready = True
     sessionObj.save()
 
     if encrypted:
@@ -216,7 +219,8 @@ class saveClientSession(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
-        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]),jsonObj["drmkeyid"], jsonObj["drmkey"])
+        saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]),
+                    jsonObj["drmkeyid"], jsonObj["drmkey"], jsonObj["duration"])
         return schedule.views.HttpResponseNoContent()
 
 @api_view(['GET'])

@@ -36,7 +36,7 @@ class Session(models.Model):
     ready = models.BooleanField(default=False)
     videoKey = models.CharField(max_length=20, default='')
     tags = models.CharField(max_length=100)
-    duration = models.IntegerField(default=0)
+    duration = models.IntegerField(default=0) #in secs
     encrypted = models.BooleanField(default=False)
 
 class DrmSession(models.Model):

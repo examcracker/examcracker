@@ -64,6 +64,12 @@ class WindowsInhibitor:
 serviceObj = None
 systemname = platform.node()
 
+def getDuration(inputfile):
+    p = subprocess.Popen(['mp4info.exe', '--format', 'json', inputfile], stdout=subprocess.PIPE)
+    o, e = p.communicate()
+    info = json.loads(o.rstrip().decode())
+    return (int(info['movie']['duration']/1000))
+
 def getmp4CoversionCommand(inputfile,outputFileName):
     command = 'ffmpeg -i '+inputfile + ' -vcodec '
     filedetails = subprocess.check_output(['bin\mp4info.exe','--format' ,'json',inputfile])
@@ -143,6 +149,7 @@ def on_message(message):
                 if 'videoKey' in res.keys():
                     responseDict["result"] = api.status_stop_success
                     responseDict["videokey"] = res["videoKey"]
+                    responseDicr["duration"] = serviceObj.duration
                 else:
                     responseDict["result"] = api.status_upload_fail
                     responseDict["fail_response"] = res
@@ -247,6 +254,7 @@ class ClientService(object):
     dokey = ''
     dokeysecret = ''
     bucketname = ''
+    duration = 0
 
     def __init__(self):
         websocket.enableTrace(True)
@@ -468,6 +476,7 @@ class ClientService(object):
 
             try:
                 # Start encryption
+                self.duration = getDuration(filePath)
                 self.encryptTheContent(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
