@@ -715,7 +715,13 @@ class ProviderProfile(generic.TemplateView):
         providerObj = providerObj[0]
 
         result['result'] = True
+        result['dokey'] = settings.DIGITAL_OCEAN_SPACE_KEY
+        result['dosecret'] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
+        result['drmkeyid'] = settings.DRM_KEY_ID
+        result['drmkey'] = settings.DRM_KEY
+
         result['clientid'] = providerObj.encryptedid
+        result['bucketname'] = providerObj.bucketname
         result['courses'] = []
 
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
@@ -723,6 +729,8 @@ class ProviderProfile(generic.TemplateView):
             coursedict = {}
             coursedict['id'] = c.id
             coursedict['name'] = c.name
+            coursedict['published'] = c.published
+            coursedict['created'] = c.created
 
             chapters = course.models.CourseChapter.objects.filter(course_id=c.id)
             coursedict['chapters'] = []
@@ -732,8 +740,25 @@ class ProviderProfile(generic.TemplateView):
                 chapterdict['name'] = ch.name
                 chapterdict['sequence'] = ch.sequence
                 chapterdict['subject'] = ch.subject
-                coursedict['chapters'].append(chapterdict)
+                chapterdict['published'] = ch.published
 
+                chapterdict['sessions'] = []
+                sessionids = course.algos.strToIntList(ch.sessions)
+                published = course.algos.strToBoolList(ch.published)
+
+                i = 0
+                while i < len(sessionids):
+                    s = sessionids[i]
+                    sessiondict = {}
+                    session = models.Session.objects.filter(id=s)[0]
+                    sessiondict['id'] = s
+                    sessiondict['name'] = session.name
+                    sessiondict['published'] = published[i]
+                    sessiondict['uploaded'] = session.uploaded
+                    chapterdict['sessions'].append(sessiondict)
+                    i = i + 1
+
+                coursedict['chapters'].append(chapterdict)
             result['courses'].append(coursedict)
 
         return JsonResponse(result)
