@@ -452,15 +452,12 @@ class ClientService(object):
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
-                # Now remove all temporary files created
-                self.removeTempFiles(self.tmpFiles)
                 LOG.info ("Uploading done")
                 LOG.debug("Video Server response: " + str(uploadResponse))
 
             except Exception as ex:
                 LOG.error("Exception in uploading the file: " + str(ex))
                 uploadResponse['fail_reason'] = str(ex)
-                self.removeTempFiles(self.tmpFiles)
                 
             return uploadResponse
         except Exception as ex:
@@ -469,6 +466,8 @@ class ClientService(object):
              return uploadResponse
 
         finally:
+            # Now remove all temporary files created
+            self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
 
