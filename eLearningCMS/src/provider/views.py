@@ -21,6 +21,9 @@ from examcracker import thread
 import cdn
 import schedule
 from django.contrib.auth import get_user_model
+from Crypto.Cipher import AES
+from django.contrib.auth import authenticate
+import base64
 
 def getDelimiter(subject=False):
     if not subject:
@@ -686,3 +689,51 @@ class addStudents(showProviderHome):
                 # creare user
         return self.get(request, *args, **kwargs)
 
+AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
+AES_IV = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
+
+class ProviderProfile(generic.TemplateView):
+    http_method_names = ['get']
+
+    def get(self, request, email, encpassword, *args, **kwargs):
+        decipherObj = AES.new(AES_KEY, AES.MODE_CFB, AES_IV)
+        base64pass = base64.b64decode(encpassword.encode())
+        decryptedpassword = decipherObj.decrypt(base64pass).decode()
+
+        result = {}
+
+        userObj = authenticate(username=email, password=decryptedpassword)
+        if not userObj:
+            result['result'] = False
+            return JsonResponse(result)
+
+        providerObj = models.Provider.objects.filter(user_id=userObj.id)
+        if len(providerObj) == 0:
+            result['result'] = False
+            return JsonResponse(result)
+
+        providerObj = providerObj[0]
+
+        result['result'] = True
+        result['clientid'] = providerObj.encryptedid
+        result['courses'] = []
+
+        courses = course.models.Course.objects.filter(provider_id=providerObj.id)
+        for c in courses:
+            coursedict = {}
+            coursedict['id'] = c.id
+            coursedict['name'] = c.name
+
+            chapters = course.models.CourseChapter.objects.filter(course_id=c.id)
+            coursedict['chapters'] = []
+            for ch in chapters:
+                chapterdict = {}
+                chapterdict['id'] = ch.id
+                chapterdict['name'] = ch.name
+                chapterdict['sequence'] = ch.sequence
+                chapterdict['subject'] = ch.subject
+                coursedict['chapters'].append(chapterdict)
+
+            result['courses'].append(coursedict)
+
+        return JsonResponse(result)
