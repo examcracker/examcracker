@@ -64,6 +64,21 @@ class WindowsInhibitor:
 serviceObj = None
 systemname = platform.node()
 
+def getProviderDetails(username,password,debug=False):
+    url = "https://www.gyaanhive.com"
+    if debug == True:
+        url = "http://127.0.0.1:8000"
+    AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
+    AES_IV = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
+    cipher = AES.new(AES_KEY, AES.MODE_CFB, AES_IV)
+    encPassword = cipher.encrypt(password.encode())
+    encPasswordDecode = base64.b64encode(encPassword).decode()
+    blankDict = {}
+    blankDict['email'] = username
+    response = httpReq.send(url, "/provider/getProviderProfile/" + str(username) + '/'+ str(encPasswordDecode), json.dumps(blankDict))
+    #print(response.json())
+    return response
+
 def getDuration(inputfile):
     p = subprocess.Popen(['mp4info.exe', '--format', 'json', inputfile], stdout=subprocess.PIPE)
     o, e = p.communicate()
