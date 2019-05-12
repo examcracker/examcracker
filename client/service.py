@@ -319,6 +319,10 @@ class ClientService(object):
         except:
             pass
 
+        self.url = "https://www.gyaanhive.com"
+        if self.debug:
+            self.url = "http://127.0.0.1:8000"
+
     def decodeClientId(self):
         decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
         self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
@@ -553,9 +557,7 @@ class ClientService(object):
         return uploadResponse
 
     def run(self):
-        self.url = "https://www.gyaanhive.com"
-        if self.debug:
-            self.url = "http://127.0.0.1:8000"
+        
         LOG.info(self.url)
 
         self.pusherobj = pysher.Pusher("3ff394e3371be28d8abd", "ap2")

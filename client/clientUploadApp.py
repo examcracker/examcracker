@@ -37,10 +37,11 @@ class worker(QThread):
 		self.serviceObj.bucketname = self.userInfo["bucketname"]
 
 	def updateUploadStatus(self, res):
+		responseDict = {}
 		if 'videoKey' in res.keys():
 			responseDict["result"] = api.status_stop_success
 			responseDict["videokey"] = res["videoKey"]
-			responseDicr["duration"] = self.serviceObj.duration
+			responseDict["duration"] = self.serviceObj.duration
 		else:
 			responseDict["result"] = api.status_upload_fail
 			responseDict["fail_response"] = res
@@ -75,6 +76,7 @@ class worker(QThread):
 					self.threadOutput.emit(doneMsg)
 				except Exception as ex:
 					doneMsg = "Upload fail : " + str(item) + " Error: " + str(ex) + "\n"
+					self.threadOutput.emit(doneMsg)
 
 			doneMsg = "\nDone!!\n\n"
 			self.threadOutput.emit(doneMsg)
@@ -88,6 +90,7 @@ class worker(QThread):
 				self.threadOutput.emit(doneMsg)
 			except Exception as ex:
 				doneMsg = "Upload fail error: " + str(ex) + "\n"
+				self.threadOutput.emit(doneMsg)
 
 class filedialogdemo(QFrame):
 	def __init__(self):
