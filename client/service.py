@@ -25,6 +25,10 @@ import sendMail
 import subprocess
 import multiprocessing
 
+# schedule states
+STOPPED = 0
+RUNNING = 1
+UPLOADING = 2
 
 try:
     import thread
@@ -150,21 +154,21 @@ def on_message(message):
                 serviceObj.bucketname = messageDict["bucketname"]
                 serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                 serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
-                sendCaptureResponse(True, serviceObj.encryptedid,serviceObj.liveStreamName)
+                sendCaptureResponse(RUNNING, serviceObj.encryptedid,serviceObj.liveStreamName)
                 serviceObj.startCapture()
         elif command == api.command_stop:
             if not serviceObj.capturing:
                 responseDict["result"] = api.status_no_capture_started
                 serviceObj.scheduleid = messageDict["id"]
-                sendCaptureResponse(False, serviceObj.encryptedid)
+                sendCaptureResponse(STOPPED, serviceObj.encryptedid)
                 res = serviceObj.stopCapture()
             else:
-                sendCaptureResponse(False, serviceObj.encryptedid)
+                sendCaptureResponse(UPLOADING, serviceObj.encryptedid)
                 res = serviceObj.stopCapture()
                 if 'videoKey' in res.keys():
                     responseDict["result"] = api.status_stop_success
                     responseDict["videokey"] = res["videoKey"]
-                    responseDicr["duration"] = serviceObj.duration
+                    responseDict["duration"] = serviceObj.duration
                 else:
                     responseDict["result"] = api.status_upload_fail
                     responseDict["fail_response"] = res
@@ -491,7 +495,7 @@ class ClientService(object):
 
             try:
                 # Start encryption
-                self.duration = getDuration(filePath)
+                self.duration = 0 #getDuration(filePath)
                 self.encryptTheContent(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
@@ -511,6 +515,7 @@ class ClientService(object):
 
         finally:
             # Now remove all temporary files created
+            sendCaptureResponse(STOPPED, self.encryptedid)
             self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
@@ -578,7 +583,7 @@ class ClientService(object):
                 if timeDiff >= self.timeout:
                     responseDict = {}                                                        
                     LOG.info ("Timeout stopping the capturing")
-                    sendCaptureResponse(False, self.encryptedid)
+                    sendCaptureResponse(UPLOADING, self.encryptedid)
                     res = self.stopCapture()
                     if 'videoKey' in res.keys():
                         responseDict["result"] = api.status_stop_success
