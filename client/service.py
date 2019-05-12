@@ -68,9 +68,7 @@ def getProviderDetails(username,password,debug=False):
     url = "https://www.gyaanhive.com"
     if debug == True:
         url = "http://127.0.0.1:8000"
-    AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
-    AES_IV = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
-    cipher = AES.new(AES_KEY, AES.MODE_CFB, AES_IV)
+    cipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
     encPassword = cipher.encrypt(password.encode())
     encPasswordDecode = base64.b64encode(encPassword).decode()
     blankDict = {}
