@@ -123,6 +123,9 @@ class filedialogdemo(QFrame):
 	def createLoginDialog(self):
 		self.loginDialog  = QDialog(self)
 
+		self.errorMsg = QLabel("Login failed, please try again!")
+		self.errorMsg.hide()
+
 		self.userNameInput = QLineEdit()
 		self.userNameInput.setPlaceholderText("Username")
 
@@ -136,12 +139,14 @@ class filedialogdemo(QFrame):
 		self.closeBtn = QPushButton('Close')
 		self.closeBtn.setMinimumSize( 130,40)
 
+
 		self.closeBtn.clicked.connect(self.loginDialog.close)
 		self.loginBtn.clicked.connect(self.checkLogin)
 
 		layoutVDialog = QVBoxLayout()
 		layoutHDialog = QHBoxLayout()
 
+		layoutVDialog.addWidget(self.errorMsg)
 		layoutVDialog.addWidget(self.userNameInput)
 		layoutVDialog.addWidget(self.passwordInput)
 		layoutHDialog.addWidget(self.closeBtn)
@@ -158,13 +163,23 @@ class filedialogdemo(QFrame):
 
 	def checkLogin(self):
 
+		self.errorMsg.hide()
 		self.username = self.userNameInput.text()
 		self.password = self.passwordInput.text()
 
 		self.settings.setValue('username', self.username)
 		self.settings.setValue('password', self.password)
 
-		self.loginDialog.close()
+
+		try:
+			response = service.getProviderDetails(self.username, self.password)
+			self.userDetails = response.json()
+			if self.userDetails['result'] == False:
+				self.errorMsg.show()
+			else:
+				self.loginDialog.close()
+		except:
+			self.errorMsg.show()
 
 	def populateCourseOptions(self):
 		index = 0
@@ -199,9 +214,14 @@ class filedialogdemo(QFrame):
 
 		if self.username == "" or self.password == "":
 			self.createLoginDialog()
-
-		response = service.getProviderDetails(self.username, self.password)
-		self.userDetails = response.json()
+		else:
+			try:
+				response = service.getProviderDetails(self.username, self.password)
+				self.userDetails = response.json()
+				if self.userDetails['result'] == False:
+					self.createLoginDialog()
+			except:
+				self.createLoginDialog()
 		
 		self.labelFilePath = QLineEdit()
 		self.labelFilePath.setPlaceholderText("Provide lecture file path")
