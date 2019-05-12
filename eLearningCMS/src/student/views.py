@@ -12,7 +12,7 @@ from django.http import Http404
 from . import models
 from . import forms
 import course
-from course import algos
+#from course import algos
 import provider
 import re
 import profiles
@@ -40,11 +40,13 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notificationsCount"] = unseenNotifications
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
-            
-        category = "ALL Courses"
-        allCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and public = 1 ORDER BY created')
-        kwargs["allCourses"] = algos.getCourseDetailsForCards(request, allCourses)
-        kwargs["category"] = category
+        studentObj = getStudent(request)
+        myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        kwargs["courses"] = len(myCourses)
+        viewMinutes = 0
+        for c in myCourses:
+            viewMinutes = viewMinutes + c.completedminutes
+        kwargs["viewMinutes"] = viewMinutes
         
         if isAnyEventLive(request):
             kwargs['live'] = 'on'
@@ -71,7 +73,7 @@ class showRecommendedCourses(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         notJoinedCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE published = 1 and public = 1 and id NOT IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ') ORDER BY created')
-        kwargs["remaining_courses"] = algos.getCourseDetailsForCards(request, notJoinedCourses)
+        kwargs["remaining_courses"] = course.algos.getCourseDetailsForCards(request, notJoinedCourses)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -104,7 +106,7 @@ class myCourses(LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
         myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
-        kwargs["courses"] = algos.getCourseDetailsForCards(request, myCourses)
+        kwargs["courses"] = course.algos.getCourseDetailsForCards(request, myCourses)
         return super().get(request, *args, **kwargs)
 
 class courseDetails(LoginRequiredMixin, generic.TemplateView):
