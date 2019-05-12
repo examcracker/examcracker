@@ -285,8 +285,7 @@ class ClientService(object):
         config.readfp(open(configPath))
 
         self.encryptedid = config.get("config", "clientId")
-        decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
-        self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
+        self.decodeClientId()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.mp4fragpath = os.path.join(dir_path, "bin","mp4fragment.exe")
@@ -319,6 +318,10 @@ class ClientService(object):
             self.debug = bool(int(config.get("config", "debug")))
         except:
             pass
+
+    def decodeClientId(self):
+        decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
+        self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
 
     def close(self):
         self.wsclient.close()
@@ -452,7 +455,7 @@ class ClientService(object):
                                         fragfilepath, encfilepath])
         mp4encryptProc.communicate()
         LOG.info ("Create encrypted mpd file and upload to CDN")
-        self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(serviceObj.clientid)
+        self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(self.clientid)
         # create temporary directory and create mpd file in tmp directory
         self.tmpdir = os.path.join(dirname,self.tmpfolder)
         if not os.path.isdir(self.tmpdir):
@@ -475,12 +478,12 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def uploadFileToCDN(self, filePath):
+    def uploadFileToCDN(self, filePath, sendResponse = True):
         # Stopping windows to go in sleep mode while we upload a file
+        uploadResponse = {}
         try:
             self.osleep.inhibit()
             LOG.info ("Uploading file to server: " + str(filePath))
-            uploadResponse = {}
             if not os.path.isfile(filePath):
                 uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
                 return uploadResponse 
@@ -499,13 +502,12 @@ class ClientService(object):
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
                 LOG.info ("Uploading done")
-                LOG.debug("Video Server response: " + str(uploadResponse))
+                LOG.info("Video Server response: " + str(uploadResponse))
 
             except Exception as ex:
                 LOG.error("Exception in uploading the file: " + str(ex))
                 uploadResponse['fail_reason'] = str(ex)
                 
-            return uploadResponse
         except Exception as ex:
              LOG.error("Exception in uploading the file: " + str(ex))
              uploadResponse['fail_reason'] = str(ex)
@@ -513,10 +515,12 @@ class ClientService(object):
 
         finally:
             # Now remove all temporary files created
-            sendCaptureResponse(STOPPED, self.encryptedid)
+            if sendResponse:
+                sendCaptureResponse(STOPPED, self.encryptedid)
             self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
+        return uploadResponse
 
     def stopCapture(self):
         if not self.capturing:
