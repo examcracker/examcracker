@@ -41,6 +41,11 @@ status_no_capture_started = 2
 status_camera_not_detected = 3
 status_stop_success = 4
 
+# schedule states
+STOPPED = 0
+RUNNING = 1
+UPLOADING = 2
+
 class HttpResponseNoContent(HttpResponse):
     status_code = 200
 
