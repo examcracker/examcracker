@@ -3,6 +3,7 @@ import subprocess
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from PyQt5 import QtWidgets, QtGui
 import httpReq
 import httpReq
 import service
@@ -187,6 +188,9 @@ class filedialogdemo(QFrame):
 		self.dailogStylesheet()
 		self.loginDialog.setWindowTitle("Login")
 
+		scriptDir = os.path.dirname(os.path.realpath(__file__))
+		self.loginDialog.setWindowIcon(QtGui.QIcon(os.path.join(scriptDir, 'application.ico')))
+
 		self.loginDialog.exec_()
 
 	def checkLogin(self):
@@ -322,6 +326,9 @@ class filedialogdemo(QFrame):
 		
 		self.setLayout(layoutV)
 		self.setWindowTitle("GyaanHive upload application")
+		
+		scriptDir = os.path.dirname(os.path.realpath(__file__))
+		self.setWindowIcon(QtGui.QIcon(os.path.join(scriptDir, 'application.ico')))
 
 		self.populateCourseOptions()
 		
