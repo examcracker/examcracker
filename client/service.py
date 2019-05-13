@@ -24,6 +24,7 @@ import socket
 import sendMail
 import subprocess
 import multiprocessing
+from pymediainfo import MediaInfo
 
 # schedule states
 STOPPED = 0
@@ -82,29 +83,24 @@ def getProviderDetails(username,password,debug=False):
     return response
 
 def getDuration(inputfile):
-    p = subprocess.Popen(['mp4info.exe', '--format', 'json', inputfile], stdout=subprocess.PIPE)
-    o, e = p.communicate()
-    info = json.loads(o.rstrip().decode())
-    return (int(info['movie']['duration']/1000))
+	media_info = MediaInfo.parse(inputfile)
+	for track in media_info.tracks:
+		if track.track_type.lower() == 'general':
+			return (track.duration/1000)
 
-def getmp4CoversionCommand(inputfile,outputFileName):
+def getmp4CoversionCommand(inputfile):
     command = 'ffmpeg -i '+inputfile + ' -vcodec '
-    filedetails = subprocess.check_output(['bin\mp4info.exe','--format' ,'json',inputfile])
-    filedict = json.loads(filedetails.decode("utf-8"))
     vcodec = 'copy'
     acodec = 'copy'
-    for track in filedict["tracks"]:
-        tracktype = track['type']
-        for t in track["sample_descriptions"]:
-            if tracktype.lower() == 'video':
-                if 'avc' not in t['coding'] or 'h.264' not in t['coding_name'].lower():
-                    vcodec = 'libx264'
-            if tracktype.lower() == 'audio':
-                if 'mp4a' not in t['coding'] or 'mpeg-4 audio' not in t['coding_name'].lower():
-                    acodec = 'aac'
+    media_info = MediaInfo.parse(inputfile)
+    for track in media_info.tracks:
+        if track.track_type.lower() == 'video' and 'avc' not in track.format.lower():
+            vcodec = 'libx264'
+        elif track.track_type.lower() == 'audio' and 'aac' not in track.format.lower():
+            acodec = 'aac'
     if vcodec == 'copy' and acodec == 'copy':
         return 'false'
-    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputFileName
+    command = command + vcodec + ' -acodec ' + acodec
     return command
 
 def sendCaptureResponse(state, id, streamName=None):
@@ -500,7 +496,7 @@ class ClientService(object):
 
             try:
                 # Start encryption
-                self.duration = 0 #getDuration(filePath)
+                self.duration = getDuration(filePath)
                 self.encryptTheContent(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
