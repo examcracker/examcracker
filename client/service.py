@@ -268,7 +268,8 @@ class ClientService(object):
     dokeysecret = ''
     bucketname = ''
     duration = 0
-
+    tmpFiles = []
+    
     def __init__(self):
         websocket.enableTrace(True)
 
