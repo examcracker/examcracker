@@ -69,7 +69,20 @@ class worker(QThread):
 			uploadCount = 0
 			for item in listOfMp4Files:
 				try:
+					fileInfo = os.path.splitext(item)
+					outputFile = fileInfo[0] + '_conv' + fileInfo[1]
+					conversionState = service.getmp4CoversionCommand(item, outputFile)
+					if conversionState != 'false':
+						doneMsg = "Converting file: " + str(item) + "\n"
+						self.threadOutput.emit(doneMsg)
+						os.system(conversionState)
+						item = outputFile
+
 					res = self.serviceObj.uploadFileToCDN(item, False)
+					
+					if conversionState != 'false':
+						os.remove(outputFile)
+				
 					self.updateUploadStatus(res)
 					uploadCount += 1
 					doneMsg = "Upload done for : " + str(item) + " (" + str(uploadCount) + "/" + str(self.totalFileCount) + ")\n"
@@ -81,10 +94,22 @@ class worker(QThread):
 			doneMsg = "\nDone!!\n\n"
 			self.threadOutput.emit(doneMsg)
 		else:
-			doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 			try:
+				fileInfo = os.path.splitext(self.mediaFilePath)
+				outputFile = fileInfo[0] + '_conv' + fileInfo[1]
+				conversionState = service.getmp4CoversionCommand(self.mediaFilePath, outputFile)
+				if conversionState != 'false':
+					doneMsg = "Converting file: " + str(self.mediaFilePath) + "\n"
+					self.threadOutput.emit(doneMsg)
+					os.system(conversionState)
+					self.mediaFilePath = outputFile
+
+				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 				self.threadOutput.emit(doneMsg)
 				res = self.serviceObj.uploadFileToCDN(self.mediaFilePath, False)
+				if conversionState != 'false':
+					os.remove(outputFile)
+
 				self.updateUploadStatus(res)
 				doneMsg = "Upload successful: " + str(self.mediaFilePath) + "\n\nDone!!\n"
 				self.threadOutput.emit(doneMsg)
@@ -195,6 +220,7 @@ class filedialogdemo(QFrame):
 
 	def onCourseSelection(self, index):
 		courseId = self.comboBoxCourse.itemData(index, Qt.UserRole + 1)
+		self.comboBoxChapter.clear() 
 
 		for course in self.userDetails['courses']:
 			if courseId == course['id']:
