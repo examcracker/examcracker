@@ -16,5 +16,5 @@ urlpatterns = [
      path('myStudents', views.myStudents.as_view(), name="my_students"),
      path('liveCapture', views.liveCapture.as_view(), name="live_capture"),
      path('addStudents/<slug:slug>', views.addStudents.as_view(), name="add_students"),
-     path('getProviderProfile/<str:email>/<str:encpassword>', views.ProviderProfile.as_view(), name="provider_profile"),
+     path('getProviderProfile/<str:email>/<str:encpassword>', views.ProviderCourseDetails.as_view(), name="provider_profile"),
 ]
