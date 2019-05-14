@@ -692,7 +692,7 @@ class addStudents(showProviderHome):
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 AES_IV = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
 
-class ProviderProfile(generic.TemplateView):
+class ProviderCourseDetails(generic.TemplateView):
     http_method_names = ['get']
 
     def get(self, request, email, encpassword, *args, **kwargs):

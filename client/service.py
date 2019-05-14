@@ -24,6 +24,7 @@ import socket
 import sendMail
 import subprocess
 import multiprocessing
+from pymediainfo import MediaInfo
 
 # schedule states
 STOPPED = 0
@@ -82,29 +83,24 @@ def getProviderDetails(username,password,debug=False):
     return response
 
 def getDuration(inputfile):
-    p = subprocess.Popen(['mp4info.exe', '--format', 'json', inputfile], stdout=subprocess.PIPE)
-    o, e = p.communicate()
-    info = json.loads(o.rstrip().decode())
-    return (int(info['movie']['duration']/1000))
+	media_info = MediaInfo.parse(inputfile)
+	for track in media_info.tracks:
+		if track.track_type.lower() == 'general':
+			return (track.duration/1000)
 
-def getmp4CoversionCommand(inputfile,outputFileName):
+def getmp4CoversionCommand(inputfile, outputfile):
     command = 'ffmpeg -i '+inputfile + ' -vcodec '
-    filedetails = subprocess.check_output(['bin\mp4info.exe','--format' ,'json',inputfile])
-    filedict = json.loads(filedetails.decode("utf-8"))
     vcodec = 'copy'
     acodec = 'copy'
-    for track in filedict["tracks"]:
-        tracktype = track['type']
-        for t in track["sample_descriptions"]:
-            if tracktype.lower() == 'video':
-                if 'avc' not in t['coding'] or 'h.264' not in t['coding_name'].lower():
-                    vcodec = 'libx264'
-            if tracktype.lower() == 'audio':
-                if 'mp4a' not in t['coding'] or 'mpeg-4 audio' not in t['coding_name'].lower():
-                    acodec = 'aac'
+    media_info = MediaInfo.parse(inputfile)
+    for track in media_info.tracks:
+        if track.track_type.lower() == 'video' and 'avc' not in track.format.lower():
+            vcodec = 'libx264'
+        elif track.track_type.lower() == 'audio' and 'aac' not in track.format.lower():
+            acodec = 'aac'
     if vcodec == 'copy' and acodec == 'copy':
         return 'false'
-    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputFileName
+    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputfile
     return command
 
 def sendCaptureResponse(state, id, streamName=None):
@@ -272,7 +268,8 @@ class ClientService(object):
     dokeysecret = ''
     bucketname = ''
     duration = 0
-
+    tmpFiles = []
+    
     def __init__(self):
         websocket.enableTrace(True)
 
@@ -285,8 +282,7 @@ class ClientService(object):
         config.readfp(open(configPath))
 
         self.encryptedid = config.get("config", "clientId")
-        decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
-        self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
+        self.decodeClientId()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
         self.mp4fragpath = os.path.join(dir_path, "bin","mp4fragment.exe")
@@ -319,6 +315,14 @@ class ClientService(object):
             self.debug = bool(int(config.get("config", "debug")))
         except:
             pass
+
+        self.url = "https://www.gyaanhive.com"
+        if self.debug:
+            self.url = "http://127.0.0.1:8000"
+
+    def decodeClientId(self):
+        decipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
+        self.clientid = decipher.decrypt(base64.b64decode(self.encryptedid)).decode()
 
     def close(self):
         self.wsclient.close()
@@ -452,7 +456,7 @@ class ClientService(object):
                                         fragfilepath, encfilepath])
         mp4encryptProc.communicate()
         LOG.info ("Create encrypted mpd file and upload to CDN")
-        self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(serviceObj.clientid)
+        self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(self.clientid)
         # create temporary directory and create mpd file in tmp directory
         self.tmpdir = os.path.join(dirname,self.tmpfolder)
         if not os.path.isdir(self.tmpdir):
@@ -475,12 +479,12 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def uploadFileToCDN(self, filePath):
+    def uploadFileToCDN(self, filePath, sendResponse = True):
         # Stopping windows to go in sleep mode while we upload a file
+        uploadResponse = {}
         try:
             self.osleep.inhibit()
             LOG.info ("Uploading file to server: " + str(filePath))
-            uploadResponse = {}
             if not os.path.isfile(filePath):
                 uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
                 return uploadResponse 
@@ -493,19 +497,18 @@ class ClientService(object):
 
             try:
                 # Start encryption
-                self.duration = 0 #getDuration(filePath)
+                self.duration = getDuration(filePath)
                 self.encryptTheContent(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
                 LOG.info ("Uploading done")
-                LOG.debug("Video Server response: " + str(uploadResponse))
+                LOG.info("Video Server response: " + str(uploadResponse))
 
             except Exception as ex:
                 LOG.error("Exception in uploading the file: " + str(ex))
                 uploadResponse['fail_reason'] = str(ex)
                 
-            return uploadResponse
         except Exception as ex:
              LOG.error("Exception in uploading the file: " + str(ex))
              uploadResponse['fail_reason'] = str(ex)
@@ -513,10 +516,12 @@ class ClientService(object):
 
         finally:
             # Now remove all temporary files created
-            sendCaptureResponse(STOPPED, self.encryptedid)
+            if sendResponse:
+                sendCaptureResponse(STOPPED, self.encryptedid)
             self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
+        return uploadResponse
 
     def stopCapture(self):
         if not self.capturing:
@@ -549,9 +554,7 @@ class ClientService(object):
         return uploadResponse
 
     def run(self):
-        self.url = "https://www.gyaanhive.com"
-        if self.debug:
-            self.url = "http://127.0.0.1:8000"
+        
         LOG.info(self.url)
 
         self.pusherobj = pysher.Pusher("3ff394e3371be28d8abd", "ap2")

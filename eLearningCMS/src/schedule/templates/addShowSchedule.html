@@ -67,10 +67,10 @@
             <input type="hidden" id="scheduleChapterId" name="scheduleChapterId" value="" />
           </div>
         </div>
-        {% if locations|length > 0 %}
-        <div class="form-group row" style="display:none;">
+        {% if locations|length < 2 %}
+        <div class="form-group row" style="display:none;" >
           {% else %}
-          <div class="form-group row"></div>
+          <div class="form-group row">
           {% endif %}
           <label for="courseLocation" class="col-sm-4 col-form-label">Location</label>
           <div class="col-sm-8">
