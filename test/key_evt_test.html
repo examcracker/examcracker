@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+</body>
+<script language="JavaScript">
+    document.onkeydown = function (event) {
+        event = (event || window.event);
+        if (event.keyCode == 123) {
+            alert('No F-keys again');
+            return false;
+        }
+    }
+
+	function disableclick(event)
+{
+  if(event.button==2)
+   {
+     alert("kushal");
+     return false;    
+   }
+}
+
+	document.onmousedown=disableclick;
+	document.oncontextmenu=clickIE;
+</script>
+</html>
