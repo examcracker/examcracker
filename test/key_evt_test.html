@@ -5,11 +5,12 @@
     <title>Chat Room</title>
 </head>
 <body>
+ Testing events
 </body>
 <script language="JavaScript">
     document.onkeydown = function (event) {
         event = (event || window.event);
-        if (event.keyCode == 123) {
+        if (event.ctrlKey || event.keyCode == 123) {
             alert('No F-keys again');
             return false;
         }
@@ -19,7 +20,7 @@
 {
   if(event.button==2)
    {
-     alert("kushal");
+     alert("no mouse click");
      return false;    
    }
 }
