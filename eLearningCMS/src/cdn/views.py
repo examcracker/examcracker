@@ -130,7 +130,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0,sessionName=''):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
@@ -138,8 +138,10 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid=''
     # session file Naming convention : chapter_date_sessionNumber
     dateTimeStr = datetime.datetime.now().strftime("%B %d, %Y")
     sessionids = strToIntList(chapterObj.sessions)
-    sessionObj.name = chapterObj.name + '_' + dateTimeStr + '_' + str(len(sessionids)+1)
-    
+    if sessionName == '':
+        sessionObj.name = chapterObj.name + '_' + dateTimeStr + '_' + str(len(sessionids)+1)
+    else:
+        sessionObj.name = sessionName
     sessionObj.videoKey = videoKey
     sessionObj.provider_id = providerObj.id
     sessionObj.tags = chapterObj.subject
@@ -219,8 +221,11 @@ class saveClientSession(generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
+        sessionName = ''
+        if "sessionName" in jsonObj:
+            sessionName = jsonObj["sessionName"]
         saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]),
-                    jsonObj["drmkeyid"], jsonObj["drmkey"], jsonObj["duration"])
+                    jsonObj["drmkeyid"], jsonObj["drmkey"], jsonObj["duration"],sessionName)
         return schedule.views.HttpResponseNoContent()
 
 @api_view(['GET'])

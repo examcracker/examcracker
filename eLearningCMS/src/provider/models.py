@@ -34,7 +34,7 @@ class Session(models.Model):
     uploaded = models.DateTimeField(auto_now_add=True)
     video = models.FileField(upload_to=user_directory_path)
     ready = models.BooleanField(default=False)
-    videoKey = models.CharField(max_length=20, default='')
+    videoKey = models.CharField(max_length=100, default='')
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0) #in secs
     encrypted = models.BooleanField(default=False)

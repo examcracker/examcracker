@@ -55,7 +55,8 @@
                                             {% if not session.published and not editContentDisable  %}
                                             <span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span>
                                             {% else %}
-                                            <button type="button" class="btn btn-outline-info" disabled><i class="fa fa-ban" data-toggle="tooltip" data-placement="top" title="Published session cant be deleted"></i></button>
+                                            <span title="Delete This Session"><button type="button" class="btn btn-outline-secondary" onclick="deleteLecture(this)"><i class="fa fa-trash"></i></button></span>
+                                            <!-- <button type="button" class="btn btn-outline-info" disabled><i class="fa fa-ban" data-toggle="tooltip" data-placement="top" title="Published session cant be deleted"></i></button> -->
                                             {% endif %}
                                         </div>
                                         <div class="col-xs-3 col-sm-3" id="{{courseName}};{{chapid}};{{forloop.counter}}">
