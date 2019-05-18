@@ -163,6 +163,7 @@ def on_message(message):
                     responseDict["result"] = api.status_stop_success
                     responseDict["videokey"] = res["videoKey"]
                     responseDict["duration"] = serviceObj.duration
+                    responseDict["sessionName"] = res["sessionName"]
                 else:
                     responseDict["result"] = api.status_upload_fail
                     responseDict["fail_response"] = res
@@ -204,6 +205,7 @@ def on_message(message):
             if 'videoKey' in res.keys():
                 responseDict["result"] = api.status_upload_sucess
                 responseDict["videokey"] = res["videoKey"]
+                responseDict["sessionName"] = res["sessionName"]
                 httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
             else:
                 responseDict["result"] = api.status_upload_fail
@@ -499,9 +501,10 @@ class ClientService(object):
                 # Start encryption
                 self.duration = getDuration(filePath)
                 self.encryptTheContent(filePath)
+                filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
-                uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success'}
+                uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success', 'sessionName': filename}
                 LOG.info ("Uploading done")
                 LOG.info("Video Server response: " + str(uploadResponse))
 
@@ -589,6 +592,7 @@ class ClientService(object):
                     if 'videoKey' in res.keys():
                         responseDict["result"] = api.status_stop_success
                         responseDict["videokey"] = res["videoKey"]
+                        responseDict["sessionName"] = res["sessionName"]
                     else:
                         responseDict["result"] = api.status_upload_fail
                         responseDict["fail_response"] = res

@@ -43,6 +43,7 @@ class worker(QThread):
 			responseDict["result"] = api.status_stop_success
 			responseDict["videokey"] = res["videoKey"]
 			responseDict["duration"] = self.serviceObj.duration
+			responseDict["sessionName"] = res["sessionName"]
 		else:
 			responseDict["result"] = api.status_upload_fail
 			responseDict["fail_response"] = res
@@ -64,6 +65,8 @@ class worker(QThread):
 					if file.endswith('.mp4') or file.endswith('.mov'):
 						listOfMp4Files.append(os.path.join(root, file))
 
+			listOfMp4Files.sort(key=lambda x: os.path.getmtime(x))
+			print ()
 			self.totalFileCount = len(listOfMp4Files)
 			doneMsg = "Total lectures found: " + str(self.totalFileCount) + "\n"
 			self.threadOutput.emit(doneMsg)
