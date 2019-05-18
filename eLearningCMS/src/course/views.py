@@ -348,6 +348,8 @@ class playSessionEnc(playSession):
         else:
             kwargs["keyid"] = settings.DRM_KEY_ID
             kwargs["key"] = settings.DRM_KEY
+        kwargs["user_email"] = request.user.email
+        kwargs["userip"] = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):

@@ -17,10 +17,13 @@
 
 <div class="container-full">
     <div class="row">
-            <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
+            <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
                 <div id="shakaplayer">
-                    <video id="encplayer" controls preload="auto" width="80%" height="80%" {% if isLive == "true" %} autoplay {% endif %}></video>
+                    <video id="encplayer" controls preload="auto" {% if isLive == "true" %} autoplay {% endif %}>
+                    </video>
+                    <div class="logo"><small>{{user_email}}</small></div>
+                    <div class="ipaddress"><small>{{userip}}</small></div>
                 </div>
                 <h4>{{ session.name }}</h4>
 
@@ -93,8 +96,75 @@
     </div>
 </div>
 
-<script type="text/javascript">
+<style>
 
+video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 2px;
+    font-size: 20px;
+    font-family: Helvetica;
+    color:rgb(241, 214, 214);
+    z-index: 2147483647;
+}
+.ipaddress {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 2px;
+    font-size: 20px;
+    font-family: Helvetica;
+    color:rgb(241, 214, 214);
+    z-index: 2147483647;
+}
+
+
+</style>
+
+<script type="text/javascript">
+function changePosition() {
+$(".logo")
+
+.css({
+"left" : $("video#encplayer").width()/1.5 * Math.random()+"px",
+"top" : $("video#encplayer").height()/1.5 * Math.random()+"px"
+})
+
+$(".ipaddress")
+
+.css({
+"left" : $("video#encplayer").width()/1.5 * Math.random()+"px",
+"top" : $("video#encplayer").height()/1.5 * Math.random()+"px"
+})
+
+}
+var inFullScreenMode = false;
+// Entering fullscreen mode
+$('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(e) {
+    //var state = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+    //var event = state ? 'FullscreenOn' : 'FullscreenOff';
+    // Now do something interesting
+   // if (state)  {
+     //   var elem = document.getElementById('shakaplayer');
+   // }
+   var elem = document.getElementById('shakaplayer');
+   var state = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+   if (state) {
+			document.webkitCancelFullScreen();
+		} 
+    else {
+        changePosition();
+			elem.webkitRequestFullScreen();
+	};
+});
+setInterval(changePosition, 5000);
 	var isOwner = "{{isOwner}}";
 	var isLive = "{{isLive}}";
 
