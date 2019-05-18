@@ -89,7 +89,7 @@ def getDuration(inputfile):
 			return (track.duration/1000)
 
 def getmp4CoversionCommand(inputfile, outputfile):
-    command = 'ffmpeg -i '+inputfile + ' -vcodec '
+    command = 'ffmpeg -i "'+inputfile + '" -vcodec '
     vcodec = 'copy'
     acodec = 'copy'
     media_info = MediaInfo.parse(inputfile)
@@ -100,7 +100,7 @@ def getmp4CoversionCommand(inputfile, outputfile):
             acodec = 'aac'
     if vcodec == 'copy' and acodec == 'copy':
         return 'false'
-    command = command + vcodec + ' -acodec ' + acodec + ' ' + outputfile
+    command = command + vcodec + ' -acodec ' + acodec + ' "' + outputfile + '"'
     return command
 
 def sendCaptureResponse(state, id, streamName=None):
