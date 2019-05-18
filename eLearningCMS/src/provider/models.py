@@ -32,9 +32,9 @@ class Session(models.Model):
     name = models.CharField(max_length=100)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     uploaded = models.DateTimeField(auto_now_add=True)
-    video = models.FileField(upload_to=user_directory_path)
+    video = models.FileField(upload_to=user_directory_path,default='media/default_profile.png')
     ready = models.BooleanField(default=False)
-    videoKey = models.CharField(max_length=20, default='')
+    videoKey = models.CharField(max_length=100, default='')
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0) #in secs
     encrypted = models.BooleanField(default=False)
