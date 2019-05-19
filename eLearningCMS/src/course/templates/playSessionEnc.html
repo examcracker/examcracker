@@ -19,7 +19,7 @@
     <div class="row">
             <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
-                <div id="shakaplayer">
+                <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
                     <video id="encplayer" controls preload="auto" {% if isLive == "true" %} autoplay {% endif %}>
                     </video>
                     <div class="watermarkEmail"><small>{{user_email}}</small></div>
@@ -131,8 +131,12 @@ video {
 <script type="text/javascript">
 
 function moveWatermarks() {
-    var left = $("video#encplayer").width()/2*Math.random();
-    var top = $("video#encplayer").height()/2*Math.random();
+    var offsetLeft = document.getElementById("encplayer").offsetLeft;
+    var offsetTop = document.getElementById("encplayer").offsetTop;
+    var vWidth = $("video#encplayer").width();
+    var vHeight = $("video#encplayer").height();
+    var left = (offsetLeft+vWidth/2)*Math.random(); //$("video#encplayer").width()*Math.random()*Math.random();
+    var top = (offsetTop+vHeight/2)*Math.random();;//$("video#encplayer").height()*Math.random()*Math.random();
     $(".watermarkEmail").css({"left" : left + "px",
                             "top" : top+"px"
                         })
