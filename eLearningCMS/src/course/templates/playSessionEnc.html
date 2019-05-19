@@ -149,13 +149,19 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
    // if (state)  {
      //   var elem = document.getElementById('shakaplayer');
    // }
+    if(inFullScreenMode){
+        inFullScreenMode = false;
+        return;
+    }
    var elem = document.getElementById('shakaplayer');
-   var state = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+   var state = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
    if (state) {
-		document.webkitCancelFullScreen();
+        document.exitFullscreen();
+       //document.webkitCancelFullScreen();
+        inFullScreenMode = true;
 		} 
     else {
-		elem.webkitRequestFullScreen();
+		elem.requestFullscreen();
 	};
 });
     setInterval(moveWatermarks, 5000);
