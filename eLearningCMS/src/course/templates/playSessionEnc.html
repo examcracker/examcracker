@@ -129,6 +129,15 @@ video {
 </style>
 
 <script type="text/javascript">
+var inFullScreenMode = false;
+var showpopup= true;
+document.addEventListener("keypress", function(event) {
+    if (event.key === "F" || event.key === "f") {
+        var elem = document.getElementById('shakaplayer');
+        inFullScreenMode = true;
+        elem.requestFullscreen();
+    }
+});
 
 function moveWatermarks() {
     var offsetLeft = document.getElementById("encplayer").offsetLeft;
@@ -144,7 +153,7 @@ function moveWatermarks() {
                             "top" : top+20 + "px"
                         })
 }
-var inFullScreenMode = false;
+
 // Entering fullscreen mode
 $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(e) {
 
@@ -156,6 +165,7 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
    // }
     if(inFullScreenMode){
         inFullScreenMode = false;
+        showpopup = true;
         return;
     }
    var elem = document.getElementById('shakaplayer');
@@ -166,7 +176,12 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
         inFullScreenMode = true;
 		} 
     else {
-		elem.requestFullscreen();
+        elem.requestFullscreen().catch(err => {
+        if (showpopup) {
+            alert('Press F or f key for Fullscreen');
+            showpopup = false;
+        }
+    });
 	};
     // mobile screens detection
     if( navigator.userAgent.match(/Android/i)
