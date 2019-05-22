@@ -287,9 +287,9 @@ class ClientService(object):
         self.decodeClientId()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
-        self.mp4fragpath = os.path.join(dir_path, "bin","mp4fragment.exe")
-        self.mp4encryptpath = os.path.join(dir_path,"bin" ,"mp4encrypt.exe")
-        self.mp4dashpath = os.path.join(dir_path,"bin" ,"mp4dash.bat")
+        self.mp4fragpath = os.path.join(dir_path, "mp4fragment.exe")
+        self.mp4encryptpath = os.path.join(dir_path, "mp4encrypt.exe")
+        self.mp4dashpath = os.path.join(dir_path ,"mp4dash.bat")
 
         self.uploadJW = uploadVideo.uploadVideo(self.clientid)
         self.upload = uploadVideoDO.uploadVideoDO(self.clientid)
