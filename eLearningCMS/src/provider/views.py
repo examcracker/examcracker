@@ -652,7 +652,7 @@ class addStudents(showProviderHome):
             # now enroll courses and modules to this student
             # first enroll full course
             subject = 'Welcome to Gyaanhive'
-            emailBody = 'Dear Student,\nYou have been enrolled as a student by ' + request.user.name + '.\
+            emailBody = 'Dear Student,\nYou have been enrolled to a course or your module access has been changed by ' + request.user.name + '.\
                     Login with your email as password. Kindly change your password from profile page.\n\
                     Checkout your dashboard for the enrolled coursed.\n.\
                     Thanks\n\
@@ -687,6 +687,7 @@ class addStudents(showProviderHome):
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()
                 # creare user
+        profiles.signals.sendMail(email, subject, emailBody)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
