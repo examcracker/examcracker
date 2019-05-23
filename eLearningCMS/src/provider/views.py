@@ -179,7 +179,6 @@ def saveCourseContent(request,courseId):
             # first get and save files into provider_session db
             sessionsIdArr = []
             publishedArr = []
-
             # get session ids here
             lcVar = 'lec['+str(cpid[0])+'][]'
             lecPubVar = 'lecPub['+str(cpid[0])+'][]'
@@ -189,6 +188,7 @@ def saveCourseContent(request,courseId):
                 j=0
                 while j < len(filesUploaded):
                     sessionId = filesUploaded[j]
+
                     try:
                         filesUploaded[j] = int(filesUploaded[j])
                     except:
@@ -201,6 +201,12 @@ def saveCourseContent(request,courseId):
                         sessionObj.save()
                         sessionId = str(sessionObj.id)
 
+                    sname = request.POST.get('sname['+str(sessionId)+']','')               
+                    if sname != '':
+                        sessionObj = models.Session.objects.filter(id=sessionId)
+                        sessionObj = sessionObj[0]
+                        sessionObj.name = sname
+                        sessionObj.save()
                     sessionsIdArr.append(sessionId)
                     if course.algos.str2bool(filePublishedArr[j]):
                         publishedArr.append('1')
