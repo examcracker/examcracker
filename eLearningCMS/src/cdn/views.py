@@ -130,7 +130,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0,sessionName=''):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0, sessionName=''):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
@@ -174,17 +174,16 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid=''
 
     # send mail to provider that new session has been added
     userObj = User.objects.filter(id=providerObj.user_id)[0]
-    subject = "New session available for chapter " + chapterObj.name
-    emailBody = '\
-    Dear ' + userObj.name + ',\
-        New session has been added for chapter ' + chapterObj.name + '.\
-        If you have not enabled auto publish your schedule, kindly go to course page and click\
-        on publish to make it visible to your students. For any issues , kindly contact us.\
-    Thanks\
-    GyaanHive Team\
-    '
+    subject = "Session available for " + chapterObj.name
 
-    #sendMail(userObj.email, subject,emailBody)
+    emailBody = '<p>Dear <span style="color: #ff0000;"><strong>' + userObj.name + '\n\
+</strong></span>,<br />New session has been added for chapter <em><strong>' + chapterObj.name + '</strong></em>.<br />\n\
+If you have not enabled <em>auto publish</em> for your schedule, kindly go to your <a href="https://www.gyaanhive.com/course/coursePage/' + str(chapterObj.course_id) + '">Course</a> and click on <em>Publish</em> to make it available to your students.<br />\n\
+For any issues, kindly contact us.<br />\n\
+Thanks</p>\
+<p>GyaanHive Team</p>'
+
+    sendMail(userObj.email, subject, emailBody)
 
 def saveLiveSessionInt(videoKey, chapterId):
     saveSession(videoKey, chapterId)
