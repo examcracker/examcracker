@@ -37,7 +37,7 @@
                                 <input id="fileupload{{chapid}}" type="file" onchange="fileSelected(this,'{{ editCourse.id }}','{{ courseName }}');"  name="video" multiple style="display: none;">
                                 <input type="hidden" value="{{chapid}}-{{courseName}}" name="lcids" />
                                 <div class="row">
-                                    <input type="text" id="card{{chapid}}--card-body-input" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" onkeyup="copyTextFunction(this)" >
+                                    <input type="text" id="card{{chapid}}--card-body-input" class="form-control" name="cd[]" placeholder="Summary" value = "{{value.name}}" onkeyup="copyTextFunction(this,event)" >
                                     <input type="hidden" class="form-control" name="cpids[]" value = "{{chapid}}" >
                                 </div>
                                 <div class="row">
@@ -63,6 +63,8 @@
                                                 Session {{forloop.counter}}        
                                         </div>
                                         <div class="col-xs-7 col-sm-7">
+                                                <a title="Click to change Session Name" onclick="showHideSessionTextBox('{{session.id}}');"><i class="fa fa-edit"></i></a>
+                                                
                                                 {% if session.encrypted %}
                                                 <a href="{% url 'course:playSessionEnc' chapid session.id %}" id="card{{session.id}}--card-header-a">
                                                         <i class="fa fa-play fa-fw" ></i>
@@ -76,7 +78,8 @@
                                             {% endif %}
                                             <input type="hidden" name ="lecPub[{{chapid}}][]" value="{{session.published}}">
                                             <input type="hidden" name ="lec[{{chapid}}][]" value="{{session.id}}">
-                                            <input type="text" id="card{{session.id}}--card-body-input" class="form-control" name="sname[{{session.id}}]" value = "{{ session.name }}" onkeyup="copyTextFunction(this)" >
+                                            <input type="text" id="card{{session.id}}--card-body-input" class="form-control" 
+                                            name="sname[{{session.id}}]" value = "{{ session.name }}" onkeyup="copyTextFunction(this,event)" style="display: none">
                                         </div>
                                 </div>
                                 {% endfor %}
@@ -154,12 +157,28 @@
 
 
 <script>
-    function copyTextFunction(e) {
+    function showHideSessionTextBox(sessionid) {
+        var id = "card"+sessionid+"--card-body-input";
+        var txtBox = document.getElementById(id);
+        if (txtBox.style.display=='none') {
+            txtBox.style.display='block';
+        }  else {
+            txtBox.style.display='none';
+        }
+        return false;
+    }
+    function copyTextFunction(e,ev) {
         var id = e.id;
         var txtVal = e.value;
         var idtarget = id.split('-')[0] + "--card-header-a";
         document.getElementById(idtarget).innerHTML = txtVal;
         addWarningMessage();
+        var eName = e.name;
+        if (eName.includes('sname')){
+            if(ev.keyCode == 13) {
+                e.style.display = 'none';
+            }
+        }
     }
 
     var fileIDMap = new Map();
@@ -407,7 +426,7 @@ function addWarningMessage() {
         var lcidval = id + '-' + subject;
         var lectureFatherId = 'lecturesHere-'+id;
         var fileTag = $("<input id=\"fileupload"+id+"\" type=\"file\" onchange=\"fileSelected(this,'{{ editCourse.id }}','{{ editCourse.name }}')\" name=\"video\" multiple style=\"display: none;\" data-url=\"{% url 'provider:upload_video' %}\" >");
-        var myChapter = $('<div class="card" id="card'+id+'"><div class="card-header"><a class="card-link mr-3" id="card'+id+'--card-header-a" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button><span class="badge badge-secondary" id="span-badge-sessionCnt-'+id+'">0 <i class="fas fa-video"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-'+id+'" hidden><i class="fa fa-exclamation-triangle"></i></span></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" id="card'+id+'--card-body-input" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" onkeyup="copyTextFunction(this)" /></div><div class="row"><!--<div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div>--><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
+        var myChapter = $('<div class="card" id="card'+id+'"><div class="card-header"><a class="card-link mr-3" id="card'+id+'--card-header-a" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button><span class="badge badge-secondary" id="span-badge-sessionCnt-'+id+'">0 <i class="fas fa-video"></i></span><span class="badge badge-warning" title="Contains unpublished Sessions" id="span-badge-publishedStatus-'+id+'" hidden><i class="fa fa-exclamation-triangle"></i></span></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" id="card'+id+'--card-body-input" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" onkeyup="copyTextFunction(this,event)" /></div><div class="row"><!--<div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div>--><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
         //var myChapter = $('<div class="card" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" id="card'+id+'"><div class="card-header"><a class="card-link" data-toggle="collapse" data-parent="#accordianChapters'+subject+'" href="#c'+id+'">Chapter '+chapterNum+'</a><button type="button" onclick="deleteChapter(this)" class="btn-xs btn-info float-right" id="'+subject+'-deleteChapter">Delete</button></div><div id="c'+id+'" class="collapse"><div class="card-body" id="'+id+'"><input type="hidden" value="'+lcidval+'" name="lcids" /><div class="row"><input type="text" class="form-control" name="cd[]" placeholder="Enter Chapter Description" value = "Chapter '+chapterNum+'" /></div><div class="row"><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLecture(this,\'{{ editCourse.id }}\',\'{{ editCourse.name }}\')" class="btn-xs btn-primary float-right">Add Session</button></div><div class="col-auto mt-2 mb-2"><button type="button" onclick="addLectureFromLibrary(this,\'{{ editCourse.name }}\')" class="btn-sm btn-default float-right">Choose existing Session</button></div></div><div class="container" id="'+lectureFatherId+'"></div></div></div></div>');
         myChapter.appendTo(fatherOfChapter);
         fileTag.appendTo($("#"+id+".card-body"));
