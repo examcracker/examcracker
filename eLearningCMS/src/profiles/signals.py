@@ -21,7 +21,7 @@ def sendMail(toEmail, emailSubj,emailBody):
     msg['To'] = toEmail
     msg['Subject'] = emailSubj
     body = emailBody
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html'))
 
     server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
     server.ehlo()
