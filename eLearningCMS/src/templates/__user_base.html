@@ -128,24 +128,24 @@
           </a>
         </li>
         {% if not user.is_staff %}
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Recommended Courses">
+<!--         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Recommended Courses">
           <a class="nav-link" href="{% url 'student:recommended_courses' %}">
             <i class="fa fa-fw fa-graduation-cap fa-lg"></i>
             <span class="nav-link-text">Recommended Courses</span>
           </a>
-        </li>
+        </li> -->
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Progress">
           <a class="nav-link" href="{% url 'student:progress' %}">
             <i class="fas fa-tasks fa-lg"></i>
             <span class="nav-link-text">Progress</span>
           </a>
         </li>
-		<li class="nav-item" data-toggle="tooltip" data-placement="right" title="Cart">
+<!-- 		<li class="nav-item" data-toggle="tooltip" data-placement="right" title="Cart">
           <a class="nav-link" href="{% url 'payments:my_cart' %}">
             <i class="fas fa-shopping-cart fa-lg"></i>
             <span class="nav-link-text">Cart</span>
           </a>
-        </li>
+        </li> -->
         {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Notifications">
           <a class="nav-link" href="{% url 'notification:all' %}">
