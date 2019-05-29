@@ -11,16 +11,21 @@
     {% block container %}
 
     {% block content %}
+
+    <link href="{% static 'shaka/controls.css' %}" rel="stylesheet">
+
     <script src="{% static 'access/access.js' %}"></script>
     <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}"></script>
-    <script src="{% static 'shaka/shaka-player.compiled.js' %}"></script>
+
+    <Script src="{% static 'shaka/shaka-player.ui.js' %}"></Script>
+
 
 <div class="container-full" oncontextmenu="return false;">
     <div class="row">
             <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
                 <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
-                    <video id="encplayer" controls preload="auto" {% if isLive == "true" %} autoplay {% endif %}>
+                    <video id="encplayer" data-shaka-player preload="auto" {% if isLive == "true" %} autoplay {% endif %}>
                     </video>
                     <div class="watermarkEmail"><small>{{user_email}}</small></div>
                     <div class="watermarkIpaddress"><small>{{userip}}</small></div>
@@ -157,12 +162,6 @@ function moveWatermarks() {
 // Entering fullscreen mode
 $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(e) {
 
-    //var state = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
-    //var event = state ? 'FullscreenOn' : 'FullscreenOff';
-    // Now do something interesting
-   // if (state)  {
-     //   var elem = document.getElementById('shakaplayer');
-   // }
     if(inFullScreenMode){
         inFullScreenMode = false;
         showpopup = true;
@@ -222,6 +221,178 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
 	var lastdurationsent = 0;
 	var playergap = 0;
 
+
+    // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
+    document.addEventListener('shaka-ui-loaded', initPlayer);
+
+    function getUTCTimeSecs() {
+		return new Date().getTime()/1000;
+	}
+
+	function update() {
+		var durationdiff = durationplayed - lastdurationsent;
+		lastdurationsent = durationplayed;
+		var isDebug = debug;
+		var url = window.location.protocol + "//" + window.location.hostname;
+		if (isDebug == "on") {
+			url = url + ":" + window.location.port;
+		}
+
+		if (isOwner != "yes") {
+			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff);
+		}
+		else {
+			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(durationdiff);
+		}
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", url, true);
+		xmlHttp.send();
+	}
+
+	function onPlaying() {
+		now = getUTCTimeSecs();
+		nowplayer = video.currentTime;
+
+		if (lasttime == 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		playergap = nowplayer - lastplayertime;
+		if(playergap < 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		var systemgap = now - lasttime;
+		if(Math.abs(systemgap - playergap) < 3) {
+			durationplayed = durationplayed + playergap;
+			lastplayertime = nowplayer;
+			lasttime = now;
+
+			//console.log(durationplayed);
+
+			if(durationplayed - lastdurationplayed > gap) {
+				lastdurationplayed = durationplayed;
+				update();
+			}
+			return;
+		}
+
+		// system time and player time deviations are different, either its paused, stalled or sought forward
+		if(systemgap > playergap) {
+			durationplayed = durationplayed + playergap;
+		}
+
+		//console.log(durationplayed);
+
+		lastplayertime = nowplayer;
+		lasttime = now;
+
+		if(durationplayed - lastdurationplayed > gap) {
+			lastdurationplayed = durationplayed;
+			update();
+		}
+	}
+
+	function onErrorEvent(event) {
+		onError(event.detail);
+	}
+
+	function onError(error) {
+		console.error('Error code', error.code, 'object', error);
+	}
+
+	function initApp() {
+		shaka.polyfill.installAll();
+
+		if (shaka.Player.isBrowserSupported()) {
+			//initPlayer();
+		} else {
+			console.error('Browser not supported!');
+		}
+	}
+
+	function initPlayer() {
+		
+		video = document.getElementById('encplayer');
+        
+        const ui = video['ui'];
+        var uiConfig = {};
+        uiConfig['controlPanelElements'] = ['time_and_duration', 'rewind', 'fast_forward', 'spacer', 'mute', 'volume', 'fullscreen'];
+        //uiConfig['overflowMenuButtons'] = []
+        ui.configure(uiConfig);
+
+        const controls = ui.getControls();
+
+		var player = controls.getPlayer();
+
+		if (isLive == "false") {
+			player.configure({
+				drm: {
+					clearKeys: {
+						"{{keyid}}" : "{{key}}",
+						"{{keyid}}" : "{{key}}"
+					}
+				}
+			});
+		}
+
+		video.addEventListener('timeupdate', onPlaying);
+		window.player = player;
+
+		player.addEventListener('error', onErrorEvent);
+		player.load(manifest).then(function() {
+		}).catch(onError);
+	}
+
+    if (isOwner == "yes") {
+        if (isLive == "true") {
+			manifest = liveUrl;
+        }
+        else {
+            manifest = "https://"+"{{bucketname}}"+".sgp1.cdn.digitaloceanspaces.com/" + "{{videokey}}" + "/" + "{{videokey}}" + ".mpd";
+        }
+		document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+		var accepted = 0;
+        var tracktime = 0;
+
+        if (disableaccess) {
+            accepted = 1;
+            tracktime = 1;
+        } else {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = debug;
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+            }
+            url = url + accessurl + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
+        }
+
+		if (accepted) {
+			if (isLive == "true") {
+				manifest = liveUrl;
+			} else {
+				manifest = "https://"+"{{bucketname}}"+".sgp1.cdn.digitaloceanspaces.com/" + "{{videokey}}" + "/" + "{{videokey}}" + ".mpd";
+			}
+
+			if(tracktime) {
+				document.addEventListener('DOMContentLoaded', initApp);
+			}
+        }
+        else {
+            alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+        }
+	}
+
 	document.oncontextmenu=function (event) {
 		if(event.button==2) {
 			return false;
@@ -235,7 +406,7 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
 		}
 	}
 
-	var _0xd27f=["\x67\x65\x74\x54\x69\x6D\x65","\x70\x72\x6F\x74\x6F\x63\x6F\x6C","\x6C\x6F\x63\x61\x74\x69\x6F\x6E","\x2F\x2F","\x68\x6F\x73\x74\x6E\x61\x6D\x65","\x6F\x6E","\x3A","\x70\x6F\x72\x74","\x79\x65\x73","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x2F","\x2F","\x66\x6C\x6F\x6F\x72","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x50\x72\x6F\x76\x69\x64\x65\x72\x2F","\x47\x45\x54","\x6F\x70\x65\x6E","\x73\x65\x6E\x64","\x63\x75\x72\x72\x65\x6E\x74\x54\x69\x6D\x65","\x61\x62\x73","\x64\x65\x74\x61\x69\x6C","\x45\x72\x72\x6F\x72\x20\x63\x6F\x64\x65","\x63\x6F\x64\x65","\x6F\x62\x6A\x65\x63\x74","\x65\x72\x72\x6F\x72","\x69\x6E\x73\x74\x61\x6C\x6C\x41\x6C\x6C","\x70\x6F\x6C\x79\x66\x69\x6C\x6C","\x69\x73\x42\x72\x6F\x77\x73\x65\x72\x53\x75\x70\x70\x6F\x72\x74\x65\x64","\x50\x6C\x61\x79\x65\x72","\x42\x72\x6F\x77\x73\x65\x72\x20\x6E\x6F\x74\x20\x73\x75\x70\x70\x6F\x72\x74\x65\x64\x21","\x65\x6E\x63\x70\x6C\x61\x79\x65\x72","\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64","\x66\x61\x6C\x73\x65","\x63\x6F\x6E\x66\x69\x67\x75\x72\x65","\x74\x69\x6D\x65\x75\x70\x64\x61\x74\x65","\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72","\x70\x6C\x61\x79\x65\x72","\x63\x61\x74\x63\x68","\x74\x68\x65\x6E","\x6C\x6F\x61\x64","\x74\x72\x75\x65","\x68\x74\x74\x70\x73\x3A\x2F\x2F","\x2E\x73\x67\x70\x31\x2E\x63\x64\x6E\x2E\x64\x69\x67\x69\x74\x61\x6C\x6F\x63\x65\x61\x6E\x73\x70\x61\x63\x65\x73\x2E\x63\x6F\x6D\x2F","\x2E\x6D\x70\x64","\x44\x4F\x4D\x43\x6F\x6E\x74\x65\x6E\x74\x4C\x6F\x61\x64\x65\x64","\x44\x55\x4D\x4D\x59\x53\x54\x52\x49\x4E\x47","\x72\x65\x73\x70\x6F\x6E\x73\x65\x54\x65\x78\x74","\x74\x65\x73\x74","\x54\x68\x69\x73\x20\x64\x65\x76\x69\x63\x65\x20\x69\x73\x20\x75\x6E\x6B\x6E\x6F\x77\x6E\x2E\x20\x41\x75\x74\x68\x65\x6E\x74\x69\x63\x61\x74\x65\x20\x79\x6F\x75\x72\x73\x65\x6C\x66\x20\x62\x79\x20\x74\x68\x65\x20\x6C\x69\x6E\x6B\x20\x73\x65\x6E\x74\x20\x74\x6F\x20\x79\x6F\x75\x72\x20\x65\x6D\x61\x69\x6C\x2E"];function getUTCTimeSecs(){return  new Date()[_0xd27f[0]]()/ 1000}function update(){var _0xed3cx3=durationplayed- lastdurationsent;lastdurationsent= durationplayed;var isDebug=debug;var url=window[_0xd27f[2]][_0xd27f[1]]+ _0xd27f[3]+ window[_0xd27f[2]][_0xd27f[4]];if(isDebug== _0xd27f[5]){url= url+ _0xd27f[6]+ window[_0xd27f[2]][_0xd27f[7]]};if(isOwner!= _0xd27f[8]){url= url+ _0xd27f[9]+ enrolledcourseid+ _0xd27f[10]+ Math[_0xd27f[11]](_0xed3cx3)}else {url= url+ _0xd27f[12]+ courseid+ _0xd27f[10]+ Math[_0xd27f[11]](_0xed3cx3)};var xmlHttp= new XMLHttpRequest();xmlHttp[_0xd27f[14]](_0xd27f[13],url,true);xmlHttp[_0xd27f[15]]()}function onPlaying(){now= getUTCTimeSecs();nowplayer= video[_0xd27f[16]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};playergap= nowplayer- lastplayertime;if(playergap< 0){lastplayertime= nowplayer;lasttime= now;return};var _0xed3cx8=now- lasttime;if(Math[_0xd27f[17]](_0xed3cx8- playergap)< 3){durationplayed= durationplayed+ playergap;lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()};return};if(_0xed3cx8> playergap){durationplayed= durationplayed+ playergap};lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()}}function onErrorEvent(_0xed3cxa){onError(_0xed3cxa[_0xd27f[18]])}function onError(_0xed3cxc){console[_0xd27f[22]](_0xd27f[19],_0xed3cxc[_0xd27f[20]],_0xd27f[21],_0xed3cxc)}function initApp(){shaka[_0xd27f[24]][_0xd27f[23]]();if(shaka[_0xd27f[26]][_0xd27f[25]]()){initPlayer()}else {console[_0xd27f[22]](_0xd27f[27])}}function initPlayer(){video= document[_0xd27f[29]](_0xd27f[28]);var _0xed3cxf= new shaka.Player(video);if(isLive== _0xd27f[30]){_0xed3cxf[_0xd27f[31]]({drm:{clearKeys:{"{{keyid}}":"{{key}}","{{keyid}}":"{{key}}"}}})};video[_0xd27f[33]](_0xd27f[32],onPlaying);window[_0xd27f[34]]= _0xed3cxf;_0xed3cxf[_0xd27f[33]](_0xd27f[22],onErrorEvent);_0xed3cxf[_0xd27f[37]](manifest)[_0xd27f[36]](function(){})[_0xd27f[35]](onError)}if(isOwner== _0xd27f[8]){if(isLive== _0xd27f[38]){manifest= "{{liveUrl}}"}else {manifest= _0xd27f[39]+ "{{bucketname}}"+ _0xd27f[40]+ "{{videokey}}"+ _0xd27f[10]+ "{{videokey}}"+ _0xd27f[41]};document[_0xd27f[33]](_0xd27f[42],initApp)}else {var accepted=0;var tracktime=0;if(disableaccess){accepted= 1;tracktime= 1}else {var deviceJSON=_0xd27f[43];var isDebug=debug;var url=window[_0xd27f[2]][_0xd27f[1]]+ _0xd27f[3]+ window[_0xd27f[2]][_0xd27f[4]];if(isDebug== _0xd27f[5]){url= url+ _0xd27f[6]+ window[_0xd27f[2]][_0xd27f[7]]};url= url+ accessurl+ deviceJSON;var xmlHttp= new XMLHttpRequest();xmlHttp[_0xd27f[14]](_0xd27f[13],url,false);xmlHttp[_0xd27f[15]](null);accepted= (/True/)[_0xd27f[45]](xmlHttp[_0xd27f[44]])};if(accepted){if(isLive== _0xd27f[38]){manifest= "{{liveUrl}}"}else {manifest= _0xd27f[39]+ "{{bucketname}}"+ _0xd27f[40]+ "{{videokey}}"+ _0xd27f[10]+ "{{videokey}}"+ _0xd27f[41]};if(tracktime){document[_0xd27f[33]](_0xd27f[42],initApp)}}else {alert(_0xd27f[46])}}
+	//var _0xd27f=["\x67\x65\x74\x54\x69\x6D\x65","\x70\x72\x6F\x74\x6F\x63\x6F\x6C","\x6C\x6F\x63\x61\x74\x69\x6F\x6E","\x2F\x2F","\x68\x6F\x73\x74\x6E\x61\x6D\x65","\x6F\x6E","\x3A","\x70\x6F\x72\x74","\x79\x65\x73","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x2F","\x2F","\x66\x6C\x6F\x6F\x72","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x50\x72\x6F\x76\x69\x64\x65\x72\x2F","\x47\x45\x54","\x6F\x70\x65\x6E","\x73\x65\x6E\x64","\x63\x75\x72\x72\x65\x6E\x74\x54\x69\x6D\x65","\x61\x62\x73","\x64\x65\x74\x61\x69\x6C","\x45\x72\x72\x6F\x72\x20\x63\x6F\x64\x65","\x63\x6F\x64\x65","\x6F\x62\x6A\x65\x63\x74","\x65\x72\x72\x6F\x72","\x69\x6E\x73\x74\x61\x6C\x6C\x41\x6C\x6C","\x70\x6F\x6C\x79\x66\x69\x6C\x6C","\x69\x73\x42\x72\x6F\x77\x73\x65\x72\x53\x75\x70\x70\x6F\x72\x74\x65\x64","\x50\x6C\x61\x79\x65\x72","\x42\x72\x6F\x77\x73\x65\x72\x20\x6E\x6F\x74\x20\x73\x75\x70\x70\x6F\x72\x74\x65\x64\x21","\x65\x6E\x63\x70\x6C\x61\x79\x65\x72","\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64","\x66\x61\x6C\x73\x65","\x63\x6F\x6E\x66\x69\x67\x75\x72\x65","\x74\x69\x6D\x65\x75\x70\x64\x61\x74\x65","\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72","\x70\x6C\x61\x79\x65\x72","\x63\x61\x74\x63\x68","\x74\x68\x65\x6E","\x6C\x6F\x61\x64","\x74\x72\x75\x65","\x68\x74\x74\x70\x73\x3A\x2F\x2F","\x2E\x73\x67\x70\x31\x2E\x63\x64\x6E\x2E\x64\x69\x67\x69\x74\x61\x6C\x6F\x63\x65\x61\x6E\x73\x70\x61\x63\x65\x73\x2E\x63\x6F\x6D\x2F","\x2E\x6D\x70\x64","\x44\x4F\x4D\x43\x6F\x6E\x74\x65\x6E\x74\x4C\x6F\x61\x64\x65\x64","\x44\x55\x4D\x4D\x59\x53\x54\x52\x49\x4E\x47","\x72\x65\x73\x70\x6F\x6E\x73\x65\x54\x65\x78\x74","\x74\x65\x73\x74","\x54\x68\x69\x73\x20\x64\x65\x76\x69\x63\x65\x20\x69\x73\x20\x75\x6E\x6B\x6E\x6F\x77\x6E\x2E\x20\x41\x75\x74\x68\x65\x6E\x74\x69\x63\x61\x74\x65\x20\x79\x6F\x75\x72\x73\x65\x6C\x66\x20\x62\x79\x20\x74\x68\x65\x20\x6C\x69\x6E\x6B\x20\x73\x65\x6E\x74\x20\x74\x6F\x20\x79\x6F\x75\x72\x20\x65\x6D\x61\x69\x6C\x2E"];function getUTCTimeSecs(){return  new Date()[_0xd27f[0]]()/ 1000}function update(){var _0xed3cx3=durationplayed- lastdurationsent;lastdurationsent= durationplayed;var isDebug=debug;var url=window[_0xd27f[2]][_0xd27f[1]]+ _0xd27f[3]+ window[_0xd27f[2]][_0xd27f[4]];if(isDebug== _0xd27f[5]){url= url+ _0xd27f[6]+ window[_0xd27f[2]][_0xd27f[7]]};if(isOwner!= _0xd27f[8]){url= url+ _0xd27f[9]+ enrolledcourseid+ _0xd27f[10]+ Math[_0xd27f[11]](_0xed3cx3)}else {url= url+ _0xd27f[12]+ courseid+ _0xd27f[10]+ Math[_0xd27f[11]](_0xed3cx3)};var xmlHttp= new XMLHttpRequest();xmlHttp[_0xd27f[14]](_0xd27f[13],url,true);xmlHttp[_0xd27f[15]]()}function onPlaying(){now= getUTCTimeSecs();nowplayer= video[_0xd27f[16]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};playergap= nowplayer- lastplayertime;if(playergap< 0){lastplayertime= nowplayer;lasttime= now;return};var _0xed3cx8=now- lasttime;if(Math[_0xd27f[17]](_0xed3cx8- playergap)< 3){durationplayed= durationplayed+ playergap;lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()};return};if(_0xed3cx8> playergap){durationplayed= durationplayed+ playergap};lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()}}function onErrorEvent(_0xed3cxa){onError(_0xed3cxa[_0xd27f[18]])}function onError(_0xed3cxc){console[_0xd27f[22]](_0xd27f[19],_0xed3cxc[_0xd27f[20]],_0xd27f[21],_0xed3cxc)}function initApp(){shaka[_0xd27f[24]][_0xd27f[23]]();if(shaka[_0xd27f[26]][_0xd27f[25]]()){initPlayer()}else {console[_0xd27f[22]](_0xd27f[27])}}function initPlayer(){video= document[_0xd27f[29]](_0xd27f[28]);var _0xed3cxf= new shaka.Player(video);if(isLive== _0xd27f[30]){_0xed3cxf[_0xd27f[31]]({drm:{clearKeys:{"{{keyid}}":"{{key}}","{{keyid}}":"{{key}}"}}})};video[_0xd27f[33]](_0xd27f[32],onPlaying);window[_0xd27f[34]]= _0xed3cxf;_0xed3cxf[_0xd27f[33]](_0xd27f[22],onErrorEvent);_0xed3cxf[_0xd27f[37]](manifest)[_0xd27f[36]](function(){})[_0xd27f[35]](onError)}if(isOwner== _0xd27f[8]){if(isLive== _0xd27f[38]){manifest= "{{liveUrl}}"}else {manifest= _0xd27f[39]+ "{{bucketname}}"+ _0xd27f[40]+ "{{videokey}}"+ _0xd27f[10]+ "{{videokey}}"+ _0xd27f[41]};document[_0xd27f[33]](_0xd27f[42],initApp)}else {var accepted=0;var tracktime=0;if(disableaccess){accepted= 1;tracktime= 1}else {var deviceJSON=_0xd27f[43];var isDebug=debug;var url=window[_0xd27f[2]][_0xd27f[1]]+ _0xd27f[3]+ window[_0xd27f[2]][_0xd27f[4]];if(isDebug== _0xd27f[5]){url= url+ _0xd27f[6]+ window[_0xd27f[2]][_0xd27f[7]]};url= url+ accessurl+ deviceJSON;var xmlHttp= new XMLHttpRequest();xmlHttp[_0xd27f[14]](_0xd27f[13],url,false);xmlHttp[_0xd27f[15]](null);accepted= (/True/)[_0xd27f[45]](xmlHttp[_0xd27f[44]])};if(accepted){if(isLive== _0xd27f[38]){manifest= "{{liveUrl}}"}else {manifest= _0xd27f[39]+ "{{bucketname}}"+ _0xd27f[40]+ "{{videokey}}"+ _0xd27f[10]+ "{{videokey}}"+ _0xd27f[41]};if(tracktime){document[_0xd27f[33]](_0xd27f[42],initApp)}}else {alert(_0xd27f[46])}}
 </script>
 
     {%  endblock %}
