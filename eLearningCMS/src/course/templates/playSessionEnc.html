@@ -25,7 +25,7 @@
             <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
                 <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
-                    <video id="encplayer" data-shaka-player preload="auto" {% if isLive == "true" %} autoplay controls {% endif %}>
+                    <video id="encplayer" preload="auto" {% if isLive == "true" %} autoplay controls {% else %} data-shaka-player {% endif %}>
                     </video>
                     <div class="watermarkEmail"><small>{{user_email}}</small></div>
                     <div class="watermarkIpaddress"><small>{{userip}}</small></div>
@@ -158,9 +158,6 @@ function moveWatermarks() {
     var topDelta = topMax/10;
     var left = getRandomInRange(offsetLeft,leftMax);
     var top = getRandomInRange(offsetTop,topMax-topDelta);
-    
-    //var left = (offsetLeft+vWidth/2)*Math.random(); //$("video#encplayer").width()*Math.random()*Math.random();
-    //var top = (offsetTop+vHeight/2)*Math.random();;//$("video#encplayer").height()*Math.random()*Math.random();
     $(".watermarkEmail").css({"left" : left + "px",
                             "top" : top+"px"
                         })
@@ -238,7 +235,11 @@ window.addEventListener('resize', function() {
 
 
     // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
-    document.addEventListener('shaka-ui-loaded', initPlayer);
+    if (isLive == "true") {
+        document.addEventListener('DOMContentLoaded', initApp); 
+    }  else {
+        document.addEventListener('shaka-ui-loaded', initPlayer);
+    }
 
     function getUTCTimeSecs() {
 		return new Date().getTime()/1000;
@@ -324,7 +325,9 @@ window.addEventListener('resize', function() {
 		shaka.polyfill.installAll();
 
 		if (shaka.Player.isBrowserSupported()) {
-			//initPlayer();
+            if (isLive == "true") {
+			  initPlayer();
+            }
 		} else {
 			console.error('Browser not supported!');
 		}
@@ -337,7 +340,7 @@ window.addEventListener('resize', function() {
 
         if (isLive == "true") {
             var player = new shaka.Player(video);
-        }  else {
+          }  else {
             const ui = video['ui'];
             var uiConfig = {};
             uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'mute', 'volume', 'fullscreen'];
