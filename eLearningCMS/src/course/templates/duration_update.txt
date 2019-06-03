@@ -1,6 +1,31 @@
 https://javascriptobfuscator.com/Javascript-Obfuscator.aspx
 
-function getUTCTimeSecs() {
+	if (isOwner == "yes") {
+		gap = 10;
+    }
+	
+	var video;
+	var manifest;
+	var lastplayertime = 0;
+	var nowplayer = 0;
+	var now = 0;
+	var lasttime = 0;
+	var lastdurationplayed = 0
+	var durationplayed = 0;
+	var coreapi = window.coreapi;
+	var client = new coreapi.Client();
+	var lastdurationsent = 0;
+	var playergap = 0;
+
+
+    // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
+    if (isLive == "true") {
+        document.addEventListener('DOMContentLoaded', initApp); 
+    }  else {
+        document.addEventListener('shaka-ui-loaded', initPlayer);
+    }
+
+    function getUTCTimeSecs() {
 		return new Date().getTime()/1000;
 	}
 
@@ -84,28 +109,43 @@ function getUTCTimeSecs() {
 		shaka.polyfill.installAll();
 
 		if (shaka.Player.isBrowserSupported()) {
-			initPlayer();
+            if (isLive == "true") {
+			  initPlayer();
+            }
 		} else {
 			console.error('Browser not supported!');
 		}
 	}
 
 	function initPlayer() {
+		
 		video = document.getElementById('encplayer');
-		var player = new shaka.Player(video);
+        var player;
+
+        if (isLive == "true") {
+            var player = new shaka.Player(video);
+          }  else {
+            const ui = video['ui'];
+            var uiConfig = {};
+            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'mute', 'volume', 'fullscreen'];
+            //uiConfig['overflowMenuButtons'] = []
+            ui.configure(uiConfig);
+            const controls = ui.getControls();
+            var player = controls.getPlayer();
+        }
+
 		if (isLive == "false") {
 			player.configure({
 				drm: {
 					clearKeys: {
-						keyid : key,
-						keyid : key
+						kid : kidkey,
+						kid : kidkey
 					}
 				}
 			});
 		}
 
 		video.addEventListener('timeupdate', onPlaying);
-
 		window.player = player;
 
 		player.addEventListener('error', onErrorEvent);

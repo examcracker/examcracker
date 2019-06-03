@@ -340,7 +340,9 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         #print ('ip2 is : ' + ip2)
         scheduleObj = scheduleObj[0]
         userString = '?'
+        courseChapterObj = course.models.CourseChapter.objects.filter(id=scheduleObj.chapter_id)
         if request.user.is_staff:
+            courseChapterObj = courseChapterObj[0]
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
             if scheduleObj.provider_id != providerObj.id:
@@ -350,9 +352,10 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             scheduleObj.save()
             userString = userString + 'providerid='+str(providerObj.id) + '&'
             kwargs["isOwner"] = 'yes'
+            kwargs["courseid"] = courseChapterObj.course_id
         else:
             # check if student is enrolled for this schedule
-            courseChapterObj = course.models.CourseChapter.objects.filter(id=scheduleObj.chapter_id)
+            
             if not courseChapterObj:
                 return Http404()
             courseChapterObj = courseChapterObj[0]
