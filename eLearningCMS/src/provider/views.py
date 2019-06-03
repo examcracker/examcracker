@@ -577,6 +577,7 @@ class addStudents(showProviderHome):
         providerObj = getProvider(request)
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         courseDict = []
+        viewhours = '10'
         for c in courses:
             courseDetails = course.algos.getCourseDetails(c.id, False,False)
             courseInfo = {}
@@ -588,10 +589,12 @@ class addStudents(showProviderHome):
             if studentid > 0:
                 studentObj = student.models.Student.objects.filter(id=studentid)[0]
                 kwargs['email'] = course.algos.getUserNameAndPic(studentObj.user_id)['email']
+                kwargs['studentname'] = course.algos.getUserNameAndPic(studentObj.user_id)['name']
                 enrolledCourseObj = course.models.EnrolledCourse.objects.filter(course_id=c.id,student_id=studentid)
                 if enrolledCourseObj:
                     enrolledCourseObj = enrolledCourseObj[0]
-                    kwargs['viewhours'] = enrolledCourseObj.viewhours
+                    viewhours = enrolledCourseObj.viewhours
+                    courseInfo['viewhours'] = enrolledCourseObj.viewhours
                     if enrolledCourseObj.chapteraccess == '':
                         courseInfo['fullaccess'] = 1
                     else:
@@ -605,7 +608,7 @@ class addStudents(showProviderHome):
             courseInfo['details'] = courseDetails
             courseDict.append(courseInfo)
         kwargs['mycourses'] = courseDict
-            
+        kwargs['viewhours'] = viewhours
             # store 3 info , name, subject and id
         kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
@@ -613,11 +616,14 @@ class addStudents(showProviderHome):
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
+        #return self.get(request, *args, **kwargs)
 
-        providerObj = getProvider(request)
+        #providerObj = getProvider(request)
         emails = self.request.POST.get('email', '')
+        studentnames = self.request.POST.get('studentname', '')
         viewhours = self.request.POST.get('viewHours','')
         emailsList = str.split(emails, ',')
+        studentnamesList = str.split(studentnames, ',')
         if len(emailsList) == 0:
             return self.get(request, *args, **kwargs)
         
@@ -626,18 +632,21 @@ class addStudents(showProviderHome):
             fullCourses = self.request.POST.getlist('course')
         modules = [k for k, v in request.POST.items() if k.startswith('modules')]
 
-        if len(modules) == 0 and fullCourses == '':
+        if len(emailsList) == 0 :
             return self.get(request, *args, **kwargs)
 
         # create users and students from emails
         User = get_user_model()
+        i = -1
+        snameLen = len(studentnamesList)
         for email in emailsList:
+            i = i+1
             userObj = User.objects.filter(email=email)
             studentObj = ''
             if not userObj:
                 userObj = User(email = email)
                 userObj.set_password(email)
-                userObj.name = email
+                userObj.name = studentnamesList[i] if i<snameLen else email
                 userObj.save()
                 studentObj = student.models.Student()
                 studentObj.user_id = userObj.id
@@ -665,9 +674,12 @@ The password can be changed from <em>Profile</em> section after login.<br />\n\
 Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the courses.<br />\n\
 Thanks<br />\n\
 Gyaanhive Team</p>'
-
+            courseEnrolledList = []
+            enrolledCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
             for fc in fullCourses:
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=fc,student_id=studentObj.id)
+                viewHours = self.request.POST.get('viewhours'+str(fc))
+                courseEnrolledList.append(fc)
                 if not enrolledCourse:
                     enrolledCourse = course.models.EnrolledCourse()
                     enrolledCourse.course_id = fc
@@ -675,12 +687,14 @@ Gyaanhive Team</p>'
                 else:
                     enrolledCourse = enrolledCourse[0]
                     enrolledCourse.chapteraccess = ''
-                if viewhours != '':
-                        enrolledCourse.viewhours = viewhours
+                #if viewhours != '':
+                enrolledCourse.viewhours = viewhours
                 enrolledCourse.save()
             for module in modules:
                 chapterList = request.POST.getlist(module)
                 courseid = module.split('modules')[1]
+                courseEnrolledList.append(courseid)
+                viewHours = self.request.POST.get('viewhours'+str(courseid))
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseid,student_id=studentObj.id)
                 if enrolledCourse:
                     enrolledCourse = enrolledCourse[0]
@@ -689,14 +703,20 @@ Gyaanhive Team</p>'
                
                 enrolledCourse.course_id = courseid
                 enrolledCourse.student_id = studentObj.id
-                if viewhours != '':
-                    enrolledCourse.viewhours = viewhours
+                #if viewhours != '':
+                enrolledCourse.viewhours = viewhours
                 modulelist = list(map(int,chapterList))
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()
                 # creare user
+            # remove course enrollment here
+            coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            if len(courseEnrolledList) != 0:
+                coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).exclude(course_id__in=courseEnrolledList)
+            if  coursesToDelete:   
+                coursesToDelete.delete()
 
-            profiles.signals.sendMail(email, subject, emailBody)
+            #profiles.signals.sendMail(email, subject, emailBody)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")

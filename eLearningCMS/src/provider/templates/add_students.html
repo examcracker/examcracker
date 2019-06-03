@@ -13,15 +13,25 @@
   <form action="" method="post" enctype="multipart/form-data" id="enrollStudents">
 	{% csrf_token %}
 	<div class="form-group row">
-    <label for="inputEmail3" class="col-sm-2 col-form-label">Emails (separated by comma) </label>
+    <label for="inputEmail3" class="col-sm-2 col-form-label">Emails  </label>
     <div class="col-sm-10">
 			<input type="text" class="form-control" name="email" id="inputEmail3" placeholder="Email" {% if email %} value = "{{email}}" readonly {% endif %}>
+			<small>Separated by <strong>Commas</strong> for multiple enrollments</small>
+    </div>
+	</div>
+	<div class="form-group row">
+    <label for="inputEmail3" class="col-sm-2 col-form-label">Student Name</label>
+    <div class="col-sm-10">
+			<input type="text" class="form-control" name="studentname" id="studentname" placeholder="Student Name" 
+			{% if studentname %} value = "{{studentname}}"  readonly {% endif %} >
+			<small>Separated by <strong>Commas</strong> for multiple enrollments</small>
     </div>
 	</div>
 	<div class="form-group row">
     <label for="inputEmail3" class="col-sm-2 col-form-label">View hours</label>
     <div class="col-sm-10">
-      <input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" {% if viewhours %} value = "{{viewhours}}" {% endif %}>
+			<input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" 
+			{% if viewhours %} value = "{{viewhours}}" {% endif %} required onwheel="this.blur()">
     </div>
 	</div>
 	<h4>Assign Course and permissions</h2>
@@ -31,7 +41,7 @@
 
 	<div class="row">
 		<div class="col-6">
-		<h4> Enroll for Course {{ course.name }}<strong>
+		<h4> Enroll for Course <strong> {{ course.name }}
 	</strong></h4>
 	</div>
 	<div class="col-3">
@@ -42,26 +52,29 @@
 </div>
 		<div class="row">
 		{% for sub, subDetails in course.details.items %}
-		
-		<div class="col-sm-3">
+				<div class="col-sm-3">
 				<h5>{{sub}}</h5>
-		{% for subject in subDetails %}
-	
-			{% for chapId, chapDetails in subject.items %}
-			<div class="row-sm-3">
+			{% for subject in subDetails %}
+				{% for chapId, chapDetails in subject.items %}
+				<div class="row-sm-3">
 					<input class="form-check-input" name="modules{{course.cid}}" type="checkbox" id="gridCheck1" value="{{chapId}}"
 					{% if chapDetails.access  %} checked {% endif %} {% if course.fullaccess == 1 %} disabled {% endif %}>
 					<label class="form-check-label" for="gridCheck1">
 							{{ chapDetails.name }}
 					</label>
 				</div>
-
-			{% endfor %}	
-	
-	{% endfor %}
+				{% endfor %}
+		{% endfor %}
 </div>
 	{% endfor %}
 	</div>
+	<!-- <div class="form-group row">
+    <label for="inputEmail3" class="col-sm-2 col-form-label"> <stong> View hours </stong></label>
+    <div class="col-sm-10">
+			<input type="number" class="form-control" name="viewhours{{course.cid}}" id="viewHours" placeholder="view Hours" {% if course.viewhours %} 
+			value = "{{course.viewhours}}" {% else %} value = 10 {% endif %} onwheel="this.blur()" >
+    </div>
+	</div> -->
 	<hr>
 </div>
 {% endfor %}
