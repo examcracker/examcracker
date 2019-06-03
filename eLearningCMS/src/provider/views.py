@@ -716,7 +716,7 @@ Gyaanhive Team</p>'
             if  coursesToDelete:   
                 coursesToDelete.delete()
 
-            #profiles.signals.sendMail(email, subject, emailBody)
+            profiles.signals.sendMail(email, subject, emailBody)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
