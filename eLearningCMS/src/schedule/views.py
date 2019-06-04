@@ -474,5 +474,17 @@ class captureState(generic.TemplateView):
         if 'streamKey' in dictBody:
             scheduleObj.streamkey = dictBody["streamKey"]
         scheduleObj.save()
-
         return HttpResponseNoContent()
+
+class deleteSchedule(addShowSchedule):
+    template_name="addShowSchedule.html"
+    http_method_names = ['get']
+
+    def get(self, request, scheduleid, *args, **kwargs):
+        scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
+        providerObj = getProvider(request)
+        if scheduleObj[0].provider_id != providerObj.id:
+            raise Http404()
+        if scheduleObj:
+            scheduleObj.delete()
+        return redirect("schedule:add_show_schedule")

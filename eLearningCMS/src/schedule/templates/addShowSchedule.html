@@ -173,7 +173,10 @@
                   </tr>
             {% for schedule in schedules %}
               <tr>
-                <th scope="row">{{forloop.counter}}</th>
+                <th scope="row">
+                  <a href="{% url 'schedule:deleteSchedule' schedule.id %}" class="btn btn-primary btn-sm mx-2 px-2" role="button" aria-pressed="true" onclick="return confirm('Do you want to delete this schedule?')">
+                    <i class="fa fa-trash fa-sm" title="Delete Schedule"></i></a>
+                </th>
                 <td><a href="{% url 'provider:edit_course' schedule.courseId %}"> {{schedule.courseName}} </a></td>
                 <td>{{schedule.subjectName}}</td>
                 <td >{{schedule.chapterName}}</td>
