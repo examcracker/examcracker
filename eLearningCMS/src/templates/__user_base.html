@@ -38,6 +38,48 @@
 {% block bodystart%}
 <body class="fixed-nav bg-dark" id="page-top">
 {% endblock bodystart %}
+<div id="myModal" class="modal" role="dialog">
+		<div class="modal-dialog">
+	  <!-- Modal content-->
+	  <div class="modal-content">
+	  <div class="modal-header">
+	  <h4 class="modal-title">Submit your query</h4>
+	  <button type="button" class="close" data-dismiss="modal">×</button>
+	  </div>
+	  <div class="modal-body">
+			  <form role="form" method="post" id="reused_form" action="{% url 'home' %}"> {% csrf_token %}
+			  <p>
+				  <b>Submit the problem faced by you. 
+            Kindly mention as much details as possible include the video link, your internet speed etc
+          </b>
+			  </p>
+			  <div class="form-group">
+				  <label for="name">
+					  Name:</label>
+				  <input type="text" class="form-control"
+				  id="name" name="name"   required maxlength="50">
+        </div>
+        <div class="form-group">
+            <label for="name">
+              Subject:</label>
+            <input type="text" class="form-control"
+            id="subject" name="subject"   required maxlength="50">
+          </div>
+			  <div class="form-group">
+				  <label for="name">
+					  Message:</label>
+				  <textarea class="form-control" type="textarea" name="message"
+				  id="message" placeholder="Your Message Here"
+				  maxlength="6000" rows="7"></textarea>
+			  </div>
+			  <button type="submit" class="btn btn-lg btn-success btn-block" id="btnContactUs">Submit Your Query</button>
+		  </form>
+	  </div>
+	  
+	  </div>
+	  
+	   </div>
+	  </div>
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     {% if user.is_staff %}
@@ -156,6 +198,12 @@
 			{% endif %}
           </a>
         </li>
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Submit Issues">
+            <a class="nav-link" href="" data-toggle="modal" data-target="#myModal">
+              <i class="fas fa-envelope fa-lg"></i>
+              <span class="nav-link-text">Submit Issues</span>
+            </a>
+          </li>
       </ul>
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">
@@ -272,5 +320,60 @@
 <script src="{% static 'userDashBoard/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'userDashBoard/vendor/jquery-easing/jquery.easing.min.js' %}"></script>
   <script src="{% static 'userDashBoard/js/sb-admin.min.js' %}"></script>
-
+  <script>
+      $(function()
+      {
+        function after_form_submitted(data)
+        {
+          $('#myModal').modal('toggle');
+          $('#queryResponseModal').modal('show');
+          document.getElementById('btnContactUs').innerText = 'Submit Your Query'
+          if(data.result == 'success')
+          {
+            $('#success_message').show();
+            $('#error_message').hide();
+          }
+          else
+          {
+            $('#error_message').append('<ul></ul>');
+            jQuery.each(data.errors,function(key,val)
+            {
+              $('#error_message ul').append('<li>'+key+':'+val+'</li>');
+            });
+            //$('form#reused_form').hide();
+            $('#success_message').hide();
+            $('#error_message').show();
+      
+            //reverse the response on the button
+            $('button[type="button"]', $form).each(function()
+            {
+              $btn = $(this);
+              label = $btn.prop('orig_label');
+              if(label)
+              {
+                $btn.prop('type','submit' );
+                $btn.text(label);
+                $btn.prop('orig_label','');
+              }
+            });
+      
+          }//else
+        }
+      
+        $('#reused_form').submit(function(e)
+          {
+          document.getElementById('btnContactUs').innerText = 'Sending ...'
+          e.preventDefault();
+          $form = $(this);
+          $.ajax({
+              type: "POST",
+              url: $form.attr('action'),
+              data: $form.serialize(),
+              success: after_form_submitted,
+              dataType: 'json'
+          });
+      
+          });
+      });
+      </script>
 </html>

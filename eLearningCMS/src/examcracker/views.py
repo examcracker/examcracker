@@ -93,14 +93,16 @@ class HomePage(fillCartCourses):
         return resp
     
     def post(self, request):
-        name = self.request.POST.get('name')
-        email = self.request.POST.get('email')
-        phone = self.request.POST.get('phone')
-        message = self.request.POST.get('message')
+        name = self.request.POST.get('name','')
+        email = self.request.POST.get('email','')
+        phone = self.request.POST.get('phone','')
+        message = self.request.POST.get('message','')
+        subject = self.request.POST.get('subject','')
         try:
             emailSub = 'Query from '+ name
             emailBody = 'Hello GyaanHive,\n'
             emailBody = emailBody + 'Name : ' + name + '\n'
+            emailBody = emailBody + 'subject : ' + subject + '\n'
             emailBody = emailBody + 'Phone : ' + phone + '\n'
             emailBody = emailBody + 'Email : ' + email + '\n'
             emailBody = emailBody + 'Message : ' + message + '\n'
