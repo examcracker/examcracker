@@ -492,6 +492,7 @@ class myStudents(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
+        kwargs["providerid"] = providerObj.id
         coursesObj = course.models.Course.objects.filter(Q(provider_id=providerObj.id) & Q(published=1))
         courseDictMap = {}
         for courseObj in coursesObj:
