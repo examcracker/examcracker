@@ -353,7 +353,7 @@ window.addEventListener('resize', function() {
           }  else {
             const ui = video['ui'];
             var uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'mute', 'volume', 'fullscreen'];
+            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen'];
             //uiConfig['overflowMenuButtons'] = []
             ui.configure(uiConfig);
             const controls = ui.getControls();
