@@ -617,7 +617,6 @@ class addStudents(showProviderHome):
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-        #return self.get(request, *args, **kwargs)
 
         #providerObj = getProvider(request)
         emails = self.request.POST.get('email', '')
@@ -640,14 +639,18 @@ class addStudents(showProviderHome):
         User = get_user_model()
         i = -1
         snameLen = len(studentnamesList)
+        fixedEmail = ''
         for email in emailsList:
+            fixedEmail = email.strip().lower()
+            if not fixedEmail:
+                continue
             i = i+1
-            userObj = User.objects.filter(email=email)
+            userObj = User.objects.filter(email=fixedEmail)
             studentObj = ''
             if not userObj:
-                userObj = User(email = email)
-                userObj.set_password(email)
-                userObj.name = studentnamesList[i] if i<snameLen else email
+                userObj = User(email = fixedEmail)
+                userObj.set_password(fixedEmail)
+                userObj.name = studentnamesList[i] if i<snameLen else fixedEmail
                 userObj.save()
                 studentObj = student.models.Student()
                 studentObj.user_id = userObj.id
@@ -670,7 +673,7 @@ class addStudents(showProviderHome):
             subject = 'Welcome to GyaanHive'
             emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
 <p>You have been enrolled for a course or your module access has been changed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
-Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email. Give your email as password.\n\
+Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email. Give your email in lowercase as password.\n\
 The password can be changed from <em>Profile</em> section after login.<br />\n\
 Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the courses.<br />\n\
 Thanks<br />\n\
@@ -717,7 +720,7 @@ Gyaanhive Team</p>'
             if  coursesToDelete:   
                 coursesToDelete.delete()
 
-            profiles.signals.sendMail(email, subject, emailBody)
+            profiles.signals.sendMail(fixedEmail, subject, emailBody)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
