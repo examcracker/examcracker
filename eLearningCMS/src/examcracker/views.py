@@ -12,6 +12,8 @@ from profiles.signals import sendMail
 from django.http import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 
 # search by exam , course , provider , substring or exact
 class SearchResultsPage(fillCartCourses):
@@ -166,3 +168,20 @@ class DebugPage(generic.TemplateView, LoginRequiredMixin):
 
         cdn.views.sendUploadFileReq(scheduleid, system, filename)
         return self.get(request, providerid, *args, **kwargs)
+
+class fixUsers(generic.TemplateView, LoginRequiredMixin):
+    template_name = "debug.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise Http404()
+        User = get_user_model()
+        userObjs = User.objects.filter(is_staff=0)
+        for userObj in userObjs:
+            email = userObj.email
+            if email.strip() != userObj.email:
+                userObj.delete()
+                continue
+        return super().get(request, *args, **kwargs)
+
+
