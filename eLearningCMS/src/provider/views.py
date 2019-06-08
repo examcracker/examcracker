@@ -47,6 +47,15 @@ def getSessionsBySubjects(providerId,subjects):
     sessionObj = sessionObj.filter(q_objects)
     return sessionObj
 
+def getTotalStudentsPlayedTime(providerId):
+    providerCourses = course.models.Course.objects.filter(provider_id=providerId)
+    myec = course.models.EnrolledCourse.objects.filter(course_id__in=providerCourses.values('id'))
+    viewHours = 0
+    for ec in myec:
+        viewHours = viewHours + ec.completedminutes
+    return (int(viewHours))
+
+
 def getProviderStats(providerId):
     coursesObj = course.models.Course.objects.filter(Q(provider_id=providerId) & Q(published=1))
     sessionObj = models.Session.objects.filter(provider_id=providerId)
@@ -73,6 +82,7 @@ def getProviderStats(providerId):
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
     providerStatsInfo['piechartArray'] = courses
     providerStatsInfo['completedtime'] = str(int(totalViewedMinutes/60)) + " : " + str(int(totalViewedMinutes%60))
+    providerStatsInfo['totalStudentsPlayedTime'] = getTotalStudentsPlayedTime(providerId)
     return providerStatsInfo
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
