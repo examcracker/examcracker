@@ -42,6 +42,7 @@ urlpatterns = [
     path('searchResults/', views.SearchResultsPage.as_view(), name='searchResults'),
     path('listCourses/', views.listCourses.as_view(), name='listCourses'),
     path('debug/<int:providerid>', views.DebugPage.as_view(), name='debug'),
+    path('fixUsers/', views.fixUsers.as_view(), name='fixUsers'),
     path('', include(accounts.urls)),
 ]
 
