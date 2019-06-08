@@ -29,6 +29,20 @@ def getStudent(request):
     else:
         return studentObj
 
+def getStudentViewAllotedHoursProviderWise(request,providerid):
+    studentObj = getStudent(request)
+    providerCourses = course.models.Course.objects.filter(provider_id=providerid)
+    myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id__in=providerCourses.values('id'))
+    if not myCourses:
+        return -1,-1
+    viewMinutes = 0
+    allotedHours = 0
+    for c in myCourses:
+        allotedHours = c.viewhours
+        viewMinutes = viewMinutes + c.completedminutes
+    return viewMinutes,allotedHours
+
+
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
     template_name = 'student_home.html'
     http_method_names = ['get']
@@ -270,4 +284,28 @@ class VerifyEmail(LoginRequiredMixin, generic.TemplateView):
             profileObj.email_verified = True
             profileObj.save()
 
+        return super().get(request, *args, **kwargs)
+
+class view_hours(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'view_hours.html'
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        studentObj = getStudent(request)
+        if not studentObj:
+            raise Http404()
+        providerObjs = provider.models.Provider.objects.all()
+        viewHoursProviderWise = []
+        for providerObj in providerObjs:
+            providerInfo = {}
+            viewMinutes,allotedHours = getStudentViewAllotedHoursProviderWise(request,providerObj.id)
+            if viewMinutes == -1:
+                continue
+            providerUser = User.objects.filter(id=providerObj.user_id)[0]
+            providerInfo['alloted_hours'] = allotedHours
+            providerInfo['completed_mins'] = viewMinutes
+
+            providerInfo['provider_name'] = providerUser.name
+            viewHoursProviderWise.append(providerInfo)
+        kwargs["viewHoursProviderWise"] = viewHoursProviderWise
         return super().get(request, *args, **kwargs)
