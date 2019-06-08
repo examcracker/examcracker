@@ -82,7 +82,7 @@ def getProviderStats(providerId):
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
     providerStatsInfo['piechartArray'] = courses
     providerStatsInfo['completedtime'] = str(int(totalViewedMinutes/60)) + " : " + str(int(totalViewedMinutes%60))
-    providerStatsInfo['totalStudentsPlayedTime'] = getTotalStudentsPlayedTime(providerId)
+    providerStatsInfo['totalStudentsPlayedTime'] = int (getTotalStudentsPlayedTime(providerId)/60)
     return providerStatsInfo
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
