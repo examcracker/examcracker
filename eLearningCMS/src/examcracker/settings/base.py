@@ -85,6 +85,8 @@ EMAIL_HOST_PASSWORD = 'examcracker2018'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@yahoo.com>'
 
+EMAIL_TO_USER = 'mygyaanhive@gmail.com'
+
 # Pusher settings
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"

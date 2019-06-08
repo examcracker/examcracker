@@ -106,7 +106,7 @@ class HomePage(fillCartCourses):
             emailBody = emailBody + 'Phone : ' + phone + '\n'
             emailBody = emailBody + 'Email : ' + email + '\n'
             emailBody = emailBody + 'Message : ' + message + '\n'
-            sendMail(settings.EMAIL_HOST_USER,emailSub,emailBody)
+            sendMail(settings.EMAIL_TO_USER,emailSub,emailBody)
             data = {'result':'success'}
         except:
             data = {'result':'failure'}
