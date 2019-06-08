@@ -673,7 +673,7 @@ class addStudents(showProviderHome):
             subject = 'Welcome to GyaanHive'
             emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
 <p>You have been enrolled for a course or your module access has been changed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
-Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email. Give your email in lowercase as password.\n\
+Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email. If you are login for the first time, then give your email in lowercase as password.\n\
 The password can be changed from <em>Profile</em> section after login.<br />\n\
 Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the courses.<br />\n\
 Thanks<br />\n\
