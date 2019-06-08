@@ -40,7 +40,7 @@ def getStudentViewAllotedHoursProviderWise(request,providerid):
     for c in myCourses:
         allotedHours = c.viewhours
         viewMinutes = viewMinutes + c.completedminutes
-    return viewMinutes,allotedHours
+    return int(viewMinutes),allotedHours
 
 
 class showStudentHome(LoginRequiredMixin, generic.TemplateView):
@@ -60,7 +60,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         viewMinutes = 0
         for c in myCourses:
             viewMinutes = viewMinutes + c.completedminutes
-        kwargs["viewMinutes"] = viewMinutes
+        kwargs["viewMinutes"] = int(viewMinutes)
         
         if isAnyEventLive(request):
             kwargs['live'] = 'on'
