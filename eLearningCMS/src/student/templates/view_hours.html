@@ -1,0 +1,51 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+  <!-- Breadcrumbs-->
+  <nav class="navbar">
+  <div class="mr-lg-auto">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Assigned view hours</li>
+  </ol>
+  </div>
+    
+  </nav>
+
+
+   <div class="container-fluid">
+        {% if viewHoursProviderWise|length > 0 %}
+        <h5>Your View Hours Info.</h5>
+        <div style="overflow-x:auto;">
+        <table class="table" id="viewHoursInfo">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Provider</th>
+                <th scope="col">Alloted Hours</th>
+                <th scope="col">Completed Minutes</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for vhp in viewHoursProviderWise %}
+              <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td> {{vhp.provider_name}} </td>
+                <td> {{vhp.alloted_hours}}</td>
+                <td >{{vhp.completed_mins}}</td>
+                
+              </tr>
+              {% endfor %}    
+            </tbody>
+          </table>
+          </div>
+        
+        {% else %}
+        <h5>No Information available for view hours</h5>
+        {% endif %}
+    </div>
+{% endblock active %}
+
