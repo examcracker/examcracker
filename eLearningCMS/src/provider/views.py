@@ -25,6 +25,12 @@ from Crypto.Cipher import AES
 from django.contrib.auth import authenticate
 import base64
 
+import string
+import random
+
+def pwd_generator(size=6, chars=string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
 def getDelimiter(subject=False):
     if not subject:
         return course.algos.DELIMITER
@@ -657,9 +663,11 @@ class addStudents(showProviderHome):
             i = i+1
             userObj = User.objects.filter(email=fixedEmail)
             studentObj = ''
+            pwd=''
             if not userObj:
                 userObj = User(email = fixedEmail)
-                userObj.set_password(fixedEmail)
+                pwd = pwd_generator()
+                userObj.set_password(pwd)
                 userObj.name = studentnamesList[i] if i<snameLen else fixedEmail
                 userObj.save()
                 studentObj = student.models.Student()
@@ -681,15 +689,22 @@ class addStudents(showProviderHome):
             # now enroll courses and modules to this student
             # first enroll full course
             subject = 'Welcome to GyaanHive'
-            emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
+            if pwd == '':
+                emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
 <p>You have been enrolled for a course or your module access has been changed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
-Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email. If you are login for the first time, then give your email in lowercase as password.\n\
-The password can be changed from <em>Profile</em> section after login.<br />\n\
-Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the courses.<br />\n\
+Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the details.<br />\n\
 Thanks<br />\n\
 Gyaanhive Team</p>'
+            else:
+                emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
+<p>You have been enrolled for a course or your module access has been changed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
+Login at <strong><a href="https://www.gyaanhive.com">GyaanHive </a></strong>with your email and following password: ' + pwd + '<br />\n\
+The password can be changed from <em>Profile</em> section after login.<br />\n\
+Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the details.<br />\n\
+Thanks<br />\n\
+Gyaanhive Team</p>'
+
             courseEnrolledList = []
-            enrolledCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
             for fc in fullCourses:
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=fc,student_id=studentObj.id)
                 viewHours = self.request.POST.get('viewhours'+str(fc))
