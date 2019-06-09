@@ -280,9 +280,9 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                     raise Http404()
             # check if view hours have completed
             kwargs["enrolledcourseid"] = ecObj.id
-            viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(request,providerObj.id)
-            if ecObj.viewhours > 0 and viewMinutes >= allotedHours*60:
-                raise Http404()
+            #viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(request,providerObj.id)
+            #if ecObj.viewhours > 0 and viewMinutes >= allotedHours*60:
+            #    raise Http404()
 
             # dont do device verification if restricted viewing for student is set
             if ecObj.viewhours > 0:
