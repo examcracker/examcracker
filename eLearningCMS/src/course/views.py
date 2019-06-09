@@ -268,7 +268,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            providerObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+            courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
                 raise Http404()
@@ -278,14 +278,15 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 allowedModules = ecObj.chapteraccess.split(',')
                 if str(chapterid) not in allowedModules:
                     raise Http404()
+
             # check if view hours have completed
             kwargs["enrolledcourseid"] = ecObj.id
-            #viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(request,providerObj.id)
-            #if ecObj.viewhours > 0 and viewMinutes >= allotedHours*60:
-            #    raise Http404()
+            viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(studentObj.id,courseObj.provider_id)
+            if allotedHours > 0 and viewMinutes >= allotedHours*60:
+                raise Http404()
 
             # dont do device verification if restricted viewing for student is set
-            if ecObj.viewhours > 0:
+            if allotedHours > 0:
                 kwargs["disableaccess"] = True
 
             kwargs["isOwner"] = 'no'

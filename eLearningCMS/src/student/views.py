@@ -29,16 +29,15 @@ def getStudent(request):
     else:
         return studentObj
 
-def getStudentViewAllotedHoursProviderWise(request,providerid):
-    studentObj = getStudent(request)
+def getStudentViewAllotedHoursProviderWise(studentid,providerid):
     providerCourses = course.models.Course.objects.filter(provider_id=providerid)
-    myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id__in=providerCourses.values('id'))
+    myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentid,course_id__in=providerCourses.values('id'))
     if not myCourses:
         return -1,-1
     viewMinutes = 0
     allotedHours = 0
     for c in myCourses:
-        allotedHours = c.viewhours
+        allotedHours = max(c.viewhours,allotedHours)
         viewMinutes = viewMinutes + c.completedminutes
     return int(viewMinutes),allotedHours
 
@@ -298,7 +297,7 @@ class view_hours(LoginRequiredMixin, generic.TemplateView):
         viewHoursProviderWise = []
         for providerObj in providerObjs:
             providerInfo = {}
-            viewMinutes,allotedHours = getStudentViewAllotedHoursProviderWise(request,providerObj.id)
+            viewMinutes,allotedHours = getStudentViewAllotedHoursProviderWise(studentObj.id,providerObj.id)
             if viewMinutes == -1:
                 continue
             providerUser = User.objects.filter(id=providerObj.user_id)[0]

@@ -372,6 +372,12 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
                 kwargs["disableaccess"] = True
             else:
                 kwargs["disableaccess"] = False
+
+            #check view hours and alloted hours before proceed further
+            courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+            viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(studentObj.id,courseObj.provider_id)
+            if allotedHours > 0 and viewMinutes >= allotedHours*60:
+                raise Http404()
             userString = userString+'studentid='+str(studentObj.id)+'&'
 
             # delete all access enteries for this student for this schedule
