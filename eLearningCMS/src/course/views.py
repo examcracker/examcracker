@@ -260,7 +260,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         # check whether the session is in that course
         if str(sessionid) not in sessions:
             raise Http404()
-
+        allowedModules = []
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
             index = sessions.index(str(sessionid))
@@ -284,7 +284,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(studentObj.id,courseObj.provider_id)
             if allotedHours > 0 and viewMinutes >= allotedHours*60:
                 raise Http404()
-
+            if ecObj.chapteraccess != '':
+                allowedModules = ecObj.chapteraccess.split(',')
             # dont do device verification if restricted viewing for student is set
             if allotedHours > 0:
                 kwargs["disableaccess"] = True
@@ -321,7 +322,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             checkPublished = False
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
-        kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished)
+        kwargs["coursedetails"] = algos.getCourseDetails(courseChapterObj.course_id,checkPublished,True,allowedModules)
         kwargs["course"] = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         kwargs["session"] = sessionObj
         kwargs["chapter"] = courseChapterObj
