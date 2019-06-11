@@ -340,7 +340,7 @@ class playSessionEnc(playSession):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
         if not sessionObj.encrypted:
-            return Http404()
+            raise Http404()
         
         drmsessionObj = provider.models.DrmSession.objects.filter(id=sessionObj.id)
         if len(drmsessionObj) != 0 :

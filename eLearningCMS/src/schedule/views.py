@@ -323,7 +323,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
         OFUSCATE_JW = True
         if not scheduleObj:
-            return Http404()
+            raise Http404()
         if settings.DEBUG:
             kwargs["debug"] = "on"
         else:
@@ -346,7 +346,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
             if scheduleObj.provider_id != providerObj.id:
-                return Http404()
+                raise Http404()
             
             scheduleObj.streamkey = ''
             scheduleObj.save()
@@ -357,13 +357,13 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             # check if student is enrolled for this schedule
             
             if not courseChapterObj:
-                return Http404()
+                raise Http404()
             courseChapterObj = courseChapterObj[0]
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id)
             if not enrolledCourseObj:
-                return Http404()
+                raise Http404()
             enrolledCourseObj = enrolledCourseObj[0]
             kwargs["enrolledcourseid"] = enrolledCourseObj.id
             kwargs["isOwner"] = 'no'
