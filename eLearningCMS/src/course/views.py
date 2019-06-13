@@ -123,11 +123,11 @@ class courseDetails(fillCartCourses):
         #################Get review details########################
 
         reviewSummary = {}
-        userReviewList = []
+        #userReviewList = []
 
-        getCourseReview(reviewSummary, userReviewList, courseid)
+        #getCourseReview(reviewSummary, userReviewList, courseid)
 
-        kwargs['userReviewList'] = userReviewList
+        #kwargs['userReviewList'] = userReviewList
 
         ##########################################################
 
