@@ -28,7 +28,7 @@ import base64
 import string
 import random
 
-def pwd_generator(size=6, chars=string.ascii_lowercase + string.digits):
+def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 def getDelimiter(subject=False):
