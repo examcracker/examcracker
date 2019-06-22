@@ -25,6 +25,7 @@ import sendMail
 import subprocess
 import multiprocessing
 from pymediainfo import MediaInfo
+import threading
 
 # schedule states
 STOPPED = 0
@@ -155,10 +156,12 @@ def on_message(message):
                 responseDict["result"] = api.status_no_capture_started
                 serviceObj.scheduleid = messageDict["id"]
                 sendCaptureResponse(STOPPED, serviceObj.encryptedid)
-                res = serviceObj.stopCapture()
+                #res = serviceObj.stopCapture(responseDict)
+                serviceObj.stopCapture(responseDict)
             else:
                 sendCaptureResponse(UPLOADING, serviceObj.encryptedid)
-                res = serviceObj.stopCapture()
+                serviceObj.stopCapture(responseDict)
+                """ res = serviceObj.stopCapture(responseDict)
                 if 'videoKey' in res.keys():
                     responseDict["result"] = api.status_stop_success
                     responseDict["videokey"] = res["videoKey"]
@@ -187,7 +190,9 @@ def on_message(message):
                         LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
                         break
 
-                serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName)
+                serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName) """
+
+                #LOG.info ("Stop command completed")
 
         elif command == api.command_upload_logs:
             lineCount = 50
@@ -212,7 +217,8 @@ def on_message(message):
         elif command == api.command_upload_file:
             filePath = messageDict["filePath"]
             
-            res = serviceObj.uploadFileToCDN(filePath)
+            serviceObj.uploadFileToCDN(filePath, responseDict)
+            """ res = serviceObj.uploadFileToCDN(filePath, responseDict)
             if 'videoKey' in res.keys():
                 responseDict["result"] = api.status_upload_sucess
                 responseDict["videokey"] = res["videoKey"]
@@ -227,7 +233,7 @@ def on_message(message):
             responseDict["id"] = messageDict["id"]
             httpReq.send(serviceObj.url, "/cdn/uploadFileStatus/", json.dumps(responseDict))
 
-            serviceObj.uploadOriginalFileToCDN(filePath)
+            serviceObj.uploadOriginalFileToCDN(filePath) """
             
         elif command == api.command_check_client_active:
             responseDict['result'] = api.status_client_active
@@ -320,6 +326,9 @@ class ClientService(object):
 
         self.tmpfolder = 'tmp'
 
+        self.loopCount = 0
+        self.uploadThread = None
+
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
             self.waitBeforeDelete = int(config.get("config", "waitBeforeDelete"))
@@ -371,6 +380,7 @@ class ClientService(object):
 
         # disable sleep
         self.osleep.inhibit()
+        self.loopCount = 0
 
         self.capturing = True
         self.captureStartTime = int(round(time.time()))
@@ -492,7 +502,7 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def uploadFileToCDN(self, filePath, sendResponse = True):
+    def uploadFileToCDNThreaded(self, filePath, sendResponse):
         # Stopping windows to go in sleep mode while we upload a file
         uploadResponse = {}
         try:
@@ -511,6 +521,7 @@ class ClientService(object):
             try:
                 # Start encryption
                 self.duration = getDuration(filePath)
+                uploadResponse["duration"] = self.duration
                 self.encryptTheContent(filePath)
                 filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
@@ -537,7 +548,50 @@ class ClientService(object):
 
         return uploadResponse
 
-    def stopCapture(self):
+    def uploadAndUpdateDB(self, filePath, responseDict, sendResponse):
+        responseDict["chapterid"] = self.chapterid
+        responseDict["publish"] = self.publish
+        responseDict["encrypted"] = self.encrypted
+        responseDict["drmkeyid"] = self.drmkeyid
+        responseDict["drmkey"] = self.drmkey
+
+        res = self.uploadFileToCDNThreaded(filePath, sendResponse)
+        if 'videoKey' in res.keys():
+            responseDict["result"] = api.status_stop_success
+            responseDict["videokey"] = res["videoKey"]
+            responseDict["sessionName"] = res["sessionName"]
+            if 'duration' in res.keys():
+                responseDict["duration"] = res["duration"]
+            else:
+                responseDict["duration"] = self.duration
+        else:
+            responseDict["result"] = api.status_upload_fail
+            responseDict["fail_response"] = res
+
+        apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+        retryCount = 0
+        while apiResponse.status_code != 200:
+            LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
+            time.sleep(10)
+            apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+            retryCount += 1
+            if retryCount > 10:
+                LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
+                break
+
+        self.uploadOriginalFileToCDN(self.capture.outputFileName)
+
+
+    def uploadFileToCDN(self, filePath, responseDict, sendResponse = True):
+        LOG.info ("Uploading task in thread")
+        if self.uploadThread and self.uploadThread.isAlive():
+            LOG.warn ("Upload threading is already uploading hence waiting for upload to finish")
+            self.uploadThread.join()
+
+        self.uploadThread = threading.Thread(target=self.uploadAndUpdateDB, args=(filePath, responseDict, sendResponse))
+        self.uploadThread.start()
+        
+    def stopCapture(self, responseDict):
         if not self.capturing:
             self.checkAndKillProcess()
             LOG.warn ("No active capturing")
@@ -555,7 +609,8 @@ class ClientService(object):
         mailBody = 'Client logs are attached with this mail'
         attachmentPath = self.capture.ffmpegLogPath
                 
-        uploadResponse = self.uploadFileToCDN(self.capture.outputFileName)
+        #uploadResponse = self.uploadFileToCDN(self.capture.outputFileName, responseDict)
+        self.uploadFileToCDN(self.capture.outputFileName, responseDict)
         
         try:
             sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
@@ -565,7 +620,7 @@ class ClientService(object):
             LOG.error("Exception in sending mail: " + str(ex))
 
 
-        return uploadResponse
+        #return uploadResponse
 
     def run(self):
         
@@ -582,24 +637,37 @@ class ClientService(object):
         httpReq.send(self.url, "/schedule/systemName", json.dumps(initDict))
 
         waitCounterForCleaningFiles = self.checkFolderInterval
-        count = 0
+        
         while True:
             time.sleep(1)
-            count += 1
-            if (count % 900) ==  1:
+            self.loopCount += 1
+            if (self.loopCount % 900) ==  1:
                 status = checkInternetConnection(self.TEST_REMOTE_SERVER)
-                LOG.info ("Client internet connection status: " + str(status))
-            if count > 1800:
-                LOG.info ("Client is running")
-                count = 0
+                if self.capturing and status == False:
+                    LOG.info ("Client internet connection status: " + str(status))
+            if self.loopCount > 1800:
+                if self.capturing:
+                    LOG.info ("Client is running")
+                self.loopCount = 0
+
+            if self.capturing:
+                timeDiff = int(round(time.time())) - self.captureStartTime
+                if timeDiff < 600 and timeDiff > 30 and (self.loopCount % 60) == 0:
+                    if not self.capture.checkCapturedFileExist():
+                        LOG.error ("Captured file not exist restarting the capture process")
+                        self.capture.stopCapturing()
+                        self.capture.startCapturing()
+
 
             if self.capturing and self.timeout > 0:
                 timeDiff = int(round(time.time())) - self.captureStartTime
                 if timeDiff >= self.timeout:
-                    responseDict = {}                                                        
+                    responseDict = {}    
+                    responseDict["id"] = self.encryptedid                                                  
                     LOG.info ("Timeout stopping the capturing")
                     sendCaptureResponse(UPLOADING, self.encryptedid)
-                    res = self.stopCapture()
+                    self.stopCapture(responseDict)
+                    """ res = self.stopCapture(responseDict)
                     if 'videoKey' in res.keys():
                         responseDict["result"] = api.status_stop_success
                         responseDict["videokey"] = res["videoKey"]
@@ -615,7 +683,7 @@ class ClientService(object):
                     responseDict["drmkey"] = self.drmkey
                     responseDict["duration"] = self.duration
                     httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-                    self.uploadOriginalFileToCDN(self.capture.outputFileName)
+                    self.uploadOriginalFileToCDN(self.capture.outputFileName) """
             
             waitCounterForCleaningFiles += 1
             if waitCounterForCleaningFiles > self.checkFolderInterval:

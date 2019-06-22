@@ -53,6 +53,9 @@ class captureFeed:
     def setCapturingTimeout(self, timeout):
         self.timeout = timeout
 
+    def checkCapturedFileExist(self):
+        return os.path.exists(self.outputFileName)
+
     def startCapturing(self):
         self.outputFileName = os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
 		#os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
