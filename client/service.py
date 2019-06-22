@@ -610,6 +610,10 @@ class ClientService(object):
 
                     responseDict["chapterid"] = self.chapterid
                     responseDict["publish"] = self.publish
+                    responseDict["encrypted"] = self.encrypted
+                    responseDict["drmkeyid"] = self.drmkeyid
+                    responseDict["drmkey"] = self.drmkey
+                    responseDict["duration"] = self.duration
                     httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
                     self.uploadOriginalFileToCDN(self.capture.outputFileName)
             
