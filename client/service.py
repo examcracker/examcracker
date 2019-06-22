@@ -175,7 +175,18 @@ def on_message(message):
                 responseDict["drmkey"] = serviceObj.drmkey
 
                 responseDict["id"] = serviceObj.clientid
-                httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                #import pdb; pdb.set_trace()
+                apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                retryCount = 0
+                while apiResponse.status_code != 200:
+                    LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
+                    time.sleep(10)
+                    apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                    retryCount += 1
+                    if retryCount > 10:
+                        LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
+                        break
+
                 serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName)
 
         elif command == api.command_upload_logs:
@@ -287,9 +298,9 @@ class ClientService(object):
         self.decodeClientId()
 
         self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
-        self.mp4fragpath = os.path.join(dir_path, "mp4fragment.exe")
-        self.mp4encryptpath = os.path.join(dir_path, "mp4encrypt.exe")
-        self.mp4dashpath = os.path.join(dir_path ,"mp4dash.bat")
+        self.mp4fragpath = os.path.join(dir_path, "bin", "mp4fragment.exe")
+        self.mp4encryptpath = os.path.join(dir_path, "bin", "mp4encrypt.exe")
+        self.mp4dashpath = os.path.join(dir_path ,"bin", "mp4dash.bat")
 
         self.uploadJW = uploadVideo.uploadVideo(self.clientid)
         self.upload = uploadVideoDO.uploadVideoDO(self.clientid)
