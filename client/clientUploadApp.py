@@ -82,7 +82,7 @@ class worker(QThread):
 						os.system(conversionState)
 						item = outputFile
 
-					res = self.serviceObj.uploadFileToCDN(item, False)
+					res = self.serviceObj.uploadFileToCDNThreaded(item, False)
 					
 					if conversionState != 'false':
 						os.remove(outputFile)
@@ -110,7 +110,7 @@ class worker(QThread):
 
 				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 				self.threadOutput.emit(doneMsg)
-				res = self.serviceObj.uploadFileToCDN(self.mediaFilePath, False)
+				res = self.serviceObj.uploadFileToCDNThreaded(self.mediaFilePath, False)
 				if conversionState != 'false':
 					os.remove(outputFile)
 
