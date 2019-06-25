@@ -98,7 +98,10 @@ class uploadVideoDO:
 					file = nested_dir + file if nested_dir else file
 					#print ("[S3_UPLOAD] Going to upload {complete_file_path} to s3 bucket {s3_bucket} as {file}"\
 					#    .format(complete_file_path=complete_file_path, s3_bucket=bucketname, file=file))
-					client.upload_file(complete_file_path, bucketname, file,ExtraArgs={'ACL':'public-read','CacheControl':'no-store'})
+					cacheControl = 'max-age=86400'
+					if (file.strip().endswith('init.mp4') or file.strip().endswith('.mpd')):
+						cacheControl = 'no-store'
+					client.upload_file(complete_file_path, bucketname, file,ExtraArgs={'ACL':'public-read','CacheControl':cacheControl})
 					self.alreadyUploadedList.append(complete_file_path)
 				except Exception as ex:
 					LOG.error("Exception in uploading the file: " + str(ex) + ' file name: ' + str(file))
