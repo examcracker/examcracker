@@ -389,7 +389,7 @@ window.addEventListener('resize', function() {
 			manifest = liveUrl;
         }
         else {
-            manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + videokey + "/" + videokey + ".mpd";
+            manifest = "https://"+ bucketname + "." + "{{cdnName}}" + "/" + videokey + "/" + videokey + ".mpd";
         }
 		document.addEventListener('DOMContentLoaded', initApp);
 	} else {
@@ -417,7 +417,7 @@ window.addEventListener('resize', function() {
 			if (isLive == "true") {
 				manifest = liveUrl;
 			} else {
-				manifest = "https://"+bucketname+".sgp1.cdn.digitaloceanspaces.com/" + videokey + "/" + videokey + ".mpd";
+				manifest = "https://"+ bucketname + "." + "{{cdnName}}" + "/" + videokey + "/" + videokey + ".mpd";
 			}
 
 			if(tracktime) {

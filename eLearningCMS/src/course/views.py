@@ -256,7 +256,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
         courseChapterObj = courseChapterObj[0]
         sessions = str.split(courseChapterObj.sessions, ",")
-
+        kwargs["cdnName"] = "sgp1.cdn.digitaloceanspaces.com"
         # check whether the session is in that course
         if str(sessionid) not in sessions:
             raise Http404()
@@ -268,6 +268,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 raise Http404()
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            if studentObj.id == 9:
+                kwargs["cdnName"] = "b-cdn.net"
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
             if len(enrolledCourse) == 0:
