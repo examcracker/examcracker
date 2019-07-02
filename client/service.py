@@ -509,10 +509,12 @@ class ClientService(object):
             self.osleep.inhibit()
             LOG.info ("Uploading file to server: " + str(filePath))
             if not os.path.isfile(filePath):
+                LOG.error ("Invalid file path : " + str(filePath))
                 uploadResponse['fail_reason'] = "Invalid file path : " + str(filePath)
                 return uploadResponse 
 
             if os.stat(filePath).st_size == 0:
+                LOG.error ("File size is 0 bytes: " + str(filePath))
                 uploadResponse['fail_reason'] = "File size is 0 bytes: " + str(filePath)
                 return uploadResponse
 
@@ -583,13 +585,15 @@ class ClientService(object):
 
 
     def uploadFileToCDN(self, filePath, responseDict, sendResponse = True):
-        LOG.info ("Uploading task in thread")
+        '''LOG.info ("Uploading task in thread")
         if self.uploadThread and self.uploadThread.isAlive():
             LOG.warn ("Upload threading is already uploading hence waiting for upload to finish")
             self.uploadThread.join()
 
         self.uploadThread = threading.Thread(target=self.uploadAndUpdateDB, args=(filePath, responseDict, sendResponse))
-        self.uploadThread.start()
+        self.uploadThread.start()'''
+
+        self.uploadAndUpdateDB(filePath, responseDict, sendResponse)
         
     def stopCapture(self, responseDict):
         if not self.capturing:
