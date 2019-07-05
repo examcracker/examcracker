@@ -19,7 +19,7 @@
                <Component Id="ApplicationFiles" Guid="f99835e2-104b-11e9-ab14-d663bd873d93">
                   <File Id="ServiceFile" Source="service.exe"/>
                   <File Id="ArgumentsFile" Source="arguments.cfg"/>
-                  <File Id="FfmpegFile" Source="ffmpeg.exe"/>
+                  <File Id="captureAppFile" Source="captureApp.exe"/>
                   <File Id="MediainfoFile" Source="MediaInfo.dll"/>
                   <File Id="Bento4CDll" Source="bin\Bento4CDll.dll"/>
                   <File Id="mp4encrypt" Source="bin\mp4encrypt.exe"/>

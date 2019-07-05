@@ -90,7 +90,7 @@ def getDuration(inputfile):
 			return (track.duration/1000)
 
 def getmp4CoversionCommand(inputfile, outputfile):
-    command = 'ffmpeg -i "'+inputfile + '" -vcodec '
+    command = 'captureApp -i "'+inputfile + '" -vcodec '
     vcodec = 'copy'
     acodec = 'copy'
     media_info = MediaInfo.parse(inputfile)
@@ -303,16 +303,16 @@ class ClientService(object):
         self.encryptedid = config.get("config", "clientId")
         self.decodeClientId()
 
-        self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "ffmpeg.exe"))
-        self.mp4fragpath = os.path.join(dir_path, "bin", "mp4fragment.exe")
-        self.mp4encryptpath = os.path.join(dir_path, "bin", "mp4encrypt.exe")
-        self.mp4dashpath = os.path.join(dir_path ,"bin", "mp4dash.bat")
+        self.capture = captureFeed.captureFeed(self.clientid, configPath, os.path.join(dir_path, "captureApp.exe"))
+        self.mp4fragpath = os.path.join(dir_path, "bin", "doFragment.exe")
+        self.mp4encryptpath = os.path.join(dir_path, "bin", "doEncrypt.exe")
+        self.mp4dashpath = os.path.join(dir_path ,"bin", "convertToDash.bat")
 
         self.uploadJW = uploadVideo.uploadVideo(self.clientid)
         self.upload = uploadVideoDO.uploadVideoDO(self.clientid)
         self.timeout = 0
         self.captureStartTime = -1
-        self.ffmpegProcName = "ffmpeg.exe"
+        self.captureAppProcName = "captureApp.exe"
 
         self.uploadRetryCount = 5
 
@@ -370,7 +370,7 @@ class ClientService(object):
         self.osleep.uninhibit()
         for proc in psutil.process_iter():
             # check whether the process name matches
-            if proc.name() == self.ffmpegProcName:
+            if proc.name() == self.captureAppProcName:
                 proc.kill()
 
     def startCapture(self):
@@ -611,7 +611,7 @@ class ClientService(object):
         pwd = 'examcracker2018'
         subject = 'Client Logs'
         mailBody = 'Client logs are attached with this mail'
-        attachmentPath = self.capture.ffmpegLogPath
+        attachmentPath = self.capture.captureAppLogPath
                 
         #uploadResponse = self.uploadFileToCDN(self.capture.outputFileName, responseDict)
         self.uploadFileToCDN(self.capture.outputFileName, responseDict)
