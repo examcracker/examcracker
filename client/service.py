@@ -556,6 +556,9 @@ class ClientService(object):
         responseDict["encrypted"] = self.encrypted
         responseDict["drmkeyid"] = self.drmkeyid
         responseDict["drmkey"] = self.drmkey
+        responseDict["bucketname"] = self.bucketname
+        responseDict["dokey"] = self.dokey
+        responseDict["dokeysecret"] = self.dokeysecret
 
         res = self.uploadFileToCDNThreaded(filePath, sendResponse)
         if 'videoKey' in res.keys():

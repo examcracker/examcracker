@@ -53,6 +53,9 @@ class worker(QThread):
 		responseDict["encrypted"] = self.serviceObj.encrypted
 		responseDict["drmkeyid"] = self.serviceObj.drmkeyid
 		responseDict["drmkey"] = self.serviceObj.drmkey
+        responseDict["bucketname"] = self.serviceObj.bucketname
+        responseDict["dokey"] = self.serviceObj.dokey
+        responseDict["dokeysecret"] = self.serviceObj.dokeysecret
 
 		responseDict["id"] = self.serviceObj.clientid
 		httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
