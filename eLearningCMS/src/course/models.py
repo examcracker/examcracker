@@ -37,6 +37,8 @@ IAS = [
     'Sociology',
     'Statistics',
     'Zoology',
+    'GS',
+    'Ethics'
 ]
 
 GATE = [
@@ -103,6 +105,8 @@ class EnrolledCourse(models.Model):
     viewhours = models.IntegerField(default=0) # 0 => no restriction in view hours
     completedminutes = models.FloatField(default=0)
     chapteraccess = models.CharField(max_length=1000, blank=True) # => Blank means full course access
+    #active = models.BooleanField(default=True)
+    #expiry = models.DateTimeField(auto_now_add=True) # => expiry data of course for this student.
 
 class SessionStats(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
