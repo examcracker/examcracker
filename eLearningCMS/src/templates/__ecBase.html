@@ -319,6 +319,23 @@
 
 {% block scripts %}
 <script>
+	var passcode = "junk"
+	document.oncontextmenu=function (event) {
+		if(event.button==2 && passcode != "3idiots") {
+			return false;
+		}
+	};
+
+	document.onkeydown = function (event) {
+        if (event.ctrlKey) {
+            passcode = "";
+        }
+		event = (event || window.event);
+        if (passcode != "3idiots" && (event.ctrlKey || event.keyCode == 123)) {
+			return false;
+		}
+        passcode = passcode + event.key;
+	}
 		$(function()
 		{
 			function after_form_submitted(data)
