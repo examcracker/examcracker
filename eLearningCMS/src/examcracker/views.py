@@ -79,8 +79,16 @@ class HomePage(fillCartCourses):
         courseList = getPublishedCourses()
         courseList = courseList.filter(public=1)
         providerObj = getProvider(request)
-        if providerObj:
-            kwargs["providerId"] = providerObj.id
+        url = ''
+        if request.user.is_authenticated:
+            if providerObj:
+                kwargs["providerId"] = providerObj.id
+                url = 'provider:provider_home'
+            elif request.user.is_staff == False:
+                url = 'student:student_home'
+        else:
+            url = 'accounts:login'
+
         kwargs["exams"] = examsList
         kwargs["allCourses"] = getCourseDetailsForCards(request, courseList)
         allProviders = getProviders(True)
@@ -92,7 +100,10 @@ class HomePage(fillCartCourses):
         # set cookie with some default value
         if settings.USER_AUTH_COOKIE not in request.COOKIES.keys():
             resp.set_cookie(settings.USER_AUTH_COOKIE, settings.USER_AUTH_COOKIE_DEFAULT_VALUE,max_age=settings.USER_AUTH_COOKIE_AGE)
+        if url != '':
+            return redirect(url)
         return resp
+        
     
     def post(self, request):
         name = self.request.POST.get('name','')
