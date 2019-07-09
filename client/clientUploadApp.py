@@ -83,6 +83,8 @@ class worker(QThread):
 			for item in listOfMp4Files:
 				try:
 					self.CurrentFileName = os.path.basename(item)
+					doneMsg = "Uploading lecture: " + str(item) + "\n"
+					self.threadOutput.emit(doneMsg)
 					fileInfo = os.path.splitext(item)
 					outputFile = fileInfo[0] + '_conv' + fileInfo[1]
 					conversionState = service.getmp4CoversionCommand(item, outputFile)
