@@ -345,6 +345,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
         OFUSCATE_JW = True
+        kwargs["disableKeys"] = "true"
         if not scheduleObj:
             raise Http404()
         if settings.DEBUG:
@@ -378,7 +379,6 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             kwargs["courseid"] = courseChapterObj.course_id
         else:
             # check if student is enrolled for this schedule
-            
             if not courseChapterObj:
                 raise Http404()
             courseChapterObj = courseChapterObj[0]
