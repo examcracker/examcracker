@@ -8,6 +8,7 @@ from boto3.s3.transfer import TransferConfig
 import threading
 import time
 import socket
+import clientUploadApp
 
 # Log file
 LOG = logger.getLogFile(__name__)
@@ -77,11 +78,19 @@ class uploadVideoDO:
 						LOG.info("Internet conectivity status: " + str(status))
 
 
-	def uploadVideoDO(self, local_folder_path, bucketname, dokey, dokeysecret):
+	def uploadVideoDO(self, local_folder_path, bucketname, dokey, dokeysecret, uploaderInstance = None):
 		# Initialize a session using DigitalOcean Spaces.
 		LOG.info ("Uploading mpd folder to CDN: "+str(local_folder_path))
 		client = self.getUploadClient(dokey, dokeysecret)
 		parentFolder = os.path.dirname(local_folder_path)
+
+		if uploaderInstance:
+			totalFileCount = 0
+			for root, dirs, files in os.walk(local_folder_path):
+				totalFileCount += len(files)
+			uploaderInstance.totalUploadingFiles = totalFileCount
+
+		counter = 0
 		for root, dirs, files in os.walk(local_folder_path):
 			nested_dir = root.replace(parentFolder, '')
 			if nested_dir:
@@ -91,6 +100,7 @@ class uploadVideoDO:
 				nested_dir = nested_dir[1:]
 			for file in files:
 				try:
+					counter += 1
 					complete_file_path = os.path.join(root, file)
 					if complete_file_path in self.alreadyUploadedList:
 						continue
@@ -103,6 +113,9 @@ class uploadVideoDO:
 						cacheControl = 'no-store'
 					client.upload_file(complete_file_path, bucketname, file,ExtraArgs={'ACL':'public-read','CacheControl':cacheControl})
 					self.alreadyUploadedList.append(complete_file_path)
+					if uploaderInstance:
+						uploaderInstance.updateUploadCount(counter)
+
 				except Exception as ex:
 					LOG.error("Exception in uploading the file: " + str(ex) + ' file name: ' + str(file))
 					retryCount = 0

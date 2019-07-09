@@ -13,6 +13,7 @@ import time
 		
 class worker(QThread):
 	threadOutput = pyqtSignal('QString')
+	threadUploadStatus = pyqtSignal('QString')
 
 	def __init__(self, mediaFilePath, folderPath, userInfo, chapterid):
 		QThread.__init__(self, None)
@@ -21,8 +22,8 @@ class worker(QThread):
 		self.serviceObj = service.ClientService()
 		self.serviceObj.chapterid = chapterid
 		self.userInfo = userInfo
-		print("chapterId: ", chapterid)
-
+		self.totalUploadingFiles = 0
+		
 		self.updateUserDetails()
 
 	def updateUserDetails(self):
@@ -60,6 +61,10 @@ class worker(QThread):
 		responseDict["id"] = self.serviceObj.clientid
 		httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
 
+	def updateUploadCount(self, count):
+		uploadMsg = "Uploaded " + str(int((count/self.totalUploadingFiles)*100)) + '%'
+		self.threadUploadStatus.emit(uploadMsg)
+
 	def run(self):
 		if os.path.exists(self.mediaFolderPath):
 			listOfMp4Files = []
@@ -69,13 +74,15 @@ class worker(QThread):
 						listOfMp4Files.append(os.path.join(root, file))
 
 			listOfMp4Files.sort(key=lambda x: os.path.getmtime(x))
-			print ()
 			self.totalFileCount = len(listOfMp4Files)
 			doneMsg = "Total lectures found: " + str(self.totalFileCount) + "\n"
 			self.threadOutput.emit(doneMsg)
 			uploadCount = 0
+			self.threadUploadStatus.emit('Upload started...')
+
 			for item in listOfMp4Files:
 				try:
+					self.CurrentFileName = os.path.basename(item)
 					fileInfo = os.path.splitext(item)
 					outputFile = fileInfo[0] + '_conv' + fileInfo[1]
 					conversionState = service.getmp4CoversionCommand(item, outputFile)
@@ -85,7 +92,7 @@ class worker(QThread):
 						os.system(conversionState)
 						item = outputFile
 
-					res = self.serviceObj.uploadFileToCDNThreaded(item, False)
+					res = self.serviceObj.uploadFileToCDNThreaded(item, False, self)
 					
 					if conversionState != 'false':
 						os.remove(outputFile)
@@ -94,14 +101,19 @@ class worker(QThread):
 					uploadCount += 1
 					doneMsg = "Upload done for : " + str(item) + " (" + str(uploadCount) + "/" + str(self.totalFileCount) + ")\n"
 					self.threadOutput.emit(doneMsg)
+					self.threadUploadStatus.emit('Done!')
 				except Exception as ex:
 					doneMsg = "Upload fail : " + str(item) + " Error: " + str(ex) + "\n"
 					self.threadOutput.emit(doneMsg)
+					self.threadUploadStatus.emit('Failed!')
 
 			doneMsg = "\nDone!!\n\n"
+			self.threadUploadStatus.emit('Done!')
 			self.threadOutput.emit(doneMsg)
 		else:
 			try:
+				self.threadUploadStatus.emit('Upload started...')
+				self.CurrentFileName = os.path.basename(self.mediaFilePath)
 				fileInfo = os.path.splitext(self.mediaFilePath)
 				outputFile = fileInfo[0] + '_conv' + fileInfo[1]
 				conversionState = service.getmp4CoversionCommand(self.mediaFilePath, outputFile)
@@ -113,16 +125,19 @@ class worker(QThread):
 
 				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 				self.threadOutput.emit(doneMsg)
-				res = self.serviceObj.uploadFileToCDNThreaded(self.mediaFilePath, False)
+				res = self.serviceObj.uploadFileToCDNThreaded(self.mediaFilePath, False, self)
 				if conversionState != 'false':
 					os.remove(outputFile)
 
 				self.updateUploadStatus(res)
 				doneMsg = "Upload successful: " + str(self.mediaFilePath) + "\n\nDone!!\n"
 				self.threadOutput.emit(doneMsg)
+				self.threadUploadStatus.emit('Done!')
 			except Exception as ex:
 				doneMsg = "Upload fail error: " + str(ex) + "\n"
 				self.threadOutput.emit(doneMsg)
+				self.threadUploadStatus.emit('Failed!')
+				
 
 class filedialogdemo(QFrame):
 	def __init__(self):
@@ -324,11 +339,14 @@ class filedialogdemo(QFrame):
 		self.btnConvert.clicked.connect(self.startProcess)
 		layoutV.addWidget(self.btnConvert)
 
+		self.uploadProgressLabel =  QLabel('Upload Status')
+		self.uploadProgressLabel.setMinimumSize( 130,40)
 		self.outputLabel =  QLabel('Upload process details:')
 		self.output = QTextEdit()
 		self.output.setReadOnly(True)
 		layoutV.addWidget(self.outputLabel)
 		layoutV.addWidget(self.output)
+		layoutV.addWidget(self.uploadProgressLabel)
 		
 		self.setLayout(layoutV)
 		self.setWindowTitle("GyaanHive upload application")
@@ -380,10 +398,14 @@ class filedialogdemo(QFrame):
 				
 		self.thread = worker(str(mediaFilePath), str(mediaFolderPath), self.userDetails, chapterId)
 		self.thread.threadOutput.connect(self.updateOuput)
+		self.thread.threadUploadStatus.connect(self.updateUploadProgress)
 		self.thread.start()
 			
 	def updateOuput(self, message):
 		self.output.append(message)
+
+	def updateUploadProgress(self, message):
+		self.uploadProgressLabel.setText(message)
 		
 				
 def main():

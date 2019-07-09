@@ -502,7 +502,7 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def uploadFileToCDNThreaded(self, filePath, sendResponse):
+    def uploadFileToCDNThreaded(self, filePath, sendResponse, uploaderInstance = None):
         # Stopping windows to go in sleep mode while we upload a file
         uploadResponse = {}
         try:
@@ -527,7 +527,7 @@ class ClientService(object):
                 self.encryptTheContent(filePath)
                 filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
-                self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
+                self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret, uploaderInstance)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success', 'sessionName': filename}
                 LOG.info ("Uploading done")
                 LOG.info("Video Server response: " + str(uploadResponse))
