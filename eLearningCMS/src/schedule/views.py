@@ -138,6 +138,8 @@ def getActiveSchedules(providerId):
 
 def isAnyEventLive(request):
     scheduleObj = models.Schedule.objects.filter(running=1)
+    if not scheduleObj:
+        return False
     if request.user.is_staff:
         # Get Live events of Scheduled courses
         providerObj = getProvider(request)
@@ -145,9 +147,19 @@ def isAnyEventLive(request):
     else:
         # Get live events of enrolled courses
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).values('course_id')
-        courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj))
-        scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        chaptersList = []
+        for ec in enrolledCourseObj:
+            if ec.chapteraccess == '':
+                courseChapterObj = course.models.CourseChapter.objects.filter(course_id=ec.course_id)
+                for cco in courseChapterObj:
+                    chaptersList.append(cco.id)
+            else:
+                allowedModules = ec.chapteraccess.split(',')
+                allowedModulesInt = [int(i) for i in allowedModules]
+                chaptersList.extend(allowedModulesInt)
+            #courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj.values('course_id'))).values('id')
+        scheduleObj = scheduleObj.filter(Q(chapter_id__in=chaptersList))
 
     if scheduleObj :
         return True
@@ -160,7 +172,8 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
     def get(self, request, *args, **kwargs):
         
         scheduleObj = models.Schedule.objects.filter(running=1)
-        
+        if not scheduleObj:
+            return super().get(request, *args, **kwargs)
         if request.user.is_staff:
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
@@ -168,9 +181,19 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).values('course_id')
-            courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj)).values('id')
-            scheduleObj = scheduleObj.filter(Q(chapter_id__in=courseChapterObj))
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            chaptersList = []
+            for ec in enrolledCourseObj:
+                if ec.chapteraccess == '':
+                    courseChapterObj = course.models.CourseChapter.objects.filter(course_id=ec.course_id)
+                    for cco in courseChapterObj:
+                        chaptersList.append(cco.id)
+                else:
+                    allowedModules = ec.chapteraccess.split(',')
+                    allowedModulesInt = [int(i) for i in allowedModules]
+                    chaptersList.extend(allowedModulesInt)
+            #courseChapterObj = course.models.CourseChapter.objects.filter(Q(course_id__in=enrolledCourseObj.values('course_id'))).values('id')
+            scheduleObj = scheduleObj.filter(Q(chapter_id__in=chaptersList))
 
         if scheduleObj :
             schedules = []
@@ -322,6 +345,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
         OFUSCATE_JW = True
+        kwargs["disableKeys"] = "true"
         if not scheduleObj:
             raise Http404()
         if settings.DEBUG:
@@ -355,7 +379,6 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             kwargs["courseid"] = courseChapterObj.course_id
         else:
             # check if student is enrolled for this schedule
-            
             if not courseChapterObj:
                 raise Http404()
             courseChapterObj = courseChapterObj[0]

@@ -320,8 +320,9 @@
 {% block scripts %}
 <script>
 	var passcode = "junk"
+	var disableKeys = "{{disableKeys}}"
 	document.oncontextmenu=function (event) {
-		if(event.button==2 && passcode != "3idiots") {
+		if(disableKeys=="true" && event.button==2 && passcode != "3idiots") {
 			return false;
 		}
 	};
@@ -331,7 +332,7 @@
             passcode = "";
         }
 		event = (event || window.event);
-        if (passcode != "3idiots" && (event.ctrlKey || event.keyCode == 123)) {
+        if ( disableKeys=="true" && passcode != "3idiots" && (event.ctrlKey || event.keyCode == 123)) {
 			return false;
 		}
         passcode = passcode + event.key;

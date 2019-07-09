@@ -103,7 +103,7 @@ class courseDetails(fillCartCourses):
             raise Http404()
 
         courseObj = courseObj[0]
-
+        kwargs["disableKeys"] = "true"
         # this code is for the provider preview.
         # show everything to the provider
         providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)
@@ -253,7 +253,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         checkPublished = True
         if len(courseChapterObj) == 0:
             raise Http404()
-
+        kwargs["disableKeys"] = "true"
         courseChapterObj = courseChapterObj[0]
         sessions = str.split(courseChapterObj.sessions, ",")
         #kwargs["cdnName"] = "sgp1.cdn.digitaloceanspaces.com"
