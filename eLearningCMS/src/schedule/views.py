@@ -329,6 +329,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["dokeysecret"] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
     dictObj["drmkeyid"] = settings.DRM_KEY_ID
     dictObj["drmkey"] = settings.DRM_KEY
+    dictObj["multiBitRate"] = True
     return dictObj
 
 def getStreamUrl(streamname):
