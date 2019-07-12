@@ -688,7 +688,7 @@ class addStudents(showProviderHome):
                     studentObj = studentObj[0]
             # now enroll courses and modules to this student
             # first enroll full course
-            subject = 'Welcome to online course by' + ' ' + request.user.name
+            subject = request.user.name + ' : Welcome to our online courses'
             if pwd == '':
                 emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
 <p>You have been enrolled for a course or your module access has been changed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
