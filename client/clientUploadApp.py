@@ -37,6 +37,7 @@ class worker(QThread):
 		self.serviceObj.dokey = self.userInfo["dokey"]
 		self.serviceObj.dokeysecret = self.userInfo["dosecret"]
 		self.serviceObj.bucketname = self.userInfo["bucketname"]
+		self.serviceObj.multiBitRate = self.userInfo["multiBitRate"]
 
 	def updateUploadStatus(self, res):
 		responseDict = {}
@@ -57,6 +58,7 @@ class worker(QThread):
 		responseDict["bucketname"] = self.serviceObj.bucketname
 		responseDict["dokey"] = self.serviceObj.dokey
 		responseDict["dokeysecret"] = self.serviceObj.dokeysecret
+		responseDict["multiBitRate"] = self.serviceObj.multiBitRate
 
 		responseDict["id"] = self.serviceObj.clientid
 		httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
@@ -64,6 +66,9 @@ class worker(QThread):
 	def updateUploadCount(self, count):
 		uploadMsg = "Uploaded " + str(int((count/self.totalUploadingFiles)*100)) + '%'
 		self.threadUploadStatus.emit(uploadMsg)
+
+	def uploadUpdateMsg(self, message):
+		self.threadUploadStatus.emit(message)
 
 	def run(self):
 		if os.path.exists(self.mediaFolderPath):

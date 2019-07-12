@@ -26,6 +26,7 @@ import subprocess
 import multiprocessing
 from pymediainfo import MediaInfo
 import threading
+import clientUploadApp
 
 # schedule states
 STOPPED = 0
@@ -147,6 +148,7 @@ def on_message(message):
                 serviceObj.dokey = messageDict["dokey"]
                 serviceObj.dokeysecret = messageDict["dokeysecret"]
                 serviceObj.bucketname = messageDict["bucketname"]
+                serviceObj.multiBitRate = messageDict["multiBitRate"]
                 serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                 serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
                 sendCaptureResponse(RUNNING, serviceObj.encryptedid,serviceObj.liveStreamName)
@@ -328,6 +330,7 @@ class ClientService(object):
 
         self.loopCount = 0
         self.uploadThread = None
+        self.loglevel = config.get("config","loglevel")
 
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
@@ -462,8 +465,23 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def encryptTheContent(self, filePath):
-        self.tmpFiles = []
+    def resizeMediaFile(self, filePath, resolution):
+        fileNameDetails = os.path.splitext(filePath)
+        outputFilePath = fileNameDetails[0] + '_' + resolution + fileNameDetails[1]
+        commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s '+ resolution + ' -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
+        '''
+        ffmpeg -i Tue_May_14_18_44_03_2019.mp4 -strict experimental -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
+        '''
+        try:
+            os.system(commandToResize)
+            LOG.info ("Resizing of the video is successful")
+
+        except Exception as ex:
+             LOG.error("Exception in resizing the file: " + str(ex))
+
+        return outputFilePath
+
+    def fragmentAndEncFile(self, filePath):
         dirname = os.path.dirname(filePath)
         fragfilepath = os.path.join(dirname, os.path.basename(filePath).split(".mp4")[0] + "_frag.mp4")
         self.tmpFiles.append(fragfilepath)
@@ -477,10 +495,21 @@ class ClientService(object):
                                         "--global-option", "mpeg-cenc.eme-pssh:true",
                                         "--key", "2:" + self.drmkey + ":0000000000000000", "--property", "2:KID:" + self.drmkeyid,
                                         fragfilepath, encfilepath])
-        mp4encryptProc.communicate()
+        mp4encryptProc.communicate() 
+        return encfilepath
+
+
+    def encryptTheContent(self, filePath, resizeFilePath = ''):
+        resizeEncPath = ''
+        if os.path.isfile(resizeFilePath):
+            resizeEncPath = self.fragmentAndEncFile(resizeFilePath)
+
+        
+        encfilepath = self.fragmentAndEncFile(filePath)
         LOG.info ("Create encrypted mpd file and upload to CDN")
         self.videoKey = str(time.strftime("%c").replace(':', '_').replace(' ','_')) + "_" + str(self.clientid)
         # create temporary directory and create mpd file in tmp directory
+        dirname = os.path.dirname(filePath)
         self.tmpdir = os.path.join(dirname,self.tmpfolder)
         if not os.path.isdir(self.tmpdir):
             os.mkdir(self.tmpdir)
@@ -488,7 +517,10 @@ class ClientService(object):
         self.mpdoutpath = os.path.join(self.tmpdir,self.videoKey)
         self.tmpFiles.append(self.mpdoutpath)
         mpdfilename = self.videoKey+'.mpd'
-        mp4dashProc = subprocess.call([self.mp4dashpath, '-o', self.mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
+        if os.path.isfile(resizeEncPath):
+            mp4dashProc = subprocess.call([self.mp4dashpath, '-o', self.mpdoutpath,'--mpd-name',mpdfilename,encfilepath,resizeEncPath])
+        else:
+            mp4dashProc = subprocess.call([self.mp4dashpath, '-o', self.mpdoutpath,'--mpd-name',mpdfilename,encfilepath])
         #mp4dashProc.communicate()
 
     def uploadOriginalFileToCDN(self, filePath):
@@ -521,10 +553,25 @@ class ClientService(object):
             self.upload.alreadyUploadedList = []
 
             try:
+                self.tmpFiles = []
                 # Start encryption
                 self.duration = getDuration(filePath)
                 uploadResponse["duration"] = self.duration
-                self.encryptTheContent(filePath)
+                if self.multiBitRate:
+                    if uploaderInstance:
+                        uploaderInstance.uploadUpdateMsg("Creating multi bitrate files. Please wait...")
+                    resolution = '1280x720'
+                    resizeFilePath_720 = self.resizeMediaFile(filePath, resolution)
+                    self.tmpFiles.append(resizeFilePath_720)
+
+                    resolution = '720x406'
+                    resizeFilePath_480 = self.resizeMediaFile(filePath, resolution)
+                    self.tmpFiles.append(resizeFilePath_480)
+
+                    self.encryptTheContent(resizeFilePath_720, resizeFilePath_480)
+                else:
+                    self.encryptTheContent(filePath)
+                
                 filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret, uploaderInstance)
@@ -559,6 +606,7 @@ class ClientService(object):
         responseDict["bucketname"] = self.bucketname
         responseDict["dokey"] = self.dokey
         responseDict["dokeysecret"] = self.dokeysecret
+        responseDict["multiBitRate"] = self.multiBitRate
 
         res = self.uploadFileToCDNThreaded(filePath, sendResponse)
         if 'videoKey' in res.keys():
