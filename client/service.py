@@ -332,6 +332,9 @@ class ClientService(object):
         self.uploadThread = None
         self.loglevel = config.get("config","loglevel")
 
+        self.resolutionList = ['1280x720', '720x406']
+        self.resolutionBitRateMap = {'default': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k'}, '1280x720': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k'}, '720x406': {'bitrate':'350k', 'bufsize': '350k', 'maxrate': '512k'}}
+
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
             self.waitBeforeDelete = int(config.get("config", "waitBeforeDelete"))
@@ -465,13 +468,19 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
+    '''
+        originalCommand
+        captureApp.exe -i inputFile -strict experimental -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
+    '''
+
     def resizeMediaFile(self, filePath, resolution):
         fileNameDetails = os.path.splitext(filePath)
         outputFilePath = fileNameDetails[0] + '_' + resolution + fileNameDetails[1]
-        commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s '+ resolution + ' -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
-        '''
-        ffmpeg -i Tue_May_14_18_44_03_2019.mp4 -strict experimental -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
-        '''
+        if resolution in self.resolutionBitRateMap:
+            commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v high -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ resolution + ' -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
+        else:
+            commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v high -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap['default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
+
         try:
             os.system(commandToResize)
             LOG.info ("Resizing of the video is successful")
@@ -560,7 +569,7 @@ class ClientService(object):
                 if self.multiBitRate:
                     if uploaderInstance:
                         uploaderInstance.uploadUpdateMsg("Creating multi bitrate files. Please wait...")
-                    resolution = '1280x720'
+                    resolution = 'org'
                     resizeFilePath_720 = self.resizeMediaFile(filePath, resolution)
                     self.tmpFiles.append(resizeFilePath_720)
 
