@@ -23,10 +23,12 @@ import glob
 import socket
 import sendMail
 import subprocess
-import multiprocessing
+from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 from pymediainfo import MediaInfo
 import threading
 import clientUploadApp
+from functools import partial
 
 # schedule states
 STOPPED = 0
@@ -476,13 +478,14 @@ class ClientService(object):
         captureApp.exe -i inputFile -strict experimental -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
     '''
 
-    def resizeMediaFile(self, filePath, resolution):
+    def resizeMediaFile(self, resolution):
+        filePath = self.resizeBaseFilePath
         fileNameDetails = os.path.splitext(filePath)
         outputFilePath = fileNameDetails[0] + '_' + resolution + fileNameDetails[1]
         if resolution != 'Default' and resolution in self.resolutionBitRateMap:
-            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ self.resolutionBitRateMap[resolution]['resolution'] + ' -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ self.resolutionBitRateMap[resolution]['resolution'] + ' -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
         else:
-            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap['Default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['Default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['Default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap['Default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['Default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['Default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
 
         try:
             os.system(commandToResize)
@@ -572,11 +575,18 @@ class ClientService(object):
                 if self.multiBitRate:
                     if uploaderInstance:
                         uploaderInstance.uploadUpdateMsg("Creating multi bitrate files. Please wait...")
-                    listOfResizeFiles = []
-                    for resolution in self.multiBitRateList:
-                        resizeFilePath = self.resizeMediaFile(filePath, resolution)
+
+                    pool = ThreadPool(len(self.multiBitRateList))
+
+                    self.resizeBaseFilePath = filePath
+
+                    listOfResizeFiles = pool.map(self.resizeMediaFile,self.multiBitRateList)
+                    
+                    self.tmpFiles.extend(listOfResizeFiles)
+
+                    '''for resolution in self.multiBitRateList:
                         listOfResizeFiles.append(resizeFilePath)
-                        self.tmpFiles.append(resizeFilePath)
+                        self.tmpFiles.append(resizeFilePath)'''
 
                     '''resolution = '350 Kbps (720x406)'
                     resizeFilePath_480 = self.resizeMediaFile(filePath, resolution)
