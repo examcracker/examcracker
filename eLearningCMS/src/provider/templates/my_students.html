@@ -35,13 +35,16 @@
             <th>Progress</th>
             <th>Total Sessions</th>-->
             <th>Joined on</th> 
-			<th>Restricted Viewing (hrs)</th>
-			<th>Viewed (mins)</th>
+            <th>Status</th>
+			      <th>Available (hrs)</th>
+			      <th>Viewed (mins)</th>
         </tr>
     </thead>
     <tbody>
         
-        <tr><th scope="row"></th><td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students.."></td></tr> 
+        <tr><th scope="row"></th>
+          <!-- <td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students..">
+          </td></tr>  -->
         {% for item in values %}
         <tr>
             <th scope="row">{{forloop.counter}}</th>
@@ -50,7 +53,8 @@
             <td>{{ item.totalPlayedCount }}</td>
             <td>{{ item.CourseCompleted }}</td>
             <td>{{ item.totalSessions }}</td>-->
-            <td>{{ item.enrolled_date }}</td> 
+            <td>{{ item.enrolled_date }}</td>
+            <td>{{ item.remarks }}</td>
 			{% if item.viewhours >  0 %}
 			<td>{{ item.viewhours }}</td>
 			<td>{{ item.completedminutes }}</td>

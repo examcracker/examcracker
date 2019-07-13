@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 import student
 import provider
-
+from datetime import datetime
 # Create your models here.
 
 # All exams dictionary
@@ -105,8 +105,9 @@ class EnrolledCourse(models.Model):
     viewhours = models.IntegerField(default=0) # 0 => no restriction in view hours
     completedminutes = models.FloatField(default=0)
     chapteraccess = models.CharField(max_length=1000, blank=True) # => Blank means full course access
-    #active = models.BooleanField(default=True)
-    #expiry = models.DateTimeField(auto_now_add=True) # => expiry data of course for this student.
+    active = models.BooleanField(default=True)
+    expiry = models.DateTimeField(default=datetime.now()) # => expiry data of course for this student.
+    remarks = models.CharField(max_length=1000, default="Active")
 
 class SessionStats(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)

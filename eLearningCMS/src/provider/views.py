@@ -426,7 +426,7 @@ class publishCourse(coursePageBase):
                 chapter.save()
         kwargs["courseId"] = courseId
 
-        enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseId)
+        enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseId,active=True)
         for c in enrolledCourse:
             studentUserObj = student.models.Student.objects.filter(id=c.student_id)[0]
             notification.models.notify(studentUserObj.user_id, notification.models.COURSE_PUBLISHED, notification.models.INFO, courseObj.name)
@@ -532,6 +532,7 @@ class myStudents(showProviderHome):
                 studentInfo['id'] = studentDetails.id
                 studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
                 studentInfo['enrolled_date'] = studentItem.enrolled
+                studentInfo['remarks'] = studentItem.remarks
 
                 totalSessionWatched = 0
                 totalPlayedCount = 0
@@ -607,7 +608,7 @@ class addStudents(showProviderHome):
                 studentObj = student.models.Student.objects.filter(id=studentid)[0]
                 kwargs['email'] = course.algos.getUserNameAndPic(studentObj.user_id)['email']
                 kwargs['studentname'] = course.algos.getUserNameAndPic(studentObj.user_id)['name']
-                enrolledCourseObj = course.models.EnrolledCourse.objects.filter(course_id=c.id,student_id=studentid)
+                enrolledCourseObj = course.models.EnrolledCourse.objects.filter(course_id=c.id,student_id=studentid,active=True)
                 if enrolledCourseObj:
                     enrolledCourseObj = enrolledCourseObj[0]
                     viewhours = enrolledCourseObj.viewhours
@@ -718,6 +719,8 @@ Gyaanhive Team</p>'
                     enrolledCourse.chapteraccess = ''
                 #if viewhours != '':
                 enrolledCourse.viewhours = viewhours
+                enrolledCourse.active = True
+                enrolledCourse.remarks = "Active"
                 enrolledCourse.save()
             for module in modules:
                 chapterList = request.POST.getlist(module)
@@ -729,7 +732,8 @@ Gyaanhive Team</p>'
                     enrolledCourse = enrolledCourse[0]
                 else:
                     enrolledCourse = course.models.EnrolledCourse()
-               
+                enrolledCourse.active = True
+                enrolledCourse.remarks = "Active"
                 enrolledCourse.course_id = courseid
                 enrolledCourse.student_id = studentObj.id
                 #if viewhours != '':
@@ -742,8 +746,12 @@ Gyaanhive Team</p>'
             coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
             if len(courseEnrolledList) != 0:
                 coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).exclude(course_id__in=courseEnrolledList)
-            if  coursesToDelete:   
-                coursesToDelete.delete()
+            if  coursesToDelete:
+                for cd in coursesToDelete:
+                    cd.active= False
+                    cd.remarks = "Enrolled removed"
+                    cd.save()
+                #coursesToDelete.delete()
 
             profiles.signals.sendMail(fixedEmail, subject, emailBody)
         return self.get(request, *args, **kwargs)

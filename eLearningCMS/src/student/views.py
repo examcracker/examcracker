@@ -31,7 +31,7 @@ def getStudent(request):
 
 def getStudentViewAllotedHoursProviderWise(studentid,providerid):
     providerCourses = course.models.Course.objects.filter(provider_id=providerid)
-    myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentid,course_id__in=providerCourses.values('id'))
+    myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentid,course_id__in=providerCourses.values('id'),active=True)
     if not myCourses:
         return -1,-1
     viewMinutes = 0
@@ -54,7 +54,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
         studentObj = getStudent(request)
-        myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
         kwargs["courses"] = len(myCourses)
         viewMinutes = 0
         for c in myCourses:
@@ -118,7 +118,9 @@ class myCourses(LoginRequiredMixin, generic.TemplateView):
 
     def get(self, request, *args, **kwargs):
         studentObj = getStudent(request)
-        myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
+        #myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
+        myEnrolledCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+        myCourses = course.models.Course.objects.filter(id__in=myEnrolledCourses.values('course_id'))
         kwargs["courses"] = course.algos.getCourseDetailsForCards(request, myCourses)
         return super().get(request, *args, **kwargs)
 
@@ -136,7 +138,7 @@ class courseDetails(LoginRequiredMixin, generic.TemplateView):
         sessionsInCourse = provider.models.Session.objects.raw('SELECT * FROM provider_session WHERE id IN (SELECT session_id from course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
         kwargs["included_sessions"] = sessionsInCourse
 
-        present = len(course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id))
+        present = len(course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id,active=True))
         if present == 0:
             kwargs["not_joined"] = True
         return super().get(request, id, *args, **kwargs)
@@ -197,7 +199,7 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
         courseDictArray = []
         courseDictMap["myCourse"] = False
 
-        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
         if len(enrolledCourseObj) > 0:
             courseDictMap["myCourse"] = True
 
