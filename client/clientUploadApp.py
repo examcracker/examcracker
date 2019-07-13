@@ -15,12 +15,13 @@ class worker(QThread):
 	threadOutput = pyqtSignal('QString')
 	threadUploadStatus = pyqtSignal('QString')
 
-	def __init__(self, mediaFilePath, folderPath, userInfo, chapterid):
+	def __init__(self, mediaFilePath, folderPath, userInfo, chapterid, multiBitRateList):
 		QThread.__init__(self, None)
 		self.mediaFilePath = mediaFilePath
 		self.mediaFolderPath = folderPath
 		self.serviceObj = service.ClientService()
 		self.serviceObj.chapterid = chapterid
+		self.serviceObj.multiBitRateList = multiBitRateList
 		self.userInfo = userInfo
 		self.totalUploadingFiles = 0
 		
@@ -263,6 +264,15 @@ class filedialogdemo(QFrame):
 					index += 1
 
 
+	def populateBitrateOptions(self):
+		self.resolutionList = service.bitRateAndResolutionList
+		self.comboBoxBitrate1.addItem('Default')
+		for item in self.resolutionList:
+			self.comboBoxBitrate1.addItem(item)
+			self.comboBoxBitrate2.addItem(item)
+
+		self.comboBoxBitrate2.setCurrentIndex(len(self.resolutionList)-1)
+
 	def initWidget(self):
 		
 		self.setMinimumWidth(700)
@@ -315,6 +325,7 @@ class filedialogdemo(QFrame):
 		layoutH2 = QHBoxLayout()
 		layoutH3 = QHBoxLayout()
 		
+		
 		layoutH.addWidget(self.labelFilePath)
 		layoutH.addWidget(self.btnBrowse)
 
@@ -340,6 +351,33 @@ class filedialogdemo(QFrame):
 
 		layoutV.addLayout(layoutH3)
 		layoutV.addWidget(self.line2, 1)
+
+		if self.userDetails['multiBitRate']:
+			self.bitrateLable1 =  QLabel('First Bitrate:')
+			self.comboBoxBitrate1 = QComboBox()
+			self.comboBoxBitrate1.setMinimumHeight(30)
+
+			self.bitrateLable2 =  QLabel('Second Bitrate:')
+			self.comboBoxBitrate2 = QComboBox()
+			self.comboBoxBitrate2.setMinimumHeight(30)
+
+			layoutH4 = QHBoxLayout()
+			layoutH4.addWidget(self.bitrateLable1, 0, Qt.AlignLeft)
+			layoutH4.addWidget(self.comboBoxBitrate1, 0, Qt.AlignLeft)
+			layoutH4.addWidget(self.bitrateLable2, 0, Qt.AlignRight)
+			layoutH4.addWidget(self.comboBoxBitrate2, 0, Qt.AlignRight)
+
+			self.line3 = QFrame();
+			self.line3.setFrameShape(QFrame.HLine);
+			self.line3.setFrameShadow(QFrame.Sunken);
+
+			layoutV.addLayout(layoutH4)
+			layoutV.addWidget(self.line3, 1)
+			
+			self.populateBitrateOptions()
+		else:
+			self.comboBoxBitrate1 = None
+			self.comboBoxBitrate2 = None
 
 		self.btnConvert = QPushButton('Start Upload', self)
 		self.btnConvert.setMinimumSize( 130,40)
@@ -402,8 +440,13 @@ class filedialogdemo(QFrame):
 		mediaFolderPath = self.labelFilePath2.text()
 
 		chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
-				
-		self.thread = worker(str(mediaFilePath), str(mediaFolderPath), self.userDetails, chapterId)
+
+		multiBitRateList = []
+		if self.comboBoxBitrate1:
+			multiBitRateList.append(str(self.comboBoxBitrate1.currentText()))
+			multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
+
+		self.thread = worker(str(mediaFilePath), str(mediaFolderPath), self.userDetails, chapterId, multiBitRateList)
 		self.thread.threadOutput.connect(self.updateOuput)
 		self.thread.threadUploadStatus.connect(self.updateUploadProgress)
 		self.thread.start()

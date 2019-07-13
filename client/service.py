@@ -47,6 +47,9 @@ KEY = "76a6c65c5ea762046bd749a2e632ccbb"
 # Log file
 LOG = logger.getLogFile(__name__)
 
+bitRateAndResolutionList = ['600 Kbps (1280x720)', '512 Kbps (1280x720)', '350 Kbps (720x406)']
+
+
 class WindowsInhibitor:
     '''Prevent OS sleep/hibernate in windows; code from:
     https://github.com/h3llrais3r/Deluge-PreventSuspendPlus/blob/master/preventsuspendplus/core.py
@@ -332,8 +335,8 @@ class ClientService(object):
         self.uploadThread = None
         self.loglevel = config.get("config","loglevel")
 
-        self.resolutionList = ['1280x720', '720x406']
-        self.resolutionBitRateMap = {'default': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k'}, '1280x720': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k'}, '720x406': {'bitrate':'300k', 'bufsize': '300k', 'maxrate': '512k'}}
+        self.multiBitRateList = ['Default', '350 Kbps (720x406)']
+        self.resolutionBitRateMap = {'Default': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k'}, '600 Kbps (1280x720)': {'bitrate':'600k', 'bufsize': '600k', 'maxrate': '1000k', 'resolution': '1280x720'}, '512 Kbps (1280x720)': {'bitrate':'512k', 'bufsize': '512k', 'maxrate': '750k', 'resolution': '1280x720'}, '350 Kbps (720x406)': {'bitrate':'350k', 'bufsize': '350k', 'maxrate': '600k', 'resolution': '720x406'}}
 
         try:
             self.deleteContent = config.getboolean("config", "deleteContent")
@@ -476,10 +479,10 @@ class ClientService(object):
     def resizeMediaFile(self, filePath, resolution):
         fileNameDetails = os.path.splitext(filePath)
         outputFilePath = fileNameDetails[0] + '_' + resolution + fileNameDetails[1]
-        if resolution in self.resolutionBitRateMap:
-            commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ resolution + ' -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
+        if resolution != 'Default' and resolution in self.resolutionBitRateMap:
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ self.resolutionBitRateMap[resolution]['resolution'] + ' -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
         else:
-            commandToResize = str(self.captureAppProcName) + ' -i ' + str(filePath) +' -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap['default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' ' + str(outputFilePath)
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,120),0)" -b:v ' + self.resolutionBitRateMap['Default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['Default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['Default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
 
         try:
             os.system(commandToResize)
@@ -569,15 +572,17 @@ class ClientService(object):
                 if self.multiBitRate:
                     if uploaderInstance:
                         uploaderInstance.uploadUpdateMsg("Creating multi bitrate files. Please wait...")
-                    resolution = 'org'
-                    resizeFilePath_720 = self.resizeMediaFile(filePath, resolution)
-                    self.tmpFiles.append(resizeFilePath_720)
+                    listOfResizeFiles = []
+                    for resolution in self.multiBitRateList:
+                        resizeFilePath = self.resizeMediaFile(filePath, resolution)
+                        listOfResizeFiles.append(resizeFilePath)
+                        self.tmpFiles.append(resizeFilePath)
 
-                    resolution = '720x406'
+                    '''resolution = '350 Kbps (720x406)'
                     resizeFilePath_480 = self.resizeMediaFile(filePath, resolution)
-                    self.tmpFiles.append(resizeFilePath_480)
+                    self.tmpFiles.append(resizeFilePath_480)'''
 
-                    self.encryptTheContent(resizeFilePath_720, resizeFilePath_480)
+                    self.encryptTheContent(listOfResizeFiles[0], listOfResizeFiles[1])
                 else:
                     self.encryptTheContent(filePath)
                 
