@@ -9,6 +9,7 @@ from Crypto.Cipher import AES
 import json
 import os
 import base64
+from datetime import datetime
 
 aes_key = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
@@ -57,7 +58,7 @@ class Plan(models.Model):
     space = models.IntegerField(default=0) # per year
     live = models.BooleanField(default=True)
     multibitrate = models.BooleanField(default=True)
-    expiry = models.DateTimeField(blank=True)
-    startdate = models.DateTimeField(blank=True)
+    expiry = models.DateTimeField(default=datetime.now())
+    startdate = models.DateTimeField(default=datetime.now())
 
 
