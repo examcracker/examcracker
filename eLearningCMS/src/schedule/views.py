@@ -147,7 +147,7 @@ def isAnyEventLive(request):
     else:
         # Get live events of enrolled courses
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
         chaptersList = []
         for ec in enrolledCourseObj:
             if ec.chapteraccess == '':
@@ -181,7 +181,7 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
             chaptersList = []
             for ec in enrolledCourseObj:
                 if ec.chapteraccess == '':
@@ -385,7 +385,7 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             courseChapterObj = courseChapterObj[0]
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id)
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id,active=True)
             if not enrolledCourseObj:
                 raise Http404()
             enrolledCourseObj = enrolledCourseObj[0]

@@ -38,6 +38,8 @@ class Session(models.Model):
     tags = models.CharField(max_length=100)
     duration = models.IntegerField(default=0) #in secs
     encrypted = models.BooleanField(default=False)
+    bucketname = models.CharField(default='gyaanhive', max_length=100)
+    multibitrate = models.BooleanField(default=False)
 
 class DrmSession(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
@@ -53,5 +55,9 @@ class Plan(models.Model):
     cost = models.IntegerField(default=0)
     bandwidth = models.IntegerField(default=0) # per month or year
     space = models.IntegerField(default=0) # per year
+    live = models.BooleanField(default=True)
+    multibitrate = models.BooleanField(default=True)
+    expiry = models.DateTimeField(blank=True)
+    startdate = models.DateTimeField(blank=True)
 
 

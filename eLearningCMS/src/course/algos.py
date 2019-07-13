@@ -290,14 +290,14 @@ def getUserNameAndPic(user_id):
     return userDetails
 
 def getEnrolledStudentsCount(courseId):
-    enrolledCount = len(models.EnrolledCourse.objects.filter(course_id=courseId))
+    enrolledCount = len(models.EnrolledCourse.objects.filter(course_id=courseId,active=True))
     return enrolledCount
 
 def checkIfStudentEnrolledInCourse(courseId, userId):
     studentObj = student.models.Student.objects.filter(user_id=userId)
     if len(studentObj) > 0:
         studentId = studentObj[0].id
-        enrolledStudent = models.EnrolledCourse.objects.filter(Q(course_id=courseId) & Q(student_id=studentId))
+        enrolledStudent = models.EnrolledCourse.objects.filter(course_id=courseId,student_id=studentId,active=True)
         if len(enrolledStudent) > 0:
             return True
     

@@ -137,7 +137,7 @@ class courseDetails(fillCartCourses):
         if request.user.is_authenticated:
             if request.user.is_staff == False:
                 studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-                enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid)
+                enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseid,active=True)
                 if len(enrolledCourse) > 0:
                     courseOverviewMap["myCourse"] = True
                     reviewSummary["enrolledCourse"] = True
@@ -272,7 +272,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             #if studentObj.id == 9:
             #    kwargs["cdnName"] = "b-cdn.net"
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
-            enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id)
+            enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id,active=True)
             if len(enrolledCourse) == 0:
                 raise Http404()
 
@@ -285,7 +285,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             # check if view hours have completed
             kwargs["enrolledcourseid"] = ecObj.id
             viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(studentObj.id,courseObj.provider_id)
-            if allotedHours > 0 and viewMinutes >= allotedHours*60:
+            #if allotedHours > 0 and viewMinutes >= allotedHours*60:
+            if viewMinutes >= allotedHours*60:
                 raise Http404()
             if ecObj.chapteraccess != '':
                 allowedModules = ecObj.chapteraccess.split(',')
@@ -301,7 +302,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             coursesWithSession = algos.getCoursesForSession(sessionid)
 
             for c in coursesWithSession:
-                enrolledCourseObj = models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=c.id)
+                enrolledCourseObj = models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=c.id,active=True)
                 if len(enrolledCourseObj) > 0:
                     enrolledCourseObj = enrolledCourseObj[0]
                     sessionsPlayed = algos.strToIntList(enrolledCourseObj.sessions)
