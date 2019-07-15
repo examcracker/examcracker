@@ -191,14 +191,14 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
        //document.webkitCancelFullScreen();
         inFullScreenMode = true;
 		} 
-/*     else {
+    else {
         elem.requestFullscreen().catch(err => {
         if (showpopup) {
             alert('Press F or f key for Fullscreen');
             showpopup = false;
         }
     });
-	} */
+	}
 
     // mobile screens detection
     if( navigator.userAgent.match(/Android/i)
@@ -385,7 +385,8 @@ window.addEventListener('resize', function() {
                 streaming: {
                     bufferingGoal: 300,
                     rebufferingGoal: 10,
-                    bufferBehind:20
+                    bufferBehind:20,
+                    jumpLargeGaps: true,
                 }
 			});
 		}
