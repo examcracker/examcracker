@@ -47,7 +47,7 @@ INTERNAL_IPS = [
     '0.0.0.1',
 ]
 
-ALLOWED_HOSTS = ['www.gyaanhive.com']
+ALLOWED_HOSTS = ['www.gyaanhive.com','www.kunal.gyaanhive.com']
 
 if DEBUG is False:
     RECAPTCHA_PUBLIC_KEY = '6Ldum20UAAAAAEWoxXETng8qOScbkAdVLTJ7YN7_'
