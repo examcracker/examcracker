@@ -36,7 +36,13 @@ MIDDLEWARE += [
 ]
 
 # Show emails to console in DEBUG mode
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.mail.yahoo.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'mygyaanhive@yahoo.com'
+EMAIL_HOST_PASSWORD = 'examcracker2018'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@yahoo.com>'
 
 # Show thumbnail generation errors
 THUMBNAIL_DEBUG = True
