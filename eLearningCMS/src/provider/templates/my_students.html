@@ -113,7 +113,7 @@ function exportExcel(tabs,courseNames) {
       var opt = {sheetid:courseNames[i],header:true};
       opts.push(opt);
     }
-    var res = alasql('SELECT INTO XLSX("MyAwesomeData.xlsx",?) FROM ?',[opts,datas]);
+    var res = alasql('SELECT INTO XLSX("my_students.xlsx",?) FROM ?',[opts,datas]);
     }
 
 function calltablestoexcel() {
