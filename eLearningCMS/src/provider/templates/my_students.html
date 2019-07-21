@@ -2,9 +2,11 @@
 {% load staticfiles %}
 
 {% block active %}
+<script src="{% static 'provider/js/0.3/alasql.min.js' %}"></script>
+<script src="{% static 'provider/js/0.7.12/xlsx.core.min.js' %}"></script>
 
 <script>
-var tablesToExcel = (function() {
+/* var tablesToExcel = (function() {
     var uri = 'data:application/vnd.ms-excel;base64,'
     , tmplWorkbookXML = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
       + '<DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Created>{created}</Created></DocumentProperties>'
@@ -60,6 +62,60 @@ var tablesToExcel = (function() {
     }
   })();
 
+  function download_csv(csv, filename) {
+    var csvFile;
+    var downloadLink;
+
+    // CSV FILE
+    csvFile = new Blob([csv], {type: "text/csv"});
+
+    // Download link
+    downloadLink = document.createElement("a");
+
+    // File name
+    downloadLink.download = filename;
+
+    // We have to create a link to the file
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+
+    // Make sure that the link is not displayed
+    downloadLink.style.display = "none";
+
+    // Add the link to your DOM
+    document.body.appendChild(downloadLink);
+
+    // Lanzamos
+    downloadLink.click();
+}
+
+function export_table_to_csv(tables,sheetname) {
+  var csv = [];
+  for (var k = 0; k < 1; k++) {
+    var rowsSelector = "#"+tables[k] + " tr";
+	  var rows = document.querySelectorAll(rowsSelector);
+	  for (var i = 0; i < rows.length; i++) {
+		  var row = [], cols = rows[i].querySelectorAll("td, th");
+        for (var j = 0; j < cols.length; j++) 
+            row.push(cols[j].innerText.replace(/,/g, ' '));
+		    csv.push(row.join(","));		
+	  }
+  }
+  download_csv(csv.join("\n"),'students.csv');
+} */
+
+function exportExcel(tabs,courseNames) {
+    var datas = [];
+    var opts = [];
+    for (var i = 0; i < tabs.length; i++) {
+      var sql = 'SELECT * FROM HTML("#'+ tabs[i] + '",{headers:true})';
+      var data = alasql(sql);
+      datas.push(data);
+      var opt = {sheetid:courseNames[i],header:true};
+      opts.push(opt);
+    }
+    var res = alasql('SELECT INTO XLSX("MyAwesomeData.xlsx",?) FROM ?',[opts,datas]);
+    }
+
 function calltablestoexcel() {
   var tables = document.querySelectorAll('*[id^="studentsTable"]');
   var tabs = [];
@@ -71,7 +127,8 @@ function calltablestoexcel() {
     j=j+1;
     courseNames.push(courseName);
   }
-  tablesToExcel(tabs, courseNames, 'students.xls', 'Excel');
+  exportExcel(tabs,courseNames);
+  //tablesToExcel(tabs, courseNames, 'students.xls', 'Excel');
 }
 
 </script>
@@ -112,7 +169,7 @@ function calltablestoexcel() {
             <!--<th>Session Completed</th>
             <th>Play Count</th>
             <th>Progress</th>
-            <th>Total Sessions</th>-->
+            <th>Total Sessions</th> -->
             <th>Joined on</th> 
             <th>Status</th>
 			      <th>Available (hrs)</th>
@@ -121,8 +178,8 @@ function calltablestoexcel() {
     </thead>
     <tbody>
         
-        <tr><th scope="row"></th>
-          <!-- <td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students..">
+        <!--<tr><th scope="row"></th>
+          <td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students..">
           </td></tr>  -->
         {% for item in values %}
         <tr>
@@ -131,8 +188,8 @@ function calltablestoexcel() {
             <!--<td>{{ item.totalSessionWatched }}</td>
             <td>{{ item.totalPlayedCount }}</td>
             <td>{{ item.CourseCompleted }}</td>
-            <td>{{ item.totalSessions }}</td>-->
-            <td>{{ item.enrolled_date }}</td>
+            <td>{{ item.totalSessions }}</td> -->
+            <td>{{ item.enrolled_date }}</td> 
             <td>{{ item.remarks }}</td>
 			{% if item.viewhours >  0 %}
 			<td>{{ item.viewhours }}</td>

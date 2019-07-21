@@ -25,6 +25,7 @@ function swapNodes(a, b) {
 function filterFunction(filterType,elemId) {
   // Declare variables
   var target = document.querySelectorAll('[id^="' + elemId + '"]');
+  var startIndex = 1;
   for (j=0;j<target.length;j++) {
     var input, filter, table, tr, td, i;
     var cellIndex = 1;
@@ -33,6 +34,7 @@ function filterFunction(filterType,elemId) {
       cellIndex = 1;
     } else {
       cellIndex = input.parentNode.cellIndex;
+      startIndex = 2;
     }
     filter = input.value.toUpperCase();
     //table = document.getElementById(elemId);
@@ -40,7 +42,7 @@ function filterFunction(filterType,elemId) {
     tr = table.getElementsByTagName("tr");
     var filterIndex = cellIndex-1;
     // Loop through all table rows, and hide those who don't match the search query
-    for (i = 2; i < tr.length; i++) {
+    for (i = startIndex; i < tr.length; i++) {
       td = tr[i].getElementsByTagName("td")[filterIndex];
       if (td) {
         if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
