@@ -784,8 +784,10 @@ class ProviderCourseDetails(generic.TemplateView):
         result['result'] = True
         result['dokey'] = settings.DIGITAL_OCEAN_SPACE_KEY
         result['dosecret'] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
-        result['drmkeyid'] = settings.DRM_KEY_ID
-        result['drmkey'] = settings.DRM_KEY
+        
+        drm_deatils = cdn.views.getClearKey()
+        result['drmkeyid'] = drm_deatils['KeyID']
+        result['drmkey'] = drm_deatils['Key']
 
         result['clientid'] = providerObj.encryptedid
         result['bucketname'] = providerObj.bucketname

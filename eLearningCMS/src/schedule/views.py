@@ -20,6 +20,7 @@ import enum
 import json
 import base64
 import student
+import cdn
 from django.db.models import Q
 
 from access.views import parse_user_agents
@@ -327,8 +328,10 @@ def createDictSchedule(scheduleObj, command):
     dictObj["live"] = True
     dictObj["dokey"] = settings.DIGITAL_OCEAN_SPACE_KEY
     dictObj["dokeysecret"] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
-    dictObj["drmkeyid"] = settings.DRM_KEY_ID
-    dictObj["drmkey"] = settings.DRM_KEY
+
+    drm_deatils = cdn.views.getClearKey()
+    dictObj["drmkeyid"] = drm_deatils['KeyID']
+    dictObj["drmkey"] = drm_deatils['Key']
     dictObj["multiBitRate"] = False
     return dictObj
 

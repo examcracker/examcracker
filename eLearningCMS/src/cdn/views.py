@@ -32,6 +32,7 @@ from course.algos import strToIntList
 # pusher
 import pusher
 import pysher
+import os
 
 logger = logging.getLogger("project")
 
@@ -44,6 +45,11 @@ command_check_client_active = 5
 
 # methods to go here
 EXPIRY_BANDWIDTH = 30
+
+def getClearKey():
+    DRM_keyID = os.urandom(16).hex()
+    DRM_key = os.urandom(16).hex()
+    return {'KeyID': DRM_keyID, 'Key': DRM_key}
 
 def getJWClient():
     return jwplatform.Client(settings.JWPLAYER_API_KEY, settings.JWPLAYER_API_SECRET)
