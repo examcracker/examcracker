@@ -166,10 +166,6 @@ function calltablestoexcel() {
         <tr>
             <th scope="col">#</th>
             <th>Name</th>
-            <!--<th>Session Completed</th>
-            <th>Play Count</th>
-            <th>Progress</th>
-            <th>Total Sessions</th> -->
             <th>Joined on</th> 
             <th>Status</th>
 			      <th>Available (hrs)</th>
@@ -185,10 +181,6 @@ function calltablestoexcel() {
         <tr>
             <th scope="row">{{forloop.counter}}</th>
             <td>{{ item.name }}</td>
-            <!--<td>{{ item.totalSessionWatched }}</td>
-            <td>{{ item.totalPlayedCount }}</td>
-            <td>{{ item.CourseCompleted }}</td>
-            <td>{{ item.totalSessions }}</td> -->
             <td>{{ item.enrolled_date }}</td> 
             <td>{{ item.remarks }}</td>
 			{% if item.viewhours >  0 %}
