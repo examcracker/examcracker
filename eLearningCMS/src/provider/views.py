@@ -111,6 +111,8 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
          
         if schedule.views.isAnyEventLive(request):
             kwargs["live"] = 'on'
+        else:
+            kwargs["live"] = 'off'
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -518,12 +520,12 @@ class myStudents(showProviderHome):
 
             sessionIDList = course.algos.getAllSessionsIdsForCourse(courseObj.id)
 
-            sessionStatsList = []
-            for sessionID in sessionIDList:
-                sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
-                if(len(sessionStatsObj) > 0):
-                    statsDict = json.loads(sessionStatsObj[0].stats)
-                    sessionStatsList.append(statsDict)
+            #sessionStatsList = []
+            #for sessionID in sessionIDList:
+            #    sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
+            #    if(len(sessionStatsObj) > 0):
+            #        statsDict = json.loads(sessionStatsObj[0].stats)
+            #        sessionStatsList.append(statsDict)
 
             studentList = []
             for studentItem in studentsObj:
@@ -534,24 +536,24 @@ class myStudents(showProviderHome):
                 studentInfo['enrolled_date'] = studentItem.enrolled
                 studentInfo['remarks'] = studentItem.remarks
 
-                totalSessionWatched = 0
-                totalPlayedCount = 0
-                for statsItem in sessionStatsList:
-                    studentId = str(studentItem.student_id)
-                    if studentId in statsItem:
-                        totalSessionWatched += 1
-                        totalPlayedCount += statsItem[studentId]
+                #totalSessionWatched = 0
+                #totalPlayedCount = 0
+                #for statsItem in sessionStatsList:
+                #    studentId = str(studentItem.student_id)
+                #    if studentId in statsItem:
+                #        totalSessionWatched += 1
+                #        totalPlayedCount += statsItem[studentId]
 
-                studentInfo['totalSessions'] = len(sessionIDList)
-                studentInfo['totalSessionWatched'] = totalSessionWatched
-                studentInfo['totalPlayedCount'] = totalPlayedCount
+                #studentInfo['totalSessions'] = len(sessionIDList)
+                #studentInfo['totalSessionWatched'] = totalSessionWatched
+                #studentInfo['totalPlayedCount'] = totalPlayedCount
                 studentInfo['viewhours'] = studentItem.viewhours
                 studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
 
-                if(len(sessionIDList) > 0):
-                    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
-                else:
-                    studentInfo['CourseCompleted'] = 'NA'
+                #if(len(sessionIDList) > 0):
+                #    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
+                #else:
+                #    studentInfo['CourseCompleted'] = 'NA'
 
                 studentList.append(studentInfo)
 

@@ -232,7 +232,10 @@ window.addEventListener('resize', function() {
 	var debug = "{{debug}}";
 	var accessurl = "/access/allow/{{user.id}}/";
 	var gap = 60;
-    var liveUrl = "{{liveUrl}}";
+    var liveUrl = "";
+    if (isLive == "true") {
+        liveUrl = "{{liveUrl}}";
+    };
     var bucketname = "{{bucketname}}";
     var videokey = "{{videokey}}";
 
