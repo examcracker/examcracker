@@ -656,7 +656,7 @@ class ClientService(object):
                 LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
                 break
 
-        self.uploadOriginalFileToCDN(self.capture.outputFileName)
+        #self.uploadOriginalFileToCDN(self.capture.outputFileName)
 
 
     def uploadFileToCDN(self, filePath, responseDict, sendResponse = True):
