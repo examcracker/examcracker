@@ -2,14 +2,169 @@
 {% load staticfiles %}
 
 {% block active %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+<script src="{% static 'provider/js/0.3/alasql.min.js' %}"></script>
+<script src="{% static 'provider/js/0.7.12/xlsx.core.min.js' %}"></script>
+<script type="text/javascript">
+
+var emails = '';
+var names = '';
+var viewhours = '';
+
+function Upload() {
+        //Reference the FileUpload element.
+        var fileUpload = document.getElementById("fileUpload");
+ 
+        //Validate whether File is valid Excel file.
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+        if (regex.test(fileUpload.value.toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+ 
+                //For Browsers other than IE.
+                if (reader.readAsBinaryString) {
+                    reader.onload = function (e) {
+                        ProcessExcel(e.target.result);
+                    };
+                    reader.readAsBinaryString(fileUpload.files[0]);
+                } else {
+                    //For IE Browser.
+                    reader.onload = function (e) {
+                        var data = "";
+                        var bytes = new Uint8Array(e.target.result);
+                        for (var i = 0; i < bytes.byteLength; i++) {
+                            data += String.fromCharCode(bytes[i]);
+                        }
+                        ProcessExcel(data);
+                    };
+                    reader.readAsArrayBuffer(fileUpload.files[0]);
+                }
+            } else {
+                alert("This browser does not support HTML5.");
+            }
+        } else {
+            alert("Please upload a valid Excel file.");
+        }
+    };
+    function ProcessExcel(data) {
+        //Read the Excel File data.
+        var workbook = XLSX.read(data, {
+            type: 'binary'
+        });
+ 
+        //Fetch the name of First Sheet.
+        var firstSheet = workbook.SheetNames[0];
+ 
+        //Read all rows from First Sheet into an JSON array.
+        var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
+ 
+        //Create a HTML Table element.
+        var table = document.createElement("table");
+        table.border = "1";
+ 
+        //Add the header row.
+        var row = table.insertRow(-1);
+ 
+        //Add the header cells.
+        var headerCell = document.createElement("TH");
+        headerCell.innerHTML = "Email";
+        row.appendChild(headerCell);
+ 
+        headerCell = document.createElement("TH");
+        headerCell.innerHTML = "Name";
+        row.appendChild(headerCell);
+ 
+        // headerCell = document.createElement("TH");
+        // headerCell.innerHTML = "phone";
+		// row.appendChild(headerCell);
+		
+		headerCell = document.createElement("TH");
+        headerCell.innerHTML = "Viewhours";
+        row.appendChild(headerCell);
+		//Add the data rows from Excel file.
+		var emailsArr = [];
+		var namesArr = [];
+		var viewHoursArr = []
+        for (var i = 0; i < excelRows.length; i++) {
+            //Add the data row.
+            var row = table.insertRow(-1);
+ 
+            //Add the data cells.
+            var cell = row.insertCell(-1);
+            cell.innerHTML = excelRows[i].email;
+			emailsArr.push(excelRows[i].email);
+
+            cell = row.insertCell(-1);
+            cell.innerHTML = excelRows[i].name;
+			namesArr.push(excelRows[i].name);
+
+            cell = row.insertCell(-1);
+			cell.innerHTML = excelRows[i].viewhours;
+			viewHoursArr.push(excelRows[i].viewhours);
+        }
+		viewhours = viewHoursArr.join(',');
+		names = namesArr.join(',');
+		emails = emailsArr.join(',');
+		$('#dvExcel').empty();
+
+		var dvExcel = document.getElementById("dvExcel");
+		
+        dvExcel.innerHTML = "";
+		dvExcel.appendChild(table);
+		$('#importStudentsModal').modal('show');
+	};
+	function filldata() {
+		document.getElementById('inputEmail3').value = emails;
+		document.getElementById('studentname').value = names;
+		document.getElementById('viewHours').value = viewhours;
+		$('#importStudentsModal').modal('toggle');
+	}
+	function selectFile() {
+		$('input[type=file]').val('');
+		$('input[type=file]').click();
+	}
+</script>
+
   <!-- Breadcrumbs-->
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item">
-      <a href="#">Dashboard</a>
-    </li>
-    <li class="breadcrumb-item active">Enroll Students with course and modules</li>
-  </ol>
-  
+  <nav class="navbar">
+	<div class="mr-lg-auto">
+	<ol class="breadcrumb">
+	  <li class="breadcrumb-item">
+		<a href="#">Dashboard</a>
+	  </li>
+	  <li class="breadcrumb-item active">Enroll Students with course and modules</li>
+	</ol>
+  </div>
+  <button title="Select Excel file with name,email,viewhours as column names" onclick="selectFile()" id="uploadbutton" class="btn btn-outline-info btn-md mx-2 px-2" aria-pressed="true">
+	<i class="far fa-file-excel"></i> Import users</button>
+	<button title="Download Sample Excel" class="btn btn-sm btn-outline-info" onclick="downloadSample()">
+			<i class="fa fa-download" aria-hidden="true"></i></button>
+  <input id="fileUpload" type="file" name="files" onchange="Upload()" style="visibility:hidden;">
+  </nav>
+
+ <!--  modal for import students-->
+  <div class="modal" tabindex="-1" role="dialog" id="importStudentsModal">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title">Imported Students Data</h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+			<div id="dvExcel"></div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-primary" onclick="filldata()">OK</button>
+		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		</div>
+	  </div>
+	</div>
+  </div>
+
   <form action="" method="post" enctype="multipart/form-data" id="enrollStudents">
 	{% csrf_token %}
 	<div class="form-group row">
@@ -30,8 +185,8 @@
 	<div class="form-group row">
     <label for="inputEmail3" class="col-sm-2 col-form-label">View hours</label>
     <div class="col-sm-10">
-			<input type="number" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" 
-			{% if viewhours %} value = "{{viewhours}}" {% endif %} required onwheel="this.blur()">
+			<input type="text" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" 
+			{% if viewhours %} value = "{{viewhours}}" {% endif %} required>
     </div>
 	</div>
 	<h4>Assign Course and permissions</h2>
@@ -84,8 +239,18 @@
 
 <script>
 	$('#enrollStudents').submit(function() {
-    var c = confirm("Do you want to continue?");
-    return c; //you can just return c because it will be true or false
+		emails = document.getElementById('inputEmail3').value;
+		names = document.getElementById('studentname').value;
+		viewhours = document.getElementById('viewHours').value;
+		l = emails.split(",").length;
+		if (names.split(',').length == l && viewhours.split(',').length == l) {
+    		var c = confirm("Do you want to continue?");
+			return c; //you can just return c because it will be true or false
+		} else{
+			alert('Select same number of emails, names and viewhours list');
+			return false;
+		}
+
 });
 
 function enableDisableModules(e) {
@@ -101,5 +266,40 @@ function enableDisableModules(e) {
 		}
   });
 }
+
+function exportExcel(tabs,courseNames) {
+    var datas = [];
+    var opts = [];
+    for (var i = 0; i < tabs.length; i++) {
+      var sql = 'SELECT * FROM HTML("#'+ tabs[i] + '",{headers:true})';
+      var data = alasql(sql);
+      datas.push(data);
+      var opt = {sheetid:courseNames[i],header:true};
+      opts.push(opt);
+    }
+    var res = alasql('SELECT INTO XLSX("my_students.xlsx",?) FROM ?',[opts,datas]);
+    }
+	function downloadSample() {
+		exportExcel(['demoTable'],['demoSheet']);
+	}
 </script>
+
+<div style="display:none">
+<table id="demoTable">
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>email</th> 
+            <th>viewhours</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Demo Name</td>
+            <td>demo@gmail.com</td> 
+            <td>100</td>
+        </tr>
+    </tbody>  
+    </table>
+</div>
 {% endblock active %}

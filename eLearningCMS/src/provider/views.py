@@ -111,6 +111,8 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
          
         if schedule.views.isAnyEventLive(request):
             kwargs["live"] = 'on'
+        else:
+            kwargs["live"] = 'off'
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -518,12 +520,12 @@ class myStudents(showProviderHome):
 
             sessionIDList = course.algos.getAllSessionsIdsForCourse(courseObj.id)
 
-            sessionStatsList = []
-            for sessionID in sessionIDList:
-                sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
-                if(len(sessionStatsObj) > 0):
-                    statsDict = json.loads(sessionStatsObj[0].stats)
-                    sessionStatsList.append(statsDict)
+            #sessionStatsList = []
+            #for sessionID in sessionIDList:
+            #    sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
+            #    if(len(sessionStatsObj) > 0):
+            #        statsDict = json.loads(sessionStatsObj[0].stats)
+            #        sessionStatsList.append(statsDict)
 
             studentList = []
             for studentItem in studentsObj:
@@ -534,24 +536,24 @@ class myStudents(showProviderHome):
                 studentInfo['enrolled_date'] = studentItem.enrolled
                 studentInfo['remarks'] = studentItem.remarks
 
-                totalSessionWatched = 0
-                totalPlayedCount = 0
-                for statsItem in sessionStatsList:
-                    studentId = str(studentItem.student_id)
-                    if studentId in statsItem:
-                        totalSessionWatched += 1
-                        totalPlayedCount += statsItem[studentId]
+                #totalSessionWatched = 0
+                #totalPlayedCount = 0
+                #for statsItem in sessionStatsList:
+                #    studentId = str(studentItem.student_id)
+                #    if studentId in statsItem:
+                #        totalSessionWatched += 1
+                #        totalPlayedCount += statsItem[studentId]
 
-                studentInfo['totalSessions'] = len(sessionIDList)
-                studentInfo['totalSessionWatched'] = totalSessionWatched
-                studentInfo['totalPlayedCount'] = totalPlayedCount
+                #studentInfo['totalSessions'] = len(sessionIDList)
+                #studentInfo['totalSessionWatched'] = totalSessionWatched
+                #studentInfo['totalPlayedCount'] = totalPlayedCount
                 studentInfo['viewhours'] = studentItem.viewhours
                 studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
 
-                if(len(sessionIDList) > 0):
-                    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
-                else:
-                    studentInfo['CourseCompleted'] = 'NA'
+                #if(len(sessionIDList) > 0):
+                #    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
+                #else:
+                #    studentInfo['CourseCompleted'] = 'NA'
 
                 studentList.append(studentInfo)
 
@@ -641,6 +643,7 @@ class addStudents(showProviderHome):
         viewhours = self.request.POST.get('viewHours','')
         emailsList = str.split(emails, ',')
         studentnamesList = str.split(studentnames, ',')
+        viewhoursList = str.split(viewhours, ',')
         if len(emailsList) == 0:
             return self.get(request, *args, **kwargs)
         
@@ -708,7 +711,6 @@ Gyaanhive Team</p>'
             courseEnrolledList = []
             for fc in fullCourses:
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=fc,student_id=studentObj.id)
-                viewHours = self.request.POST.get('viewhours'+str(fc))
                 courseEnrolledList.append(fc)
                 if not enrolledCourse:
                     enrolledCourse = course.models.EnrolledCourse()
@@ -717,8 +719,10 @@ Gyaanhive Team</p>'
                 else:
                     enrolledCourse = enrolledCourse[0]
                     enrolledCourse.chapteraccess = ''
-                #if viewhours != '':
-                enrolledCourse.viewhours = viewhours
+                vh = viewhours
+                if len(viewhoursList) > 1:
+                    vh = viewhoursList[i]
+                enrolledCourse.viewhours = vh
                 enrolledCourse.active = True
                 enrolledCourse.remarks = "Active"
                 enrolledCourse.save()
@@ -726,7 +730,6 @@ Gyaanhive Team</p>'
                 chapterList = request.POST.getlist(module)
                 courseid = module.split('modules')[1]
                 courseEnrolledList.append(courseid)
-                viewHours = self.request.POST.get('viewhours'+str(courseid))
                 enrolledCourse = course.models.EnrolledCourse.objects.filter(course_id=courseid,student_id=studentObj.id)
                 if enrolledCourse:
                     enrolledCourse = enrolledCourse[0]
@@ -736,8 +739,10 @@ Gyaanhive Team</p>'
                 enrolledCourse.remarks = "Active"
                 enrolledCourse.course_id = courseid
                 enrolledCourse.student_id = studentObj.id
-                #if viewhours != '':
-                enrolledCourse.viewhours = viewhours
+                vh = viewhours
+                if len(viewhoursList) > 1:
+                    vh = viewhoursList[i]
+                enrolledCourse.viewhours = vh
                 modulelist = list(map(int,chapterList))
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
                 enrolledCourse.save()

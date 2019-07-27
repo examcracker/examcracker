@@ -147,7 +147,7 @@
           <a class="nav-link" href="{% url 'schedule:showLiveEvents' %}">
                 <i class="fas fa-chalkboard-teacher fa-lg"></i>
             <span class="nav-link-text">Running Live</span>
-            {% if live %}
+            {% if live == "on" %}
             <span class="badge badge-danger">live</span>
             {% endif %}
           </a>
