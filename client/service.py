@@ -110,14 +110,14 @@ def getmp4CoversionCommand(inputfile, outputfile):
     command = command + vcodec + ' -acodec ' + acodec + ' "' + outputfile + '"'
     return command
 
-def sendCaptureResponse(state, id, streamName=None):
+def sendCaptureResponse(state, id, scheduleid, streamName=None):
     global serviceObj
     data = {}
     data["state"] = state
     data["id"] = id
     if streamName != None:
         data["streamName"] = streamName
-    httpReq.send(serviceObj.url, "/schedule/captureState/" + str(serviceObj.scheduleid), json.dumps(data))
+    httpReq.send(serviceObj.url, "/schedule/captureState/" + str(scheduleid), json.dumps(data))
 
 def on_message(message):
     #LOG.info(str(message))
@@ -156,17 +156,17 @@ def on_message(message):
                 serviceObj.multiBitRate = messageDict["multiBitRate"]
                 serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                 serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
-                sendCaptureResponse(RUNNING, serviceObj.encryptedid,serviceObj.liveStreamName)
+                sendCaptureResponse(RUNNING, serviceObj.encryptedid, serviceObj.scheduleid, serviceObj.liveStreamName)
                 serviceObj.startCapture()
         elif command == api.command_stop:
             if not serviceObj.capturing:
                 responseDict["result"] = api.status_no_capture_started
                 serviceObj.scheduleid = messageDict["id"]
-                sendCaptureResponse(STOPPED, serviceObj.encryptedid)
+                sendCaptureResponse(STOPPED, serviceObj.encryptedid, serviceObj.scheduleid)
                 #res = serviceObj.stopCapture(responseDict)
                 serviceObj.stopCapture(responseDict)
             else:
-                sendCaptureResponse(UPLOADING, serviceObj.encryptedid)
+                sendCaptureResponse(UPLOADING, serviceObj.encryptedid, serviceObj.scheduleid)
                 serviceObj.stopCapture(responseDict)
                 """ res = serviceObj.stopCapture(responseDict)
                 if 'videoKey' in res.keys():
@@ -549,7 +549,7 @@ class ClientService(object):
         finally:
             self.osleep.uninhibit()
 
-    def uploadFileToCDNThreaded(self, filePath, sendResponse, uploaderInstance = None):
+    def uploadFileToCDNThreaded(self, filePath, sendResponse, scheduleid, uploaderInstance = None):
         # Stopping windows to go in sleep mode while we upload a file
         uploadResponse = {}
         try:
@@ -615,7 +615,7 @@ class ClientService(object):
         finally:
             # Now remove all temporary files created
             if sendResponse:
-                sendCaptureResponse(STOPPED, self.encryptedid)
+                sendCaptureResponse(STOPPED, self.encryptedid, scheduleid)
             self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
@@ -631,8 +631,9 @@ class ClientService(object):
         responseDict["dokey"] = self.dokey
         responseDict["dokeysecret"] = self.dokeysecret
         responseDict["multiBitRate"] = self.multiBitRate
+        scheduleid = self.scheduleid
 
-        res = self.uploadFileToCDNThreaded(filePath, sendResponse)
+        res = self.uploadFileToCDNThreaded(filePath, sendResponse, scheduleid)
         if 'videoKey' in res.keys():
             responseDict["result"] = api.status_stop_success
             responseDict["videokey"] = res["videoKey"]
@@ -660,15 +661,15 @@ class ClientService(object):
 
 
     def uploadFileToCDN(self, filePath, responseDict, sendResponse = True):
-        '''LOG.info ("Uploading task in thread")
+        LOG.info ("Uploading task in thread")
         if self.uploadThread and self.uploadThread.isAlive():
             LOG.warn ("Upload threading is already uploading hence waiting for upload to finish")
             self.uploadThread.join()
 
         self.uploadThread = threading.Thread(target=self.uploadAndUpdateDB, args=(filePath, responseDict, sendResponse))
-        self.uploadThread.start()'''
+        self.uploadThread.start()
 
-        self.uploadAndUpdateDB(filePath, responseDict, sendResponse)
+        #self.uploadAndUpdateDB(filePath, responseDict, sendResponse)
         
     def stopCapture(self, responseDict):
         if not self.capturing:
@@ -744,7 +745,7 @@ class ClientService(object):
                     responseDict = {}    
                     responseDict["id"] = self.encryptedid                                                  
                     LOG.info ("Timeout stopping the capturing")
-                    sendCaptureResponse(UPLOADING, self.encryptedid)
+                    sendCaptureResponse(UPLOADING, self.encryptedid, self.scheduleid)
                     self.stopCapture(responseDict)
                     """ res = self.stopCapture(responseDict)
                     if 'videoKey' in res.keys():
