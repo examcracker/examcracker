@@ -447,6 +447,10 @@ class editCourse(coursePageBase):
             raise Http404()
         kwargs["courseId"] = courseid
         kwargs["isCourseContent"] = True
+        kwargs["hasStudents"] = "false"
+        courseEnrollObj = course.models.EnrolledCourse.objects.filter(course_id=courseid)
+        if courseEnrollObj:
+            kwargs["hasStudents"] = "true"
         return super().get(request, *args, **kwargs)
 
 class viewSessions(LoginRequiredMixin, generic.TemplateView):
@@ -469,6 +473,31 @@ class viewCourses(showProviderHome):
             kwargs["providerId"] = providerObj.id
             courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
             kwargs["courses"] = course.algos.getCourseDetailsForCards(request, courseList)
+        return super().get(request, *args, **kwargs)
+
+class deleteCourse(viewCourses):
+    http_method_names = ['post']
+
+    def post(self, request, id, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)
+        if len(courseObj) == 0:
+            raise Http404()
+        courseObj = courseObj[0]
+        providerObj = getProvider(request)
+        if courseObj.provider_id != providerObj.id:
+            raise Http404()
+        # now delete everything related to this course
+        courseChapterObj  = course.models.CourseChapter.objects.filter(course_id=id)
+        if courseChapterObj:
+            courseChapterObj.delete()
+        
+        courseReviewObj = course.models.CourseReview.objects.filter(course_id=id)
+        if courseReviewObj:
+            courseReviewObj.delete()
+        courseObj.delete()
         return super().get(request, *args, **kwargs)
 
 class ProviderProfile(profiles.views.MyProfile):

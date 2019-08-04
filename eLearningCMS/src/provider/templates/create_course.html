@@ -22,6 +22,11 @@
 </ol>
 </div>
 {% if editCourse %}
+<form class="form-inline" action="{% url 'provider:delete_course' editCourse.id %}" id="deleteMyCourse"  method="post" enctype="multipart/form-data"> {% csrf_token %}
+	<button class="btn btn-outline-dark btn-lg float-right" type="button" id="deleteCourseButton" title = "Delete this course"
+	onclick="deleteMyCourse(this)" {% if not editCourse %} disabled {% endif %} >Delete</button>
+</form>
+
 <a href="{% url 'course:coursePage' editCourse.id %}" id="previewCourseButton" class="btn btn-outline-secondary btn-lg mx-2 px-2" role="button" aria-pressed="true">Preview</a>
 
 {% if not editContentDisable %}
@@ -158,6 +163,19 @@
 		</div>
 </div>
 <script>
+   function deleteMyCourse(el) {
+        // first upload all lectures , then publish
+		var hasStudents = "{{hasStudents}}";
+		if (hasStudents == "true") {
+			alert('Course has enrollments. Cant delete');
+			return false;
+		}
+        if(!confirm('Do you want to delete this course ?')){
+            return false;
+        }
+        $('#deleteMyCourse').submit();
+        return true;
+    }
 
       function readURL(input,imgId) {
         if (input.files && input.files[0]) {
