@@ -120,133 +120,139 @@ def sendCaptureResponse(state, id, scheduleid, streamName=None):
     httpReq.send(serviceObj.url, "/schedule/captureState/" + str(scheduleid), json.dumps(data))
 
 def on_message(message):
-    #LOG.info(str(message))
-    global serviceObj
-    responseDict = {}
-    # always add encrypted provider id in response
-    responseDict["id"] = serviceObj.encryptedid
-    messageDict = json.loads(message)
+    try:
+        #LOG.info(str(message))
+        global serviceObj
+        responseDict = {}
+        # always add encrypted provider id in response
+        responseDict["id"] = serviceObj.encryptedid
+        messageDict = json.loads(message)
 
-    if "command" in messageDict.keys():
-        machine = messageDict["machine"]
-        # check if this client is intended recipient
-        if machine != systemname:
-            LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
-            return
-        command = messageDict["command"]
-        LOG.info("Command recieved: " + str(command))
-        if command == api.command_start:
-            if serviceObj.capturing:
-                responseDict["result"] = api.status_capture_started
-            else:
-                responseDict["result"] = api.status_start_success
-                serviceObj.scheduleid = messageDict["id"]
-                serviceObj.chapterid = messageDict["chapterid"]
-                serviceObj.publish = messageDict["publish"]
-                serviceObj.encrypted = messageDict["encrypted"]
-                serviceObj.drmkeyid = messageDict["drmkeyid"]
-                serviceObj.drmkey = messageDict["drmkey"]
-                serviceObj.mediaServer = messageDict["mediaServer"]
-                serviceObj.mediaServerApp = messageDict["mediaServerApp"]
-                serviceObj.live = messageDict["live"]
-                serviceObj.timeout = int(messageDict["duration"])*60
-                serviceObj.dokey = messageDict["dokey"]
-                serviceObj.dokeysecret = messageDict["dokeysecret"]
-                serviceObj.bucketname = messageDict["bucketname"]
-                serviceObj.multiBitRate = messageDict["multiBitRate"]
-                serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
-                serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
-                sendCaptureResponse(RUNNING, serviceObj.encryptedid, serviceObj.scheduleid, serviceObj.liveStreamName)
-                serviceObj.startCapture()
-        elif command == api.command_stop:
-            if not serviceObj.capturing:
-                responseDict["result"] = api.status_no_capture_started
-                serviceObj.scheduleid = messageDict["id"]
-                sendCaptureResponse(STOPPED, serviceObj.encryptedid, serviceObj.scheduleid)
-                #res = serviceObj.stopCapture(responseDict)
-                serviceObj.stopCapture(responseDict)
-            else:
-                sendCaptureResponse(UPLOADING, serviceObj.encryptedid, serviceObj.scheduleid)
-                serviceObj.stopCapture(responseDict)
-                """ res = serviceObj.stopCapture(responseDict)
+        if "command" in messageDict.keys():
+            machine = messageDict["machine"]
+            # check if this client is intended recipient
+            if machine != systemname:
+                LOG.error("Mismatch in the machine name, input name: " + str(machine) + " actual name is: " + str(systemname))
+                return
+            command = messageDict["command"]
+            LOG.info("Command recieved: " + str(command))
+            if command == api.command_start:
+                if serviceObj.capturing:
+                    responseDict["result"] = api.status_capture_started
+                else:
+                    responseDict["result"] = api.status_start_success
+                    serviceObj.scheduleid = messageDict["id"]
+                    serviceObj.chapterid = messageDict["chapterid"]
+                    serviceObj.publish = messageDict["publish"]
+                    serviceObj.encrypted = messageDict["encrypted"]
+                    serviceObj.drmkeyid = messageDict["drmkeyid"]
+                    serviceObj.drmkey = messageDict["drmkey"]
+                    serviceObj.mediaServer = messageDict["mediaServer"]
+                    serviceObj.mediaServerApp = messageDict["mediaServerApp"]
+                    serviceObj.live = messageDict["live"]
+                    serviceObj.timeout = int(messageDict["duration"])*60
+                    serviceObj.dokey = messageDict["dokey"]
+                    serviceObj.dokeysecret = messageDict["dokeysecret"]
+                    serviceObj.bucketname = messageDict["bucketname"]
+                    serviceObj.multiBitRate = messageDict["multiBitRate"]
+                    serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
+                    serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
+                    sendCaptureResponse(RUNNING, serviceObj.encryptedid, serviceObj.scheduleid, serviceObj.liveStreamName)
+                    serviceObj.startCapture()
+            elif command == api.command_stop:
+                if not serviceObj.capturing:
+                    responseDict["result"] = api.status_no_capture_started
+                    serviceObj.scheduleid = messageDict["id"]
+                    sendCaptureResponse(STOPPED, serviceObj.encryptedid, serviceObj.scheduleid)
+                    serviceObj.stopCapture(responseDict)
+                else:
+                    try:
+                        sendCaptureResponse(UPLOADING, serviceObj.encryptedid, serviceObj.scheduleid)
+                    except Exception as ex:
+                        LOG.error("Exception in sending capture response: " + str(ex))
+                    serviceObj.stopCapture(responseDict)
+                        
+                    """ res = serviceObj.stopCapture(responseDict)
+                    if 'videoKey' in res.keys():
+                        responseDict["result"] = api.status_stop_success
+                        responseDict["videokey"] = res["videoKey"]
+                        responseDict["duration"] = serviceObj.duration
+                        responseDict["sessionName"] = res["sessionName"]
+                    else:
+                        responseDict["result"] = api.status_upload_fail
+                        responseDict["fail_response"] = res
+                        
+                    responseDict["chapterid"] = serviceObj.chapterid
+                    responseDict["publish"] = serviceObj.publish
+                    responseDict["encrypted"] = serviceObj.encrypted
+                    responseDict["drmkeyid"] = serviceObj.drmkeyid
+                    responseDict["drmkey"] = serviceObj.drmkey
+
+                    responseDict["id"] = serviceObj.clientid
+                    #import pdb; pdb.set_trace()
+                    apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                    retryCount = 0
+                    while apiResponse.status_code != 200:
+                        LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
+                        time.sleep(10)
+                        apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                        retryCount += 1
+                        if retryCount > 10:
+                            LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
+                            break
+
+                    serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName) """
+
+                    #LOG.info ("Stop command completed")
+
+            elif command == api.command_upload_logs:
+                lineCount = 50
+                if 'lineCount' in messageDict.keys():
+                    lineCount = messageDict["lineCount"]
+                logData = ""
+                with open(logger.logFileName) as fin:
+                    logData = fin.readlines()[-lineCount:]
+                responseDict["logs"] = logData
+                httpReq.send(serviceObj.url, "/cdn/logData/", json.dumps(responseDict))
+            elif command == api.command_get_recent_capture_file_details:
+                if serviceObj.capture.outputFileName != "":
+                    responseDict['filePath'] = str(serviceObj.capture.outputFileName)
+                else:
+                    list_of_files = glob.glob( serviceObj.capture.outputFolder + r'\*.mp4')
+                    responseDict['filePath'] = max(list_of_files, key=os.path.getctime)
+
+                responseDict["scheduleid"] = serviceObj.scheduleid
+                responseDict["chapterid"] = serviceObj.chapterid
+                responseDict["publish"] = serviceObj.publish
+                httpReq.send(serviceObj.url, "/cdn/getFileDetails/", json.dumps(responseDict))
+            elif command == api.command_upload_file:
+                filePath = messageDict["filePath"]
+                
+                serviceObj.uploadFileToCDN(filePath, responseDict)
+                """ res = serviceObj.uploadFileToCDN(filePath, responseDict)
                 if 'videoKey' in res.keys():
-                    responseDict["result"] = api.status_stop_success
+                    responseDict["result"] = api.status_upload_sucess
                     responseDict["videokey"] = res["videoKey"]
-                    responseDict["duration"] = serviceObj.duration
                     responseDict["sessionName"] = res["sessionName"]
+                    httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
                 else:
                     responseDict["result"] = api.status_upload_fail
                     responseDict["fail_response"] = res
-                    
-                responseDict["chapterid"] = serviceObj.chapterid
-                responseDict["publish"] = serviceObj.publish
-                responseDict["encrypted"] = serviceObj.encrypted
-                responseDict["drmkeyid"] = serviceObj.drmkeyid
-                responseDict["drmkey"] = serviceObj.drmkey
 
-                responseDict["id"] = serviceObj.clientid
-                #import pdb; pdb.set_trace()
-                apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-                retryCount = 0
-                while apiResponse.status_code != 200:
-                    LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
-                    time.sleep(10)
-                    apiResponse = httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-                    retryCount += 1
-                    if retryCount > 10:
-                        LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
-                        break
+                responseDict["chapterid"] = messageDict["chapterid"]
+                responseDict["publish"] = messageDict["publish"]
+                responseDict["id"] = messageDict["id"]
+                httpReq.send(serviceObj.url, "/cdn/uploadFileStatus/", json.dumps(responseDict))
 
-                serviceObj.uploadOriginalFileToCDN(serviceObj.capture.outputFileName) """
-
-                #LOG.info ("Stop command completed")
-
-        elif command == api.command_upload_logs:
-            lineCount = 50
-            if 'lineCount' in messageDict.keys():
-                lineCount = messageDict["lineCount"]
-            logData = ""
-            with open(logger.logFileName) as fin:
-                logData = fin.readlines()[-lineCount:]
-            responseDict["logs"] = logData
-            httpReq.send(serviceObj.url, "/cdn/logData/", json.dumps(responseDict))
-        elif command == api.command_get_recent_capture_file_details:
-            if serviceObj.capture.outputFileName != "":
-                responseDict['filePath'] = str(serviceObj.capture.outputFileName)
-            else:
-                list_of_files = glob.glob( serviceObj.capture.outputFolder + r'\*.mp4')
-                responseDict['filePath'] = max(list_of_files, key=os.path.getctime)
-
-            responseDict["scheduleid"] = serviceObj.scheduleid
-            responseDict["chapterid"] = serviceObj.chapterid
-            responseDict["publish"] = serviceObj.publish
-            httpReq.send(serviceObj.url, "/cdn/getFileDetails/", json.dumps(responseDict))
-        elif command == api.command_upload_file:
-            filePath = messageDict["filePath"]
-            
-            serviceObj.uploadFileToCDN(filePath, responseDict)
-            """ res = serviceObj.uploadFileToCDN(filePath, responseDict)
-            if 'videoKey' in res.keys():
-                responseDict["result"] = api.status_upload_sucess
-                responseDict["videokey"] = res["videoKey"]
-                responseDict["sessionName"] = res["sessionName"]
-                httpReq.send(serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-            else:
-                responseDict["result"] = api.status_upload_fail
-                responseDict["fail_response"] = res
-
-            responseDict["chapterid"] = messageDict["chapterid"]
-            responseDict["publish"] = messageDict["publish"]
-            responseDict["id"] = messageDict["id"]
-            httpReq.send(serviceObj.url, "/cdn/uploadFileStatus/", json.dumps(responseDict))
-
-            serviceObj.uploadOriginalFileToCDN(filePath) """
-            
-        elif command == api.command_check_client_active:
-            responseDict['result'] = api.status_client_active
-            httpReq.send(serviceObj.url, "/cdn/clientState/", json.dumps(responseDict))
-    else:
-        LOG.warn("Unhandled command: " + str(messageDict.keys()))
+                serviceObj.uploadOriginalFileToCDN(filePath) """
+                
+            elif command == api.command_check_client_active:
+                responseDict['result'] = api.status_client_active
+                httpReq.send(serviceObj.url, "/cdn/clientState/", json.dumps(responseDict))
+        else:
+            LOG.warn("Unhandled command: " + str(messageDict.keys()))
+    except Exception as ex:
+        LOG.error("Exception in on message: " + str(ex))
 
 def connect_handler(data):
     #print(data)
