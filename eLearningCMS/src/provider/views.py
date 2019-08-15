@@ -826,7 +826,7 @@ class ProviderCourseDetails(generic.TemplateView):
         result['clientid'] = providerObj.encryptedid
         result['bucketname'] = providerObj.bucketname
         result['courses'] = []
-        result['multiBitRate'] = True
+        result['multiBitRate'] = False
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         for c in courses:
             coursedict = {}
