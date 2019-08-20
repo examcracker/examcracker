@@ -173,6 +173,7 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
     def get(self, request, *args, **kwargs):
         
         scheduleObj = models.Schedule.objects.filter(running=1)
+        kwargs["disableKeys"] = "true"
         if not scheduleObj:
             return super().get(request, *args, **kwargs)
         if request.user.is_staff:
@@ -225,6 +226,7 @@ class addShowSchedule(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
+        kwargs["disableKeys"] = "false"
         locations = []
         locationObj = provider.models.System.objects.filter(provider_id=providerObj.id)
         for location in locationObj:

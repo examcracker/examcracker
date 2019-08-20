@@ -102,7 +102,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notificationsCount"] = unseenNotifications
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
-
+        kwargs["disableKeys"] = "false"
         providerObj = getProvider(request)
         if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
             kwargs["not_approved"] = True
