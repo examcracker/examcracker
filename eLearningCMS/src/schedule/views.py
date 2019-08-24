@@ -342,13 +342,16 @@ def getStreamUrl(streamname):
     url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
     return url
 
-#LoginRequiredMixin
-class playStream(LoginRequiredMixin,generic.TemplateView):
-    template_name="playSchedule.html"
+class playStream(LoginRequiredMixin, generic.TemplateView):
+    template_name = "playSchedule.html"
     http_method_names = ['get']
 
+    def check(self, kwargs):
+        for tag in course.tags.playSessionEncTags:
+            if not tag in kwargs:
+                kwargs[tag] = ""
+
     def get(self, request, scheduleid, *args, **kwargs):
-        
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
         OFUSCATE_JW = True
         kwargs["disableKeys"] = "true"
@@ -426,11 +429,12 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         kwargs["user_email"] = request.user.email
         kwargs["userip"] = ip
+
+        self.check(kwargs)
+
         response = super().get(request, scheduleid, *args, **kwargs)
         response.set_cookie('GyaanHiveIP', ip)
         return response
-        #return super().get(request, scheduleid, *args, **kwargs)
-
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
