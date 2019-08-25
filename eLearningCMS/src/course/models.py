@@ -108,6 +108,7 @@ class EnrolledCourse(models.Model):
     active = models.BooleanField(default=True)
     expiry = models.DateTimeField(default=datetime.now()) # => expiry data of course for this student.
     remarks = models.CharField(max_length=1000, default="Active")
+    accessdevice = models.CharField(max_length=1000, default="any")
 
 class SessionStats(models.Model):
     session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)

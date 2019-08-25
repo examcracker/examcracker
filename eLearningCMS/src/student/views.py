@@ -54,7 +54,9 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
         studentObj = getStudent(request)
+        courseIds = course.algos.getEnrolledCourseIds(request)
         myCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+        myCourses = myCourses.filter(course_id__in=courseIds)
         kwargs["courses"] = len(myCourses)
         viewMinutes = 0
         for c in myCourses:
@@ -120,6 +122,8 @@ class myCourses(LoginRequiredMixin, generic.TemplateView):
         studentObj = getStudent(request)
         #myCourses = course.models.Course.objects.raw('SELECT * FROM course_course WHERE id IN (SELECT course_id FROM course_enrolledcourse WHERE student_id = ' + str(studentObj.id) + ')')
         myEnrolledCourses = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+        courseIds = course.algos.getEnrolledCourseIds(request)
+        myEnrolledCourses = myEnrolledCourses.filter(course_id__in=courseIds)
         myCourses = course.models.Course.objects.filter(id__in=myEnrolledCourses.values('course_id'))
         kwargs["courses"] = course.algos.getCourseDetailsForCards(request, myCourses)
         return super().get(request, *args, **kwargs)
@@ -137,8 +141,11 @@ class courseDetails(LoginRequiredMixin, generic.TemplateView):
 
         sessionsInCourse = provider.models.Session.objects.raw('SELECT * FROM provider_session WHERE id IN (SELECT session_id from course_coursepattern WHERE course_id = ' + str(courseObj.id) + ') ORDER BY uploaded')
         kwargs["included_sessions"] = sessionsInCourse
-
-        present = len(course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id,active=True))
+        courseIds = course.algos.getEnrolledCourseIds(request)
+        myEnrolledCourses = course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id,active=True)
+        myEnrolledCourses = myEnrolledCourses.objects.filter(course_id__in=courseIds)
+        #present = len(course.models.EnrolledCourse.objects.filter(course_id=courseid, student_id=studentObj.id,active=True))
+        present = len(myEnrolledCourses)
         if present == 0:
             kwargs["not_joined"] = True
         return super().get(request, id, *args, **kwargs)
@@ -148,7 +155,7 @@ class courseDetails(LoginRequiredMixin, generic.TemplateView):
         courseObj = course.models.Course.objects.filter(id=courseid)[0]
 
         studentObj = models.Student.objects.filter(user_id=request.user.id)[0]
-
+        # sudomain not done
         enrolledCourseObj = course.models.EnrolledCourse()
         enrolledCourseObj.student = studentObj
         enrolledCourseObj.course = courseObj
@@ -200,6 +207,8 @@ class showProgress(LoginRequiredMixin, generic.TemplateView):
         courseDictMap["myCourse"] = False
 
         enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+        courseIds = course.algos.getEnrolledCourseIds(request)
+        enrolledCourseObj = enrolledCourseObj.filter(course_id__in=courseIds)
         if len(enrolledCourseObj) > 0:
             courseDictMap["myCourse"] = True
 
@@ -295,7 +304,12 @@ class view_hours(LoginRequiredMixin, generic.TemplateView):
         studentObj = getStudent(request)
         if not studentObj:
             raise Http404()
+        sd = course.algos.getSubDomain(request)
+        subDomainObj = provider.models.Subdomain.objects.filter(subdomain = sd)
         providerObjs = provider.models.Provider.objects.all()
+        if subDomainObj:
+            subDomainObj = subDomainObj[0]
+            providerObjs = providerObjs.filter(id=subDomainObj.provider_id)
         viewHoursProviderWise = []
         for providerObj in providerObjs:
             providerInfo = {}

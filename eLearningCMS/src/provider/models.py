@@ -61,4 +61,8 @@ class Plan(models.Model):
     expiry = models.DateTimeField(default=datetime.now())
     startdate = models.DateTimeField(default=datetime.now())
 
+class Subdomain(models.Model):
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    subdomain = models.CharField(max_length=500)
+
 

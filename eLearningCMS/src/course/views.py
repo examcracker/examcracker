@@ -273,6 +273,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             #if studentObj.id == 9:
             #    kwargs["cdnName"] = "b-cdn.net"
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+            
+            if not algos.isCourseAllowed(request,courseObj.id):
+                raise Http404()
+
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id,active=True)
             if len(enrolledCourse) == 0:
                 raise Http404()
