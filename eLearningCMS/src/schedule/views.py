@@ -148,7 +148,8 @@ def isAnyEventLive(request):
     else:
         # Get live events of enrolled courses
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+        courseIds = course.algos.getEnrolledCourseIds(request)
+        enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True,course_id__in=courseIds)
         chaptersList = []
         for ec in enrolledCourseObj:
             if ec.chapteraccess == '':
@@ -173,6 +174,7 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
     def get(self, request, *args, **kwargs):
         
         scheduleObj = models.Schedule.objects.filter(running=1)
+        kwargs["disableKeys"] = "true"
         if not scheduleObj:
             return super().get(request, *args, **kwargs)
         if request.user.is_staff:
@@ -182,7 +184,8 @@ class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
         else:
             # Get live events of enrolled courses
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
-            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+            courseIds = course.algos.getEnrolledCourseIds(request)
+            enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True,course_id__in=courseIds)
             chaptersList = []
             for ec in enrolledCourseObj:
                 if ec.chapteraccess == '':
@@ -225,6 +228,7 @@ class addShowSchedule(showProviderHome):
             raise Http404()
 
         providerObj = getProvider(request)
+        kwargs["disableKeys"] = "false"
         locations = []
         locationObj = provider.models.System.objects.filter(provider_id=providerObj.id)
         for location in locationObj:
@@ -340,13 +344,16 @@ def getStreamUrl(streamname):
     url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
     return url
 
-#LoginRequiredMixin
-class playStream(LoginRequiredMixin,generic.TemplateView):
-    template_name="playSchedule.html"
+class playStream(LoginRequiredMixin, generic.TemplateView):
+    template_name = "playSchedule.html"
     http_method_names = ['get']
 
+    def check(self, kwargs):
+        for tag in course.tags.playSessionEncTags:
+            if not tag in kwargs:
+                kwargs[tag] = ""
+
     def get(self, request, scheduleid, *args, **kwargs):
-        
         scheduleObj = schedule.models.Schedule.objects.filter(id=scheduleid)
         OFUSCATE_JW = True
         kwargs["disableKeys"] = "true"
@@ -388,7 +395,9 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
             courseChapterObj = courseChapterObj[0]
 
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+            courseIds = course.algos.getEnrolledCourseIds(request)
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id,active=True)
+            enrolledCourseObj = enrolledCourseObj.objects.filter(course_id__in=courseIds)
             if not enrolledCourseObj:
                 raise Http404()
             enrolledCourseObj = enrolledCourseObj[0]
@@ -424,11 +433,12 @@ class playStream(LoginRequiredMixin,generic.TemplateView):
         kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         kwargs["user_email"] = request.user.email
         kwargs["userip"] = ip
+
+        self.check(kwargs)
+
         response = super().get(request, scheduleid, *args, **kwargs)
         response.set_cookie('GyaanHiveIP', ip)
         return response
-        #return super().get(request, scheduleid, *args, **kwargs)
-
 
 class startCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']

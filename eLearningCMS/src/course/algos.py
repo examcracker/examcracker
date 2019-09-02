@@ -349,3 +349,47 @@ def getCoursesForSession(session_id):
 
   finalCourses = models.Course.objects.filter(query)
   return finalCourses
+
+def getSubDomain(request):
+  host = request.META['HTTP_HOST']
+  
+  '''
+  host = https://www.gyaanhive.com
+  With subDomain, it will be 
+  host = https://www.subdomain.gyaanhive.com 
+  '''
+  hostStr = host.split('.')
+  if len(hostStr) > 1:
+    return hostStr[1]
+  return hostStr[0]
+
+def getEnrolledCourseIds(request):
+  # first check if subdomain exists in request
+  #first get the student from request
+  courseids = []
+  studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
+  sd = getSubDomain(request)
+  subDomainObj = provider.models.Subdomain.objects.filter(subdomain = sd)
+  enrolledCoursesObj = models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
+
+  if subDomainObj:
+    subDomainObj = subDomainObj[0]
+    coursesObj = models.Course.objects.filter(provider_id = subDomainObj.provider_id)
+    if coursesObj:
+      cids = coursesObj.values('id')
+      enrolledCoursesObj = enrolledCoursesObj.filter(course_id__in=cids)
+
+  for ec in enrolledCoursesObj:
+    courseids.append(ec.course_id)
+  
+  return courseids
+
+def isCourseAllowed(request,courseid):
+  sd = getSubDomain(request)
+  subDomainObj = provider.models.Subdomain(subdomain = sd)
+  if subDomainObj:
+    subDomainObj = subDomainObj[0]
+    coursesObj = models.Course.objects.filter(provider_id = subDomainObj.provider_id,id=courseid)
+    if coursesObj:
+      return True
+  return False

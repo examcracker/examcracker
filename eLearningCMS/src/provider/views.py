@@ -28,6 +28,7 @@ import base64
 import string
 import random
 
+
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
@@ -102,7 +103,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notificationsCount"] = unseenNotifications
         notifications = notifications.filter(saw=False)
         kwargs["notifications"] = reversed(notifications)
-
+        kwargs["disableKeys"] = "false"
         providerObj = getProvider(request)
         if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
             kwargs["not_approved"] = True
@@ -777,9 +778,11 @@ Gyaanhive Team</p>'
                 enrolledCourse.save()
                 # creare user
             # remove course enrollment here
-            coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+            providerObj = getProvider(request)
+            allcourses = course.models.Course.objects.filter(provider_id=providerObj.id)
+            coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id__in=allcourses.values('id'))
             if len(courseEnrolledList) != 0:
-                coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).exclude(course_id__in=courseEnrolledList)
+                coursesToDelete = coursesToDelete.exclude(course_id__in=courseEnrolledList)
             if  coursesToDelete:
                 for cd in coursesToDelete:
                     cd.active= False
@@ -814,7 +817,12 @@ class ProviderCourseDetails(generic.TemplateView):
             return JsonResponse(result)
 
         providerObj = providerObj[0]
-
+        providerPlanObj = models.Plan.objects.filter(provider_id=providerObj.id)
+        if providerPlanObj:
+            providerPlanObj = providerPlanObj[0]
+            result['multiBitRate'] = providerPlanObj.multibitrate
+        else:
+            result['multiBitRate'] = False
         result['result'] = True
         result['dokey'] = settings.DIGITAL_OCEAN_SPACE_KEY
         result['dosecret'] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
@@ -826,7 +834,6 @@ class ProviderCourseDetails(generic.TemplateView):
         result['clientid'] = providerObj.encryptedid
         result['bucketname'] = providerObj.bucketname
         result['courses'] = []
-        result['multiBitRate'] = True
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         for c in courses:
             coursedict = {}

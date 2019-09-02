@@ -22,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from . import models
 import course
 from course import algos
+from course import tags
 import cdn
 import provider
 import student
@@ -272,6 +273,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             #if studentObj.id == 9:
             #    kwargs["cdnName"] = "b-cdn.net"
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+            
+            if not algos.isCourseAllowed(request,courseObj.id):
+                raise Http404()
+
             enrolledCourse = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id).filter(course_id=courseChapterObj.course_id,active=True)
             if len(enrolledCourse) == 0:
                 raise Http404()
@@ -341,6 +346,11 @@ class playSessionEnc(playSession):
     http_method_names = ['get']
     template_name = 'playSessionEnc.html'
 
+    def check(self, kwargs):
+        for tag in tags.playSessionEncTags:
+            if not tag in kwargs:
+                kwargs[tag] = ""
+
     def get(self, request, chapterid, sessionid, *args, **kwargs):
         sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
 
@@ -357,6 +367,8 @@ class playSessionEnc(playSession):
             kwargs["key"] = settings.DRM_KEY
         kwargs["user_email"] = request.user.email
         kwargs["userip"] = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
+
+        self.check(kwargs)
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class addReview(LoginRequiredMixin, generic.TemplateView):

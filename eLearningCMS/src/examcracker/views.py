@@ -111,6 +111,9 @@ class HomePage(fillCartCourses):
         phone = self.request.POST.get('phone','')
         message = self.request.POST.get('message','')
         subject = self.request.POST.get('subject','')
+        userDetails = course.algos.getUserNameAndPic(request.user.id)
+        if userDetails :
+            email = userDetails['email']
         try:
             emailSub = 'Query from '+ name
             emailBody = 'Hello GyaanHive,\n'
