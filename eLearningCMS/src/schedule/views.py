@@ -397,7 +397,7 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             courseIds = course.algos.getEnrolledCourseIds(request)
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id=courseChapterObj.course_id,active=True)
-            enrolledCourseObj = enrolledCourseObj.objects.filter(course_id__in=courseIds)
+            enrolledCourseObj = enrolledCourseObj.filter(course_id__in=courseIds)
             if not enrolledCourseObj:
                 raise Http404()
             enrolledCourseObj = enrolledCourseObj[0]
