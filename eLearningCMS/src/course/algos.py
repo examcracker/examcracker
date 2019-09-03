@@ -386,10 +386,12 @@ def getEnrolledCourseIds(request):
 
 def isCourseAllowed(request,courseid):
   sd = getSubDomain(request)
-  subDomainObj = provider.models.Subdomain(subdomain = sd)
+  subDomainObj = provider.models.Subdomain.objects.filter(subdomain=sd)
   if subDomainObj:
     subDomainObj = subDomainObj[0]
     coursesObj = models.Course.objects.filter(provider_id = subDomainObj.provider_id,id=courseid)
     if coursesObj:
       return True
-  return False
+    else:
+      return False
+  return True
