@@ -31,6 +31,7 @@ import profiles
 import payments
 import json
 from django.http import HttpResponse
+from access.views import parse_user_agents
 
 User = get_user_model()
 OFUSCATE_JW = True
@@ -263,6 +264,14 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         if str(sessionid) not in sessions:
             raise Http404()
         allowedModules = []
+
+        # get details for dynamic watermark 
+        
+        user_ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
+        user_email = request.user.email
+        kwargs["userip"] = user_ip
+        kwargs["user_email"] = user_email
+        
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
             index = sessions.index(str(sessionid))
@@ -299,7 +308,10 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             if allotedHours > 0:
                 kwargs["disableaccess"] = True
 
+            deviceinfo = parse_user_agents(request)
             kwargs["isOwner"] = 'no'
+            # save student stats here
+            student.views.fillStudentPlayStats(studentObj.id,sessionid,user_ip,user_email,deviceinfo)
 
             # updating the playing session stats
             self.updateSessionStats(request.user.id, sessionid)
@@ -365,8 +377,6 @@ class playSessionEnc(playSession):
         else:
             kwargs["keyid"] = settings.DRM_KEY_ID
             kwargs["key"] = settings.DRM_KEY
-        kwargs["user_email"] = request.user.email
-        kwargs["userip"] = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[-1].strip()
 
         self.check(kwargs)
         return super().get(request, chapterid, sessionid, *args, **kwargs)
