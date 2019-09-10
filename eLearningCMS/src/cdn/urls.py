@@ -19,4 +19,5 @@ urlpatterns = [
     path('getFileDetails/<int:providerId>/<str:machineName>', views.getFileDetails),
     path('uploadFile/<int:scheduleId>/<str:machineName>/<str:fileName>', views.postUploadFile),
     path('uploadFileStatus/', views.saveFileUpload.as_view(), name='uploadFileStatus'),
+    path('providerStudents/<int:start>/<int:end>/<int:courseid>', views.getProviderStudents),
 ]
