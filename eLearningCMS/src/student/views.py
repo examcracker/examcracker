@@ -339,9 +339,13 @@ def fillStudentPlayStats(studentid,sessionid,user_ip,user_email,device):
     statsObj = models.StudentPlayStats()
     statsObj.student_id = studentid
     statsObj.ipaddress = user_ip
-    statsObj.session_id = sessionid
-    sessionObj = provider.models.Session.objects.filter(id=sessionid)[0]
-    statsObj.sessionname = sessionObj.name
+    #statsObj.session_id = sessionid
+    # sessionid = -1 for live
+    if sessionid != -1:
+        sessionObj = provider.models.Session.objects.filter(id=sessionid)
+        statsObj.sessionname = sessionObj[0].name
+    else:
+        statsObj.sessionname = "Live"
     browser = device["browser"]
     devicetype = device["device_type"]
     deviceinfo = 'Browser = ' + browser + '  and device = ' + devicetype

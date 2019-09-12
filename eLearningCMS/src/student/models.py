@@ -16,7 +16,6 @@ class StudentDeviceStats(models.Model):
 
 class StudentPlayStats(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    session = models.ForeignKey(provider.models.Session, on_delete=models.CASCADE)
     sessionname = models.CharField(max_length=1000, blank=True)
     lastplayedtime = models.FloatField(default=0)
     date = models.DateTimeField(auto_now_add=True)
