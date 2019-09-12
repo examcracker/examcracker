@@ -23,6 +23,7 @@ import time
 import datetime
 import json
 import schedule
+import student
 from examcracker import thread
 # crypto
 from Crypto.Random import get_random_bytes
@@ -372,3 +373,39 @@ class saveFileUpload(generic.TemplateView):
         fileUploadObj.save()
         return schedule.views.HttpResponseNoContent()
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getProviderStudents(request, start, end, courseid):
+    if not request.user.is_staff:
+        return Response({"status":False})
+
+    courseObj = course.models.Course.objects.filter(id=courseid)[0]
+    studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
+
+    studentList = []
+
+    if start < 0:
+        start = 0
+    if start >= len(studentsObj):
+        start = len(studentsObj) - 1
+    count = start
+    if end < 0:
+        end = len(studentsObj) - 1
+    if end >= len(studentsObj):
+        end = len(studentsObj) - 1
+
+    while count <= end:
+        studentItem = studentsObj[count]
+        studentInfo = {}
+        studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
+        studentInfo['id'] = studentDetails.id
+        studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
+        studentInfo['enrolled_date'] = studentItem.enrolled
+        studentInfo['remarks'] = studentItem.remarks
+        studentInfo['viewhours'] = studentItem.viewhours
+        studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
+        studentList.append(studentInfo)
+        count = count + 1
+
+    return Response({"status":True, "students":studentList})
