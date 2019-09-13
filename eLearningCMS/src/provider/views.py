@@ -27,7 +27,8 @@ import base64
 
 import string
 import random
-
+import csv
+from django.http import HttpResponse
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -872,3 +873,16 @@ class ProviderCourseDetails(generic.TemplateView):
             result['courses'].append(coursedict)
 
         return JsonResponse(result)
+
+def export_users_csv(request,studentid):
+    response = HttpResponse(content_type='text/csv')
+    studentObj = student.models.Student.objects.filter(id=studentid)[0]
+    studentname = course.algos.getUserNameAndPic(studentObj.user_id)['name']
+    response['Content-Disposition'] = 'attachment; filename=' + studentname + '.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Date','IP Address', 'Session Name', 'Device Info'])
+    studentStatsObj = student.models.StudentPlayStats.objects.filter(student_id=studentid)
+    for stat in studentStatsObj:
+        writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
+    return response

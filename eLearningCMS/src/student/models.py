@@ -21,4 +21,5 @@ class StudentPlayStats(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     ipaddress = models.CharField(max_length=200, blank=True)
     deviceinfo = models.CharField(max_length=1000, blank=True)
+    otherinfo = models.CharField(max_length=1000, blank=True)
 
