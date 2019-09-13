@@ -131,6 +131,106 @@ function calltablestoexcel() {
   //tablesToExcel(tabs, courseNames, 'students.xls', 'Excel');
 }
 
+function createTable(students) {
+  var body = document.getElementById('students');
+  body.innerHTML = "";
+
+  var tbl = document.createElement('table');
+  tbl.style.width = '100%';
+  tbl.setAttribute("class", "table table-striped table-bordered");
+
+  var thead = document.createElement('thead');
+  var tr = thead.insertRow();
+
+  var th1 = document.createElement('th');
+  th1.setAttribute("scope", "column");
+  th1.textContent = "#";
+  var th2 = document.createElement('th');
+  th2.textContent = "Name";
+  var th3 = document.createElement('th');
+  th3.textContent = "Joined on";
+  var th4 = document.createElement('th');
+  th4.textContent = "Status";
+  var th5 = document.createElement('th');
+  th5.textContent = "Available (hrs)";
+  var th6 = document.createElement('th');
+  th6.textContent = "Viewed (mins)";
+
+  tr.appendChild(th1);
+  tr.appendChild(th2);
+  tr.appendChild(th3);
+  tr.appendChild(th4);
+  tr.appendChild(th5);
+  tr.appendChild(th6);
+
+  tbl.appendChild(thead);
+
+  for (var i=0; i <students.length; i++) {
+    var student = students[i];
+    var tr = tbl.insertRow();
+    var td = tr.insertCell();
+    td.textContent = i+1;
+
+    td = tr.insertCell();
+    td.textContent = student.name;
+    td = tr.insertCell();
+    td.textContent = student.enrolled_date;
+    td = tr.insertCell();
+    td.textContent = student.remarks;
+
+    td = tr.insertCell();
+    if (student.viewhours > 0)
+      td.textContent = student.name;
+    else
+      td.textContent = "NA";
+
+    td = tr.insertCell();
+    if (student.viewhours > 0)
+      td.textContent = student.completedminutes;
+    else
+      td.textContent = "NA";
+
+    td = tr.insertCell();
+    var innerhtml = "<a class=\"btn btn-primary\" href=\"{% url 'provider:add_students' 0 %}\" title=\"Edit Access\"></a>";
+    td.innerHTML = innerhtml.replace("0", student.id);
+
+    td = tr.insertCell();
+    innerhtml = "<a class=\"btn\" href=\"{% url 'provider:export_studentdata' 0 %}\" title=\"Export Student Data\"><div style=\"font-size: 12px;\"><i class=\"fa fa-download fa-lg\" style=\"color:black\" ></i></div></a>";
+    td.innerHTML = innerhtml.replace("0", student.id);
+  }
+
+  body.appendChild(tbl);
+}
+
+function loadCourse() {
+ var courseid = document.getElementById("courses").value;
+ if (courseid == "0")
+    return;
+
+ var url = window.location.protocol + "//" + window.location.hostname;
+ var isDebug = "{{debug}}";
+ if (isDebug) {
+	url = url + ":" + window.location.port;
+ }
+
+  url = url + "/cdn/providerStudents/0/0/" + courseid;
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("GET", url, true);
+
+  xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            if (xmlHttp.status == 200) {
+                var data = JSON.parse(xmlHttp.responseText);
+				if (data.status == false)
+				  return;
+				createTable(data.students);
+            }
+        }
+    };
+
+	xmlHttp.send();
+}
+
 </script>
   <!-- Breadcrumbs-->
 <nav class="navbar">
@@ -155,57 +255,25 @@ function calltablestoexcel() {
 </div>  
 </div>
 <hr>
+  <select id="courses" onchange="loadCourse()" autocomplete="off">
+     <option value="0" selected="selected">Select Course</option>
+  {% for course in course_list %}
+     <option value="{{ course.id }}">{{ course.name }}</option>
+  {% endfor %}
+  </select>
+
+  <br>
+  <br>
+
   <div class="container-fluid">
     <div style="overflow-x:auto;">
-        
-        {% for key, values in course_stats.items %}
-    <h6 id="courseName{{forloop.counter}}">{{ key }} </h6> 
-    <table id="studentsTable{{forloop.counter}}" class="table table-striped table-bordered w-auto text-xsmall" style="width:100%">
-    <thead>
-      
-        <tr>
-            <th scope="col">#</th>
-            <th>Name</th>
-            <th>Joined on</th> 
-            <th>Status</th>
-			      <th>Available (hrs)</th>
-			      <th>Viewed (mins)</th>
-        </tr>
-    </thead>
-    <tbody>
-        
-        <!--<tr><th scope="row"></th>
-          <td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students..">
-          </td></tr>  -->
-        {% for item in values %}
-        <tr>
-            <th scope="row">{{forloop.counter}}</th>
-            <td>{{ item.name }}</td>
-            <td>{{ item.enrolled_date }}</td> 
-            <td>{{ item.remarks }}</td>
-			{% if item.viewhours >  0 %}
-			<td>{{ item.viewhours }}</td>
-			<td>{{ item.completedminutes }}</td>
-			{% else %}
-			<td>NA</td>
-			<td>NA</td>
-      {% endif %}
-      <td><a class="btn btn-primary" href="{% url 'provider:add_students' item.id %}" title="Edit Access"></a>
-      <td><a class="btn" href="{% url 'provider:export_studentdata' item.id %}" title="Export Student Data">
-        <div style="font-size: 12px;"><i class="fa fa-download fa-lg" style="color:black" ></i>
-          </div>
-      </a>
-        </tr>
-      {% endfor %}
-    </tbody>
-    
-    </table>
-    <hr>
-    {% endfor %}
+
+       <div id="students">
+       </div>
+
     </div>
     </div>
     <script src="{% static 'provider/js/createCourseContent.js' %}">
-
 
     </script>
 {% endblock active %}

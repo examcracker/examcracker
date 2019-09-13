@@ -373,13 +373,7 @@ class saveFileUpload(generic.TemplateView):
         fileUploadObj.save()
         return schedule.views.HttpResponseNoContent()
 
-@api_view(['GET'])
-@authentication_classes((SessionAuthentication, ))
-@permission_classes((IsAuthenticated, ))
-def getProviderStudents(request, start, end, courseid):
-    if not request.user.is_staff:
-        return Response({"status":False})
-
+def getProviderStudentsInt(start, end, courseid):
     courseObj = course.models.Course.objects.filter(id=courseid)[0]
     studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
 
@@ -389,14 +383,13 @@ def getProviderStudents(request, start, end, courseid):
         start = 0
     if start >= len(studentsObj):
         start = len(studentsObj) - 1
-    count = start
-    if end < 0:
-        end = len(studentsObj) - 1
-    if end >= len(studentsObj):
-        end = len(studentsObj) - 1
+    if end <= 0 or end > len(studentsObj):
+        end = len(studentsObj)
 
-    while count <= end:
-        studentItem = studentsObj[count]
+    i = 0
+
+    while i < end:
+        studentItem = studentsObj[start]
         studentInfo = {}
         studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
         studentInfo['id'] = studentDetails.id
@@ -406,6 +399,15 @@ def getProviderStudents(request, start, end, courseid):
         studentInfo['viewhours'] = studentItem.viewhours
         studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
         studentList.append(studentInfo)
-        count = count + 1
+        start = start + 1
+        i = i + 1
 
-    return Response({"status":True, "students":studentList})
+    return studentList
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getProviderStudents(request, start, end, courseid):
+    if not request.user.is_staff:
+        return Response({"status":False})
+    return Response({"status":True, "students":getProviderStudentsInt(start, end, courseid)})

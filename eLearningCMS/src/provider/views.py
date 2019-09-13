@@ -24,7 +24,6 @@ from django.contrib.auth import get_user_model
 from Crypto.Cipher import AES
 from django.contrib.auth import authenticate
 import base64
-
 import string
 import random
 import csv
@@ -544,52 +543,20 @@ class myStudents(showProviderHome):
         kwargs["providerid"] = providerObj.id
         coursesObj = course.models.Course.objects.filter(Q(provider_id=providerObj.id) & Q(published=1))
         courseDictMap = {}
+        courseList = []
+
         for courseObj in coursesObj:
             studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
-            if len(studentsObj) == 0:
-                continue
+            courseDictMap[courseObj.name] = cdn.views.getProviderStudentsInt(0, len(studentsObj)-1, courseObj.id)
+            courseList.append(courseObj)
 
-            sessionIDList = course.algos.getAllSessionsIdsForCourse(courseObj.id)
-
-            #sessionStatsList = []
-            #for sessionID in sessionIDList:
-            #    sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
-            #    if(len(sessionStatsObj) > 0):
-            #        statsDict = json.loads(sessionStatsObj[0].stats)
-            #        sessionStatsList.append(statsDict)
-
-            studentList = []
-            for studentItem in studentsObj:
-                studentInfo = {}
-                studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
-                studentInfo['id'] = studentDetails.id
-                studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
-                studentInfo['enrolled_date'] = studentItem.enrolled
-                studentInfo['remarks'] = studentItem.remarks
-
-                #totalSessionWatched = 0
-                #totalPlayedCount = 0
-                #for statsItem in sessionStatsList:
-                #    studentId = str(studentItem.student_id)
-                #    if studentId in statsItem:
-                #        totalSessionWatched += 1
-                #        totalPlayedCount += statsItem[studentId]
-
-                #studentInfo['totalSessions'] = len(sessionIDList)
-                #studentInfo['totalSessionWatched'] = totalSessionWatched
-                #studentInfo['totalPlayedCount'] = totalPlayedCount
-                studentInfo['viewhours'] = studentItem.viewhours
-                studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
-
-                #if(len(sessionIDList) > 0):
-                #    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
-                #else:
-                #    studentInfo['CourseCompleted'] = 'NA'
-
-                studentList.append(studentInfo)
-
-            courseDictMap[courseObj.name] = studentList
         kwargs["course_stats"] = courseDictMap
+        kwargs["course_list"] = courseList
+
+        if settings.DEBUG:
+            kwargs["debug"] = True
+        else:
+            kwargs["debug"] = False
         return super().get(request, *args, **kwargs)
 
 class liveCapture(showProviderHome):
