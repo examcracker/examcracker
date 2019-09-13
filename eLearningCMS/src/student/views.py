@@ -328,6 +328,7 @@ class view_hours(LoginRequiredMixin, generic.TemplateView):
 
 def fillStudentPlayStats(studentid,sessionid,user_ip,user_email,device):
     # keep only last 5 days data
+    return
     statsObj = models.StudentPlayStats.objects.filter(student_id=studentid)
     if statsObj:
         # get those objects which are older then 5 days
