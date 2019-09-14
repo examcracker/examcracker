@@ -17,6 +17,8 @@ from .serializers import uploadURLSerializer
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
+import calendar
 import logging
 import hashlib
 import time
@@ -394,7 +396,23 @@ def getProviderStudentsInt(start, end, courseid):
         studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
         studentInfo['id'] = studentDetails.id
         studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
-        studentInfo['enrolled_date'] = studentItem.enrolled
+
+        datetoshow = str(studentItem.enrolled.day) + " " + calendar.month_name[studentItem.enrolled.month] + " " + str(studentItem.enrolled.year) + ", "
+        meridian = "A.M"
+        hours = studentItem.enrolled.hour
+        minutes = studentItem.enrolled.minute
+        if hours > 12:
+            hours = hours - 12
+            meridian = "P.M"
+        strh = str(hours)
+        if hours < 10:
+            strh = "0" + strh
+        strm = str(minutes)
+        if minutes < 10:
+            strm = "0" + strm
+        datetoshow = datetoshow + strh + ":" + strm + " " + meridian
+        studentInfo['enrolled_date'] = datetoshow
+
         studentInfo['remarks'] = studentItem.remarks
         studentInfo['viewhours'] = studentItem.viewhours
         studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
