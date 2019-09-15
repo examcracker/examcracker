@@ -253,16 +253,17 @@ function loadCourse() {
     <!-- <div class="col-1"></div> -->
     <div class="col-auto">
   <input type="text" id="filterAllStudents{{providerid}}" onkeyup="filterFunction('filterAllStudents{{providerid}}','studentsTable')" placeholder="Filter All Students..">
+  <select id="courses" onchange="loadCourse()" autocomplete="off" >
+    <option value="0" selected="selected">Select Course</option>
+ {% for course in course_list %}
+    <option value="{{ course.id }}">{{ course.name }}</option>
+ {% endfor %}
+ </select>
 </div>
 </div>  
 </div>
 <hr>
-  <select id="courses" onchange="loadCourse()" autocomplete="off">
-     <option value="0" selected="selected">Select Course</option>
-  {% for course in course_list %}
-     <option value="{{ course.id }}">{{ course.name }}</option>
-  {% endfor %}
-  </select>
+
 
   <br>
   <br>
