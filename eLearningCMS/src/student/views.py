@@ -332,7 +332,7 @@ def fillStudentPlayStats(studentid,sessionid,user_ip,user_email,device):
     if statsObj:
         # get those objects which are older then 5 days
         now = datetime.now()
-        last7days = now - timedelta(days=5)
+        last7days = now - timedelta(days=15)
         statsObj = statsObj.filter(date__lte = last7days)
         statsObj.delete()
 
