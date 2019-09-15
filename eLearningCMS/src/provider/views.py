@@ -541,22 +541,15 @@ class myStudents(showProviderHome):
 
         providerObj = getProvider(request)
         kwargs["providerid"] = providerObj.id
+
         coursesObj = course.models.Course.objects.filter(Q(provider_id=providerObj.id) & Q(published=1))
-        courseDictMap = {}
-        courseList = []
-
-        for courseObj in coursesObj:
-            studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
-            courseDictMap[courseObj.name] = cdn.views.getProviderStudentsInt(0, len(studentsObj)-1, courseObj.id)
-            courseList.append(courseObj)
-
-        kwargs["course_stats"] = courseDictMap
-        kwargs["course_list"] = courseList
+        kwargs["course_list"] = coursesObj
 
         if settings.DEBUG:
             kwargs["debug"] = True
         else:
             kwargs["debug"] = False
+
         return super().get(request, *args, **kwargs)
 
 class liveCapture(showProviderHome):
