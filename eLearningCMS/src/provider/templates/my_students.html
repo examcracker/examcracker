@@ -38,7 +38,7 @@ function calltablestoexcel() {
 }
 
 function createTable(students,courseid,coursename) {
-  $("#exampleModal").modal('hide');
+  $("#studentsLoading").modal('hide');
   var body = document.getElementById('students');
   var h6 = document.createElement('h6');
   h6.setAttribute("id", "courseName"+courseid);
@@ -123,7 +123,7 @@ function loadCourse() {
  if (courseid == "0")
     return;
     
-  $("#exampleModal").modal('show');
+  $("#studentsLoading").modal('show');
   var coursename = $("#courses").find("option:selected").text();
  var url = window.location.protocol + "//" + window.location.hostname;
  var isDebug = "{{debug}}";
@@ -136,7 +136,7 @@ function loadCourse() {
   xmlHttp.open("GET", url, true);
 
   xmlHttp.onreadystatechange = function () {
-    $("#exampleModal").modal('hide');
+    $("#studentsLoading").modal('hide');
         if (xmlHttp.readyState == 4) {
             if (xmlHttp.status == 200) {
               var data = JSON.parse(xmlHttp.responseText);
@@ -167,11 +167,11 @@ function loadCourse() {
 
 </nav>
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="studentsLoading" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Loading Students</h5>
+        <h5 class="modal-title" id="studentsLoadingLabel">Loading Students</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
