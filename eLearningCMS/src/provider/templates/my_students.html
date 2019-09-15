@@ -37,7 +37,22 @@ function calltablestoexcel() {
   //tablesToExcel(tabs, courseNames, 'students.xls', 'Excel');
 }
 
-function createTable(students,courseid,coursename) {
+var currentcourse = 0;
+var currentstart = 0;
+var counttofetch = 30;
+var loadall = false;
+
+function nextf() {
+  currentstart = currentstart + counttofetch;
+  loadCourse();
+}
+
+function prevf() {
+  currentstart = currentstart - counttofetch;
+  loadCourse();
+}
+
+function createTable(students, more, courseid, coursename) {
   var body = document.getElementById('students');
   var h6 = document.createElement('h6');
   h6.setAttribute("id", "courseName"+courseid);
@@ -111,15 +126,35 @@ function createTable(students,courseid,coursename) {
 
   tbl.appendChild(tbody);
   body.appendChild(tbl);
+
+  if (more && loadall == false) {
+    var next = document.createElement("button");
+    next.innerHTML = "Next";
+    next.onclick = nextf;
+    body.appendChild(next);
+  }
+
+  if (currentstart > 0 && loadall == false) {
+    var prev = document.createElement("button");
+    prev.innerHTML = "Previous";
+    prev.onclick = prevf;
+    body.appendChild(prev);
+  }
 }
 
-function loadCourse(cid = -1,cname = "") {
+function loadCourse(cid = -1, cname = "") {
  if (cid == 0) {
    return;
  }
+
+ if (cid == -1 && loadall) {
+   return;
+ }
+
  var body = document.getElementById('students');
  var courseid = cid;
  var coursename = cname;
+
  if (cid == -1) {
   $("#showAllCourses").prop("checked",false);
   body.innerHTML = "";
@@ -132,49 +167,65 @@ function loadCourse(cid = -1,cname = "") {
    courseid = cid;
  }
  cntr = cntr +1;
+
  var url = window.location.protocol + "//" + window.location.hostname;
  var isDebug = "{{debug}}";
  if (isDebug) {
 	url = url + ":" + window.location.port;
  }
 
-  url = url + "/cdn/providerStudents/0/0/" + courseid;
+  if (courseid != currentcourse) {
+   currentcourse = courseid;
+   currentstart = 0;
+  }
+  var start = currentstart;
+  if (loadall) {
+    start = 0;
+  }
+
+  var length = counttofetch;
+  if  (loadall) {
+    length = 0;
+  }
+
+  url = url + "/cdn/providerStudents/" + start + "/" + length + "/" + courseid;
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.open("GET", url, true);
   xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4) {
-          cntr = cntr -1;
-          if(cntr == 0) {
-            $("#studentsLoading").modal('hide');
-          }
-            if (xmlHttp.status == 200) {
-              
-              var data = JSON.parse(xmlHttp.responseText);
-				      if (data.status == false) {
-                return;
-              }
-				      createTable(data.students,courseid,coursename);
-            }
+    if (xmlHttp.readyState == 4) {
+      cntr = cntr -1;
+      if(cntr == 0) {
+        $("#studentsLoading").modal('hide');
+      }
+      if (xmlHttp.status == 200) {
+        var data = JSON.parse(xmlHttp.responseText);
+        if (data.status == false) {
+          return;
         }
-    };
+        createTable(data.students, data.more, courseid, coursename);
+      }
+    }
+  };
 
   xmlHttp.send();
-  
 }
 
 function showAllCourses() {
   var body = document.getElementById('students');
   body.innerHTML = "";
   if ($("#showAllCourses").prop("checked") == true) {
-    
+    loadall = true;
     var courses = document.getElementById('courses'), cid;
     for(i = 0; i < courses.length; i++) {
       $("#studentsLoading").modal('show');
       cid = courses[i].value;
       cname = courses[i].text;
-      loadCourse(cid,cname);
+      loadCourse(cid, cname);
     }
   } else {
+    loadall = false;
+	currentcourse = 0;
+	currentstart = 0;
     window.location.reload();
   }
 
@@ -205,7 +256,7 @@ function showAllCourses() {
         </button>
       </div>
       <div class="modal-body">
-        Loading Data. Please wait...
+        Loading students ...
       </div>
     </div>
   </div>

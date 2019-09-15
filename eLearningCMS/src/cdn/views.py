@@ -380,6 +380,7 @@ def getProviderStudentsInt(start, end, courseid):
     studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
 
     studentList = []
+    moreStudents = False
 
     if start < 0:
         start = 0
@@ -387,6 +388,11 @@ def getProviderStudentsInt(start, end, courseid):
         start = len(studentsObj) - 1
     if end <= 0 or end > len(studentsObj):
         end = len(studentsObj)
+    if start + end > len(studentsObj):
+        end = len(studentsObj) - start
+
+    if start + end < len(studentsObj):
+        moreStudents = True
 
     i = 0
 
@@ -420,7 +426,7 @@ def getProviderStudentsInt(start, end, courseid):
         start = start + 1
         i = i + 1
 
-    return studentList
+    return (moreStudents, studentList)
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
@@ -428,4 +434,5 @@ def getProviderStudentsInt(start, end, courseid):
 def getProviderStudents(request, start, end, courseid):
     if not request.user.is_staff:
         return Response({"status":False})
-    return Response({"status":True, "students":getProviderStudentsInt(start, end, courseid)})
+    moreStudents, studentList = getProviderStudentsInt(start, end, courseid)
+    return Response({"status":True, "students":studentList, "more":moreStudents})
