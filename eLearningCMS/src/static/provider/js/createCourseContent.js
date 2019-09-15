@@ -31,7 +31,7 @@ function filterFunction(filterType,elemId) {
     var cellIndex = 1;
     input = document.getElementById(filterType);
     if (input.id.indexOf('filterAllStudents') > -1) {
-      cellIndex = 1;
+      cellIndex = 2;
     } else {
       cellIndex = input.parentNode.cellIndex;
       startIndex = 2;
