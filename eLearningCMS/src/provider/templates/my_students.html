@@ -6,7 +6,7 @@
 <script src="{% static 'provider/js/0.7.12/xlsx.core.min.js' %}"></script>
 
 <script>
-
+var cntr = 0;
 function exportExcel(tabs,courseNames) {
     var datas = [];
     var opts = [];
@@ -38,7 +38,6 @@ function calltablestoexcel() {
 }
 
 function createTable(students,courseid,coursename) {
-  $("#studentsLoading").modal('hide');
   var body = document.getElementById('students');
   var h6 = document.createElement('h6');
   h6.setAttribute("id", "courseName"+courseid);
@@ -114,17 +113,25 @@ function createTable(students,courseid,coursename) {
   body.appendChild(tbl);
 }
 
-function loadCourse() {
- 
+function loadCourse(cid = -1,cname = "") {
+ if (cid == 0) {
+   return;
+ }
  var body = document.getElementById('students');
- body.innerHTML = "";
-
- var courseid = document.getElementById("courses").value;
- if (courseid == "0")
+ var courseid = cid;
+ var coursename = cname;
+ if (cid == -1) {
+  $("#showAllCourses").prop("checked",false);
+  body.innerHTML = "";
+  var courseid = document.getElementById("courses").value;
+  coursename = $("#courses").find("option:selected").text();
+  if (courseid == "0")
     return;
-    
-  $("#studentsLoading").modal('show');
-  var coursename = $("#courses").find("option:selected").text();
+    $("#studentsLoading").modal('show');
+ } else{
+   courseid = cid;
+ }
+ cntr = cntr +1;
  var url = window.location.protocol + "//" + window.location.hostname;
  var isDebug = "{{debug}}";
  if (isDebug) {
@@ -134,11 +141,14 @@ function loadCourse() {
   url = url + "/cdn/providerStudents/0/0/" + courseid;
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.open("GET", url, true);
-
   xmlHttp.onreadystatechange = function () {
-    $("#studentsLoading").modal('hide');
         if (xmlHttp.readyState == 4) {
+          cntr = cntr -1;
+          if(cntr == 0) {
+            $("#studentsLoading").modal('hide');
+          }
             if (xmlHttp.status == 200) {
+              
               var data = JSON.parse(xmlHttp.responseText);
 				      if (data.status == false) {
                 return;
@@ -150,6 +160,24 @@ function loadCourse() {
 
   xmlHttp.send();
   
+}
+
+function showAllCourses() {
+  var body = document.getElementById('students');
+  body.innerHTML = "";
+  if ($("#showAllCourses").prop("checked") == true) {
+    
+    var courses = document.getElementById('courses'), cid;
+    for(i = 0; i < courses.length; i++) {
+      $("#studentsLoading").modal('show');
+      cid = courses[i].value;
+      cname = courses[i].text;
+      loadCourse(cid,cname);
+    }
+  } else {
+    window.location.reload();
+  }
+
 }
 
 </script>
@@ -194,6 +222,7 @@ function loadCourse() {
     <option value="{{ course.id }}">{{ course.name }}</option>
  {% endfor %}
  </select>
+ <label><input type="checkbox" id="showAllCourses" onclick="showAllCourses()">Show All Courses</label>
 </div>
 </div>  
 </div>
