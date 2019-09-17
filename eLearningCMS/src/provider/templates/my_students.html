@@ -40,7 +40,7 @@ function calltablestoexcel() {
 var currentcourse = 0;
 var currentstart = 0;
 var counttofetch = 30;
-var loadall = false;
+var loadall = true;
 
 function nextf() {
   currentstart = currentstart + counttofetch;
@@ -147,9 +147,10 @@ function loadCourse(cid = -1, cname = "") {
    return;
  }
 
- if (cid == -1 && loadall) {
-   return;
- }
+  //if (cid == -1 && loadall) {
+  //  return;
+  //}
+
 
  var body = document.getElementById('students');
  var courseid = cid;
