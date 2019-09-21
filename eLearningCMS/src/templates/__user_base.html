@@ -160,7 +160,7 @@
               <span class="nav-link-text">Create Course</span>
             </a>
           </li>
-		 {% endif %}
+		 
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Students">
           <a class="nav-link" href="{% url 'provider:my_students' %}">
             <i class="fas fa-user-graduate fa-lg"></i>
@@ -185,6 +185,7 @@
             <span class="nav-link-text">Schedule</span>
           </a>
         </li>
+        {% endif %}
         {% endif %}
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Profile">
           <a class="nav-link"

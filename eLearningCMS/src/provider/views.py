@@ -105,6 +105,8 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notifications"] = reversed(notifications)
         kwargs["disableKeys"] = "false"
         providerObj = getProvider(request)
+        if not providerObj :
+            return super().get(request, *args, **kwargs)
         if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
             kwargs["not_approved"] = True
         else:
@@ -501,7 +503,7 @@ class deleteCourse(viewCourses):
         courseObj.delete()
         return super().get(request, *args, **kwargs)
 
-class ProviderProfile(profiles.views.MyProfile):
+class ProviderProfile(showProviderHome,profiles.views.MyProfile):
     template_name = 'provider_profile.html'
     http_method_names = ['get', 'post']
 
@@ -778,6 +780,12 @@ class ProviderCourseDetails(generic.TemplateView):
             return JsonResponse(result)
 
         providerObj = providerObj[0]
+
+        # Do not allow file upload if provider is not approved
+        if providerObj.approved == False:
+            result['result'] = False
+            return JsonResponse(result)
+
         providerPlanObj = models.Plan.objects.filter(provider_id=providerObj.id)
         if providerPlanObj:
             providerPlanObj = providerPlanObj[0]

@@ -167,7 +167,7 @@ def isAnyEventLive(request):
         return True
     return False
 
-class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
+class showLiveEvents(provider.views.showProviderHome,LoginRequiredMixin,generic.TemplateView):
     template_name = "showLiveEvents.html"
     http_method_names = ['get']
 
