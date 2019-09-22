@@ -379,6 +379,15 @@ def getEnrolledCourseIds(request):
       cids = coursesObj.values('id')
       enrolledCoursesObj = enrolledCoursesObj.filter(course_id__in=cids)
 
+  # Filter those courses whose providers are not approved
+  providersNotApproved = provider.models.Provider.objects.filter(approved=False)
+  if providersNotApproved:
+    pids = providersNotApproved.values('id')
+    courseObjsNotApproved = models.Course.objects.filter(provider_id__in=pids)
+    if courseObjsNotApproved:
+      cids = courseObjsNotApproved.values('id')
+      enrolledCoursesObj = enrolledCoursesObj.exclude(course_id__in=cids)
+
   for ec in enrolledCoursesObj:
     courseids.append(ec.course_id)
   

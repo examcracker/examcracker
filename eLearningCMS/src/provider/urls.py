@@ -18,4 +18,5 @@ urlpatterns = [
      path('addStudents/<slug:slug>', views.addStudents.as_view(), name="add_students"),
      path('getProviderProfile/<str:email>/<str:encpassword>', views.ProviderCourseDetails.as_view(), name="provider_profile"),
      path('deleteCourse/<int:id>', views.deleteCourse.as_view(), name="delete_course"),
+     path('export_studentdata/<int:studentid>', views.export_users_csv, name='export_studentdata')
 ]

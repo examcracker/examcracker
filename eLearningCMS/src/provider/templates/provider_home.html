@@ -9,6 +9,7 @@
     </li>
     <li class="breadcrumb-item active">Dashboard</li>
   </ol>
+  {% if not not_approved %}
   <script type="text/javascript" src="{% static 'progress/js/charts/loader.js' %}"></script>
   <div class="container">
     <div class="row">
@@ -176,7 +177,7 @@
       </div>
   </div>
 </div>
-
+{% endif %}
 <script type="text/javascript">
 
     $(".clickableCard").click(function() {

@@ -24,10 +24,10 @@ from django.contrib.auth import get_user_model
 from Crypto.Cipher import AES
 from django.contrib.auth import authenticate
 import base64
-
 import string
 import random
-
+import csv
+from django.http import HttpResponse
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -105,6 +105,8 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["notifications"] = reversed(notifications)
         kwargs["disableKeys"] = "false"
         providerObj = getProvider(request)
+        if not providerObj :
+            return super().get(request, *args, **kwargs)
         if settings.PROVIDER_APPROVAL_NEEDED and not providerObj.approved:
             kwargs["not_approved"] = True
         else:
@@ -501,7 +503,7 @@ class deleteCourse(viewCourses):
         courseObj.delete()
         return super().get(request, *args, **kwargs)
 
-class ProviderProfile(profiles.views.MyProfile):
+class ProviderProfile(showProviderHome,profiles.views.MyProfile):
     template_name = 'provider_profile.html'
     http_method_names = ['get', 'post']
 
@@ -541,54 +543,15 @@ class myStudents(showProviderHome):
 
         providerObj = getProvider(request)
         kwargs["providerid"] = providerObj.id
+
         coursesObj = course.models.Course.objects.filter(Q(provider_id=providerObj.id) & Q(published=1))
-        courseDictMap = {}
-        for courseObj in coursesObj:
-            studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
-            if len(studentsObj) == 0:
-                continue
+        kwargs["course_list"] = coursesObj
 
-            sessionIDList = course.algos.getAllSessionsIdsForCourse(courseObj.id)
+        if settings.DEBUG:
+            kwargs["debug"] = True
+        else:
+            kwargs["debug"] = False
 
-            #sessionStatsList = []
-            #for sessionID in sessionIDList:
-            #    sessionStatsObj = course.models.SessionStats.objects.filter(session_id=sessionID)
-            #    if(len(sessionStatsObj) > 0):
-            #        statsDict = json.loads(sessionStatsObj[0].stats)
-            #        sessionStatsList.append(statsDict)
-
-            studentList = []
-            for studentItem in studentsObj:
-                studentInfo = {}
-                studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
-                studentInfo['id'] = studentDetails.id
-                studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
-                studentInfo['enrolled_date'] = studentItem.enrolled
-                studentInfo['remarks'] = studentItem.remarks
-
-                #totalSessionWatched = 0
-                #totalPlayedCount = 0
-                #for statsItem in sessionStatsList:
-                #    studentId = str(studentItem.student_id)
-                #    if studentId in statsItem:
-                #        totalSessionWatched += 1
-                #        totalPlayedCount += statsItem[studentId]
-
-                #studentInfo['totalSessions'] = len(sessionIDList)
-                #studentInfo['totalSessionWatched'] = totalSessionWatched
-                #studentInfo['totalPlayedCount'] = totalPlayedCount
-                studentInfo['viewhours'] = studentItem.viewhours
-                studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
-
-                #if(len(sessionIDList) > 0):
-                #    studentInfo['CourseCompleted'] = str(int(totalSessionWatched*100/len(sessionIDList))) + '%'
-                #else:
-                #    studentInfo['CourseCompleted'] = 'NA'
-
-                studentList.append(studentInfo)
-
-            courseDictMap[courseObj.name] = studentList
-        kwargs["course_stats"] = courseDictMap
         return super().get(request, *args, **kwargs)
 
 class liveCapture(showProviderHome):
@@ -817,6 +780,12 @@ class ProviderCourseDetails(generic.TemplateView):
             return JsonResponse(result)
 
         providerObj = providerObj[0]
+
+        # Do not allow file upload if provider is not approved
+        if providerObj.approved == False:
+            result['result'] = False
+            return JsonResponse(result)
+
         providerPlanObj = models.Plan.objects.filter(provider_id=providerObj.id)
         if providerPlanObj:
             providerPlanObj = providerPlanObj[0]
@@ -872,3 +841,16 @@ class ProviderCourseDetails(generic.TemplateView):
             result['courses'].append(coursedict)
 
         return JsonResponse(result)
+
+def export_users_csv(request,studentid):
+    response = HttpResponse(content_type='text/csv')
+    studentObj = student.models.Student.objects.filter(id=studentid)[0]
+    studentname = course.algos.getUserNameAndPic(studentObj.user_id)['name']
+    response['Content-Disposition'] = 'attachment; filename=' + studentname + '.csv'
+
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Date','IP Address', 'Session Name', 'Device Info'])
+    studentStatsObj = student.models.StudentPlayStats.objects.filter(student_id=studentid)
+    for stat in studentStatsObj:
+        writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
+    return response

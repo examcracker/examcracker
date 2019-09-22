@@ -6,103 +6,7 @@
 <script src="{% static 'provider/js/0.7.12/xlsx.core.min.js' %}"></script>
 
 <script>
-/* var tablesToExcel = (function() {
-    var uri = 'data:application/vnd.ms-excel;base64,'
-    , tmplWorkbookXML = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-      + '<DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Created>{created}</Created></DocumentProperties>'
-      + '<Styles>'
-      + '<Style ss:ID="Currency"><NumberFormat ss:Format="Currency"></NumberFormat></Style>'
-      + '<Style ss:ID="Date"><NumberFormat ss:Format="Medium Date"></NumberFormat></Style>'
-      + '</Styles>' 
-      + '{worksheets}</Workbook>'
-    , tmplWorksheetXML = '<Worksheet ss:Name="{nameWS}"><Table>{rows}</Table></Worksheet>'
-    , tmplCellXML = '<Cell{attributeStyleID}{attributeFormula}><Data ss:Type="{nameType}">{data}</Data></Cell>'
-    , base64 = function(s) { return window.btoa(unescape(encodeURIComponent(s))) }
-    , format = function(s, c) { return s.replace(/{(\w+)}/g, function(m, p) { return c[p]; }) }
-    return function(tables, wsnames, wbname, appname) {
-      var ctx = "";
-      var workbookXML = "";
-      var worksheetsXML = "";
-      var rowsXML = "";
-
-      for (var i = 0; i < tables.length; i++) {
-        if (!tables[i].nodeType) tables[i] = document.getElementById(tables[i]);
-        for (var j = 0; j < tables[i].rows.length; j++) {
-          rowsXML += '<Row>'
-          for (var k = 0; k < tables[i].rows[j].cells.length; k++) {
-            var dataType = tables[i].rows[j].cells[k].getAttribute("data-type");
-            var dataStyle = tables[i].rows[j].cells[k].getAttribute("data-style");
-            var dataValue = tables[i].rows[j].cells[k].getAttribute("data-value");
-            dataValue = (dataValue)?dataValue:tables[i].rows[j].cells[k].innerHTML;
-            var dataFormula = tables[i].rows[j].cells[k].getAttribute("data-formula");
-            dataFormula = (dataFormula)?dataFormula:(appname=='Calc' && dataType=='DateTime')?dataValue:null;
-            ctx = {  attributeStyleID: (dataStyle=='Currency' || dataStyle=='Date')?' ss:StyleID="'+dataStyle+'"':''
-                   , nameType: (dataType=='Number' || dataType=='DateTime' || dataType=='Boolean' || dataType=='Error')?dataType:'String'
-                   , data: (dataFormula)?'':dataValue
-                   , attributeFormula: (dataFormula)?' ss:Formula="'+dataFormula+'"':''
-                  };
-            rowsXML += format(tmplCellXML, ctx);
-          }
-          rowsXML += '</Row>'
-        }
-        ctx = {rows: rowsXML, nameWS: wsnames[i] || 'Sheet' + i};
-        worksheetsXML += format(tmplWorksheetXML, ctx);
-        rowsXML = "";
-      }
-
-      ctx = {created: (new Date()).getTime(), worksheets: worksheetsXML};
-      workbookXML = format(tmplWorkbookXML, ctx);
-      var link = document.createElement("A");
-      link.href = uri + base64(workbookXML);
-      link.download = wbname || 'Workbook.xls';
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  })();
-
-  function download_csv(csv, filename) {
-    var csvFile;
-    var downloadLink;
-
-    // CSV FILE
-    csvFile = new Blob([csv], {type: "text/csv"});
-
-    // Download link
-    downloadLink = document.createElement("a");
-
-    // File name
-    downloadLink.download = filename;
-
-    // We have to create a link to the file
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-
-    // Make sure that the link is not displayed
-    downloadLink.style.display = "none";
-
-    // Add the link to your DOM
-    document.body.appendChild(downloadLink);
-
-    // Lanzamos
-    downloadLink.click();
-}
-
-function export_table_to_csv(tables,sheetname) {
-  var csv = [];
-  for (var k = 0; k < 1; k++) {
-    var rowsSelector = "#"+tables[k] + " tr";
-	  var rows = document.querySelectorAll(rowsSelector);
-	  for (var i = 0; i < rows.length; i++) {
-		  var row = [], cols = rows[i].querySelectorAll("td, th");
-        for (var j = 0; j < cols.length; j++) 
-            row.push(cols[j].innerText.replace(/,/g, ' '));
-		    csv.push(row.join(","));		
-	  }
-  }
-  download_csv(csv.join("\n"),'students.csv');
-} */
-
+var cntr = 0;
 function exportExcel(tabs,courseNames) {
     var datas = [];
     var opts = [];
@@ -123,12 +27,209 @@ function calltablestoexcel() {
   var j=1;
   for (var i=0;i<tables.length;i++) {
     tabs.push(tables[i].id);
-    var courseName = document.getElementById('courseName'+String(j)).innerText;
+    var courseid = tables[i].id.split('-')[1]
+    var test = document.getElementById('courseName'+courseid);
+    var courseName = test.innerText;
     j=j+1;
     courseNames.push(courseName);
   }
   exportExcel(tabs,courseNames);
   //tablesToExcel(tabs, courseNames, 'students.xls', 'Excel');
+}
+
+var currentcourse = 0;
+var currentstart = 0;
+var counttofetch = 30;
+var loadall = true;
+
+function nextf() {
+  currentstart = currentstart + counttofetch;
+  loadCourse();
+}
+
+function prevf() {
+  currentstart = currentstart - counttofetch;
+  loadCourse();
+}
+
+function createTable(students, more, courseid, coursename) {
+  var body = document.getElementById('students');
+  var h6 = document.createElement('h6');
+  h6.setAttribute("id", "courseName"+courseid);
+  h6.textContent = coursename;
+  h6.innerText = coursename;
+  body.appendChild(h6);
+  var tbl = document.createElement('table');
+  tbl.style.width = '100%';
+  tbl.setAttribute("class", "table table-striped table-bordered w-auto text-xsmall");
+  tbl.setAttribute("id", "studentsTable-"+courseid);
+  var thead = document.createElement('thead');
+  var tr = thead.insertRow();
+
+  var th1 = document.createElement('th');
+  th1.setAttribute("scope", "column");
+  th1.textContent = "#";
+  var th2 = document.createElement('th');
+  th2.textContent = "Name";
+  var th3 = document.createElement('th');
+  th3.textContent = "Joined on";
+  var th4 = document.createElement('th');
+  th4.textContent = "Status";
+  var th5 = document.createElement('th');
+  th5.textContent = "Available (hrs)";
+  var th6 = document.createElement('th');
+  th6.textContent = "Viewed (mins)";
+
+  tr.appendChild(th1);
+  tr.appendChild(th2);
+  tr.appendChild(th3);
+  tr.appendChild(th4);
+  tr.appendChild(th5);
+  tr.appendChild(th6);
+
+  tbl.appendChild(thead);
+  var tbody = document.createElement('tbody');
+
+  for (var i=0; i <students.length; i++) {
+    var student = students[i];
+    var tr = tbody.insertRow();
+    var td = tr.insertCell();
+    td.textContent = i+1;
+
+    td = tr.insertCell();
+    td.textContent = student.name;
+    td = tr.insertCell();
+    td.textContent = student.enrolled_date;
+    td = tr.insertCell();
+    td.textContent = student.remarks;
+
+    td = tr.insertCell();
+    if (student.viewhours > 0)
+      td.textContent = student.viewhours;
+    else
+      td.textContent = "NA";
+
+    td = tr.insertCell();
+    if (student.viewhours > 0)
+      td.textContent = student.completedminutes;
+    else
+      td.textContent = "NA";
+
+    td = tr.insertCell();
+    var innerhtml = "<a class=\"btn btn-primary\" href=\"{% url 'provider:add_students' 0 %}\" title=\"Edit Access\"></a>";
+    td.innerHTML = innerhtml.replace("0", student.id);
+
+    td = tr.insertCell();
+    innerhtml = "<a class=\"btn\" href=\"{% url 'provider:export_studentdata' 0 %}\" title=\"Export Student Data\"><div style=\"font-size: 12px;\"><i class=\"fa fa-download fa-lg\" style=\"color:black\" ></i></div></a>";
+    td.innerHTML = innerhtml.replace("0", student.id);
+  }
+
+  tbl.appendChild(tbody);
+  body.appendChild(tbl);
+
+  if (more && loadall == false) {
+    var next = document.createElement("button");
+    next.innerHTML = "Next";
+    next.onclick = nextf;
+    body.appendChild(next);
+  }
+
+  if (currentstart > 0 && loadall == false) {
+    var prev = document.createElement("button");
+    prev.innerHTML = "Previous";
+    prev.onclick = prevf;
+    body.appendChild(prev);
+  }
+}
+
+function loadCourse(cid = -1, cname = "") {
+ if (cid == 0) {
+   return;
+ }
+
+  //if (cid == -1 && loadall) {
+  //  return;
+  //}
+
+
+ var body = document.getElementById('students');
+ var courseid = cid;
+ var coursename = cname;
+
+ if (cid == -1) {
+  $("#showAllCourses").prop("checked",false);
+  body.innerHTML = "";
+  var courseid = document.getElementById("courses").value;
+  coursename = $("#courses").find("option:selected").text();
+  if (courseid == "0")
+    return;
+    $("#studentsLoading").modal('show');
+ } else{
+   courseid = cid;
+ }
+ cntr = cntr +1;
+
+ var url = window.location.protocol + "//" + window.location.hostname;
+ var isDebug = "{{debug}}";
+ if (isDebug) {
+	url = url + ":" + window.location.port;
+ }
+
+  if (courseid != currentcourse) {
+   currentcourse = courseid;
+   currentstart = 0;
+  }
+  var start = currentstart;
+  if (loadall) {
+    start = 0;
+  }
+
+  var length = counttofetch;
+  if  (loadall) {
+    length = 0;
+  }
+
+  url = url + "/cdn/providerStudents/" + start + "/" + length + "/" + courseid;
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("GET", url, true);
+  xmlHttp.onreadystatechange = function () {
+    if (xmlHttp.readyState == 4) {
+      cntr = cntr -1;
+      if(cntr == 0) {
+        $("#studentsLoading").modal('hide');
+      }
+      if (xmlHttp.status == 200) {
+        var data = JSON.parse(xmlHttp.responseText);
+        if (data.status == false) {
+          return;
+        }
+        createTable(data.students, data.more, courseid, coursename);
+      }
+    }
+  };
+
+  xmlHttp.send();
+}
+
+function showAllCourses() {
+  var body = document.getElementById('students');
+  body.innerHTML = "";
+  if ($("#showAllCourses").prop("checked") == true) {
+    loadall = true;
+    var courses = document.getElementById('courses'), cid;
+    for(i = 0; i < courses.length; i++) {
+      $("#studentsLoading").modal('show');
+      cid = courses[i].value;
+      cname = courses[i].text;
+      loadCourse(cid, cname);
+    }
+  } else {
+    loadall = false;
+	currentcourse = 0;
+	currentstart = 0;
+    window.location.reload();
+  }
+
 }
 
 </script>
@@ -145,63 +246,46 @@ function calltablestoexcel() {
 <button onclick="calltablestoexcel()" class="btn btn-outline-info btn-md mx-2 px-2" aria-pressed="true"><i class="far fa-file-excel"></i> Export data</button>
 
 </nav>
+<!-- Modal -->
+<div class="modal fade" id="studentsLoading" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="studentsLoadingLabel">Loading Students</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Loading students ...
+      </div>
+    </div>
+  </div>
+</div>
 
   <div class="container-fluid">
   <div class="row">
     <!-- <div class="col-1"></div> -->
     <div class="col-auto">
   <input type="text" id="filterAllStudents{{providerid}}" onkeyup="filterFunction('filterAllStudents{{providerid}}','studentsTable')" placeholder="Filter All Students..">
+  <select id="courses" onchange="loadCourse()" autocomplete="off" >
+    <option value="0" selected="selected">Select Course</option>
+ {% for course in course_list %}
+    <option value="{{ course.id }}">{{ course.name }}</option>
+ {% endfor %}
+ </select>
+ <label><input type="checkbox" id="showAllCourses" onclick="showAllCourses()">Show All Courses</label>
 </div>
 </div>  
 </div>
 <hr>
-  <div class="container-fluid">
-    <div style="overflow-x:auto;">
-        
-        {% for key, values in course_stats.items %}
-    <h6 id="courseName{{forloop.counter}}">{{ key }} </h6> 
-    <table id="studentsTable{{forloop.counter}}" class="table table-striped table-bordered" style="width:100%">
-    <thead>
-      
-        <tr>
-            <th scope="col">#</th>
-            <th>Name</th>
-            <th>Joined on</th> 
-            <th>Status</th>
-			      <th>Available (hrs)</th>
-			      <th>Viewed (mins)</th>
-        </tr>
-    </thead>
-    <tbody>
-        
-        <!--<tr><th scope="row"></th>
-          <td><input type="text" id="filterStudents{{forloop.counter}}" onkeyup="filterFunction('filterStudents{{forloop.counter}}','studentsTable{{forloop.counter}}')" placeholder="Filter Students..">
-          </td></tr>  -->
-        {% for item in values %}
-        <tr>
-            <th scope="row">{{forloop.counter}}</th>
-            <td>{{ item.name }}</td>
-            <td>{{ item.enrolled_date }}</td> 
-            <td>{{ item.remarks }}</td>
-			{% if item.viewhours >  0 %}
-			<td>{{ item.viewhours }}</td>
-			<td>{{ item.completedminutes }}</td>
-			{% else %}
-			<td>NA</td>
-			<td>NA</td>
-      {% endif %}
-      <td><a class="btn btn-primary" href="{% url 'provider:add_students' item.id %}" title="Edit Access"></a>
-        </tr>
-        {% endfor %}
-    </tbody>
-    
-    </table>
-    <hr>
-    {% endfor %}
+
+ <div class="container-fluid">
+    <div style="overflow-x:auto;" id = "students">
+
     </div>
     </div>
     <script src="{% static 'provider/js/createCourseContent.js' %}">
-
 
     </script>
 {% endblock active %}

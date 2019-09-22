@@ -21,6 +21,7 @@ import notification
 from math import ceil
 User = get_user_model()
 from schedule.views import isAnyEventLive
+from datetime import datetime,timedelta
 
 def getStudent(request):
     studentObj = models.Student.objects.filter(user_id=request.user.id)
@@ -324,3 +325,29 @@ class view_hours(LoginRequiredMixin, generic.TemplateView):
             viewHoursProviderWise.append(providerInfo)
         kwargs["viewHoursProviderWise"] = viewHoursProviderWise
         return super().get(request, *args, **kwargs)
+
+def fillStudentPlayStats(studentid,sessionid,user_ip,user_email,device):
+    # keep only last 5 days data
+    statsObj = models.StudentPlayStats.objects.filter(student_id=studentid)
+    if statsObj:
+        # get those objects which are older then 5 days
+        now = datetime.now()
+        last7days = now - timedelta(days=15)
+        statsObj = statsObj.filter(date__lte = last7days)
+        statsObj.delete()
+
+    statsObj = models.StudentPlayStats()
+    statsObj.student_id = studentid
+    statsObj.ipaddress = user_ip
+    #statsObj.session_id = sessionid
+    # sessionid = -1 for live
+    if sessionid != -1:
+        sessionObj = provider.models.Session.objects.filter(id=sessionid)
+        statsObj.sessionname = sessionObj[0].name
+    else:
+        statsObj.sessionname = "Live"
+    browser = device["browser"]
+    devicetype = device["device_type"]
+    deviceinfo = 'Browser = ' + browser + '  and device = ' + devicetype
+    statsObj.deviceinfo = deviceinfo
+    statsObj.save()

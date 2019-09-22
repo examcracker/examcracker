@@ -167,7 +167,7 @@ def isAnyEventLive(request):
         return True
     return False
 
-class showLiveEvents(LoginRequiredMixin,generic.TemplateView):
+class showLiveEvents(provider.views.showProviderHome,LoginRequiredMixin,generic.TemplateView):
     template_name = "showLiveEvents.html"
     http_method_names = ['get']
 
@@ -427,6 +427,9 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             schedule_liveaccessObjNew.schedule_id = scheduleObj.id
             schedule_liveaccessObjNew.student_id = studentObj.id
             schedule_liveaccessObjNew.save()
+            # store student stats in table
+            deviceinfo = parse_user_agents(request)
+            student.views.fillStudentPlayStats(studentObj.id,-1,ip,request.user.email,deviceinfo)
         #HttpResponse.set_cookie('GyaanHiveIP', ip)
         kwargs["isLive"] = "true"
         kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip

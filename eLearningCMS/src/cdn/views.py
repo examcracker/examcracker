@@ -17,12 +17,15 @@ from .serializers import uploadURLSerializer
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
+import calendar
 import logging
 import hashlib
 import time
 import datetime
 import json
 import schedule
+import student
 from examcracker import thread
 # crypto
 from Crypto.Random import get_random_bytes
@@ -372,3 +375,64 @@ class saveFileUpload(generic.TemplateView):
         fileUploadObj.save()
         return schedule.views.HttpResponseNoContent()
 
+def getProviderStudentsInt(start, end, courseid):
+    courseObj = course.models.Course.objects.filter(id=courseid)[0]
+    studentsObj = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
+
+    studentList = []
+    moreStudents = False
+
+    if start < 0:
+        start = 0
+    if start >= len(studentsObj):
+        start = len(studentsObj) - 1
+    if end <= 0 or end > len(studentsObj):
+        end = len(studentsObj)
+    if start + end > len(studentsObj):
+        end = len(studentsObj) - start
+
+    if start + end < len(studentsObj):
+        moreStudents = True
+
+    i = 0
+
+    while i < end:
+        studentItem = studentsObj[start]
+        studentInfo = {}
+        studentDetails = student.models.Student.objects.filter(id=studentItem.student_id)[0]
+        studentInfo['id'] = studentDetails.id
+        studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
+
+        datetoshow = str(studentItem.enrolled.day) + " " + calendar.month_name[studentItem.enrolled.month] + " " + str(studentItem.enrolled.year) + ", "
+        meridian = "A.M"
+        hours = studentItem.enrolled.hour
+        minutes = studentItem.enrolled.minute
+        if hours > 12:
+            hours = hours - 12
+            meridian = "P.M"
+        strh = str(hours)
+        if hours < 10:
+            strh = "0" + strh
+        strm = str(minutes)
+        if minutes < 10:
+            strm = "0" + strm
+        datetoshow = datetoshow + strh + ":" + strm + " " + meridian
+        studentInfo['enrolled_date'] = datetoshow
+
+        studentInfo['remarks'] = studentItem.remarks
+        studentInfo['viewhours'] = studentItem.viewhours
+        studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
+        studentList.append(studentInfo)
+        start = start + 1
+        i = i + 1
+
+    return (moreStudents, studentList)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getProviderStudents(request, start, end, courseid):
+    if not request.user.is_staff:
+        return Response({"status":False})
+    moreStudents, studentList = getProviderStudentsInt(start, end, courseid)
+    return Response({"status":True, "students":studentList, "more":moreStudents})
