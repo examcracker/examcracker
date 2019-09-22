@@ -34,6 +34,8 @@ from functools import partial
 STOPPED = 0
 RUNNING = 1
 UPLOADING = 2
+os.environ['CACERT_PATH'] = 'cacert.pem'
+os.environ['HTTPLIB2_CA_CERTS'] = 'cacert.pem'
 
 try:
     import thread
@@ -605,6 +607,7 @@ class ClientService(object):
                 filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
                 self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret, uploaderInstance)
+                #self.upload.uploadVideoBunnyCDNStorage(self.mpdoutpath,'gyaanhive3', 'e8616cc2-b2bb-4a3c-87bd16793cda-e0ab-4ce5', uploaderInstance)
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success', 'sessionName': filename}
                 LOG.info ("Uploading done")
                 LOG.info("Video Server response: " + str(uploadResponse))

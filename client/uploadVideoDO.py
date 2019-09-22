@@ -9,6 +9,8 @@ import threading
 import time
 import socket
 import clientUploadApp
+import urllib3
+import certifi
 
 # Log file
 LOG = logger.getLogFile(__name__)
@@ -141,3 +143,72 @@ class uploadVideoDO:
 
 
 								LOG.info("Internet conectivity status: " + str(status))
+								
+	def uploadFileToBunnyCDN(self,storagename,storagepassword,complete_file_path,file):
+		hdr = {'AccessKey':storagepassword}
+		http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',ca_certs=certifi.where())
+		with open(complete_file_path, 'rb') as fp:
+			binary_data = fp.read()
+			response = http.request('PUT', 'https://storage.bunnycdn.com/' + storagename + '//'+file,body=binary_data,headers=hdr)
+			return (response.status)
+
+	def uploadVideoBunnyCDNStorage(self, local_folder_path, storagename, storagepassword, uploaderInstance = None):
+		# Initialize a session using DigitalOcean Spaces.
+		LOG.info ("Uploading mpd folder to CDN: "+str(local_folder_path))
+		parentFolder = os.path.dirname(local_folder_path)
+
+		if uploaderInstance:
+			totalFileCount = 0
+			for root, dirs, files in os.walk(local_folder_path):
+				totalFileCount += len(files)
+			uploaderInstance.totalUploadingFiles = totalFileCount
+		counter = 0
+		for root, dirs, files in os.walk(local_folder_path):
+			nested_dir = root.replace(parentFolder, '')
+			if nested_dir:
+				nested_dir = nested_dir.replace('/','',1) + '/'
+			nested_dir = nested_dir.replace('\\','/')
+			if nested_dir.startswith('/'):
+				nested_dir = nested_dir[1:]
+			for file in files:
+				try:
+					counter += 1
+					complete_file_path = os.path.join(root, file)
+					if complete_file_path in self.alreadyUploadedList:
+						continue
+					file = nested_dir + file if nested_dir else file
+					status = self.uploadFileToBunnyCDN(storagename, storagepassword,complete_file_path,file)
+					if status != 201:
+						raise Exception('BunnyCDN : Failed to upload successfully. Throwing to retry on : ' + file)
+					self.alreadyUploadedList.append(complete_file_path)
+					if uploaderInstance:
+						uploaderInstance.updateUploadCount(counter)
+
+				except Exception as ex:
+					LOG.error("Exception in uploading the file: " + str(ex) + ' file name: ' + str(file))
+					retryCount = 0
+					while retryCount < self.uploadRetryCount:
+						LOG.info ("Retrying the upload: " + str(file))
+						try:
+							status = self.uploadFileToBunnyCDN(storagename, storagepassword,complete_file_path,file)
+							if status != 201:
+								LOG.info('File upload failed for :' + str(file))
+								raise Exception('BunnyCDN : Failed to upload successfully. Throwing to retry on : ' + file)
+							self.alreadyUploadedList.append(complete_file_path)
+							LOG.info ("Uploading success for file: " + str(file))
+							break
+						except Exception as ex:
+							LOG.error("Exception in uploading the file: " + str(ex) + ' file name: ' + str(file))
+							retryCount += 1
+							if retryCount < self.uploadRetryCount:
+								internetCheckWait = 5
+								loopCount = self.internetCheckTimeout/internetCheckWait
+								status = self.checkInternetConnection()
+								while loopCount > 0 and status == False:
+									LOG.info("Waiting for internet connection")
+									time.sleep(internetCheckWait) 
+									loopCount = loopCount - 1
+									status = self.checkInternetConnection()
+								LOG.info("Internet conectivity status: " + str(status))
+
+
