@@ -40,7 +40,7 @@ MIDDLEWARE += [
 EMAIL_HOST = 'smtp.mail.yahoo.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mygyaanhive@yahoo.com'
-EMAIL_HOST_PASSWORD = 'examcracker2018'
+EMAIL_HOST_PASSWORD = 'examcracker2019'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@yahoo.com>'
 

@@ -693,7 +693,7 @@ class ClientService(object):
 
         toAddr = ['heman.t021@gmail.com', 'kunaldceit@gmail.com', 'kghoshnitk@gmail.com']
         fromAddr = 'mygyaanhive@yahoo.com'
-        pwd = 'examcracker2018'
+        pwd = 'examcracker2019'
         subject = 'Client Logs'
         mailBody = 'Client logs are attached with this mail'
         attachmentPath = self.capture.captureAppLogPath

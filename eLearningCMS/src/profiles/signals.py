@@ -16,19 +16,23 @@ def getHost():
     return settings.ALLOWED_HOSTS[0]
 
 def sendMail(toEmail, emailSubj,emailBody):
-    msg = MIMEMultipart()
-    msg['From'] = settings.EMAIL_HOST_USER
-    msg['To'] = toEmail
-    msg['Subject'] = emailSubj
-    body = emailBody
-    msg.attach(MIMEText(body, 'html'))
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = settings.EMAIL_HOST_USER
+        msg['To'] = toEmail
+        msg['Subject'] = emailSubj
+        body = emailBody
+        msg.attach(MIMEText(body, 'html'))
 
-    server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
-    server.ehlo()
-    server.starttls()
-    server.ehlo()
-    server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    server.sendmail(settings.EMAIL_HOST_USER, toEmail, msg.as_string())
+        server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        server.sendmail(settings.EMAIL_HOST_USER, toEmail, msg.as_string())
+    except:
+        logger.error('Email could not be sent to {}.'.format(toEmail))
+        return
 
 def sendVerificationMail(httpProtocol,email, typeofuser, code):
     link = '{}://{}/{}/verifyEmail/{}'.format(httpProtocol,getHost(), typeofuser, code)
