@@ -157,6 +157,11 @@ def on_message(message):
                     serviceObj.dokeysecret = messageDict["dokeysecret"]
                     serviceObj.bucketname = messageDict["bucketname"]
                     serviceObj.multiBitRate = messageDict["multiBitRate"]
+                    if "email" in messageDict.keys():
+                        serviceObj.email = messageDict["email"]
+                    if "email_password" in messageDict.keys():
+                        serviceObj.email_password = messageDict["email_password"]
+
                     serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                     serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
                     sendCaptureResponse(RUNNING, serviceObj.encryptedid, serviceObj.scheduleid, serviceObj.liveStreamName)
@@ -303,6 +308,8 @@ class ClientService(object):
     bucketname = ''
     duration = 0
     tmpFiles = []
+    email = ''
+    email_password = ''
     
     def __init__(self):
         websocket.enableTrace(True)
@@ -694,6 +701,10 @@ class ClientService(object):
         toAddr = ['heman.t021@gmail.com', 'kunaldceit@gmail.com', 'kghoshnitk@gmail.com']
         fromAddr = 'mygyaanhive@yahoo.com'
         pwd = 'examcracker2019'
+        if self.email_password != '':
+            pwd = self.email_password
+        if self.email != '':
+            fromAddr = self.email
         subject = 'Client Logs'
         mailBody = 'Client logs are attached with this mail'
         attachmentPath = self.capture.captureAppLogPath

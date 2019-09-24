@@ -147,6 +147,7 @@ def isAnyEventLive(request):
         scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
     else:
         # Get live events of enrolled courses
+        scheduleObj = scheduleObj.filter(autopublish=True)
         studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
         courseIds = course.algos.getEnrolledCourseIds(request)
         enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True,course_id__in=courseIds)
@@ -183,6 +184,7 @@ class showLiveEvents(provider.views.showProviderHome,LoginRequiredMixin,generic.
             scheduleObj = scheduleObj.filter(provider_id=providerObj.id)
         else:
             # Get live events of enrolled courses
+            scheduleObj = scheduleObj.filter(autopublish=True)
             studentObj = student.models.Student.objects.filter(user_id=request.user.id)[0]
             courseIds = course.algos.getEnrolledCourseIds(request)
             enrolledCourseObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True,course_id__in=courseIds)
@@ -337,6 +339,9 @@ def createDictSchedule(scheduleObj, command):
     dictObj["drmkeyid"] = drm_deatils['KeyID']
     dictObj["drmkey"] = drm_deatils['Key']
     dictObj["multiBitRate"] = False
+    dictObj['email'] = settings.EMAIL_HOST_USER
+    dictObj['email_password'] = settings.EMAIL_HOST_PASSWORD
+
     return dictObj
 
 def getStreamUrl(streamname):
