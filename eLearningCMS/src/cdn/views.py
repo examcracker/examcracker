@@ -139,7 +139,7 @@ def getProviderFromChapterId(chapterid):
     return providerObj
 
 # methods to be called from provider client
-def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0, sessionName=''):
+def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid='', drmkey='', duration=0, sessionName='', dobucketname='', bunnyCDNStorageName=''):
     chapterObj = course.models.CourseChapter.objects.filter(id=chapterId)[0]
     providerObj = getProviderFromChapterId(chapterId)
     sessionObj = provider.models.Session()
@@ -158,6 +158,11 @@ def saveSession(videoKey, chapterId, publish=False, encrypted=False, drmkeyid=''
     sessionObj.duration = duration
     if duration > 0:
         sessionObj.ready = True
+    # for testing , give preference to bunny CDN
+    #if dobucketname != '':
+    #    sessionObj.bucketname = dobucketname
+    if bunnyCDNStorageName != '':
+        sessionObj.bucketname = bunnyCDNStorageName
     sessionObj.save()
 
     if encrypted:
@@ -230,10 +235,20 @@ class saveClientSession(generic.TemplateView):
     def get(self, request, *args, **kwargs):
         jsonObj = json.loads(request.body.decode())
         sessionName = ''
+        dobucketname = ''
+        bunnyCDNStorageName = ''
         if "sessionName" in jsonObj:
             sessionName = jsonObj["sessionName"]
+        if 'bucketname' in jsonObj:
+            dobucketname = jsonObj["bucketname"]
+        if 'bunnyCDNStorageName' in jsonObj:
+            bunnyCDNStorageName = jsonObj["bunnyCDNStorageName"]
+        if 'primary' in jsonObj:
+            primary = jsonObj["primary"]
+            if primary == schedule.views.DO:
+                bunnyCDNStorageName = ''
         saveSession(jsonObj["videokey"], jsonObj["chapterid"], bool(jsonObj["publish"]), bool(jsonObj["encrypted"]),
-                    jsonObj["drmkeyid"], jsonObj["drmkey"], jsonObj["duration"],sessionName)
+                    jsonObj["drmkeyid"], jsonObj["drmkey"], jsonObj["duration"],sessionName,dobucketname,bunnyCDNStorageName)
         return schedule.views.HttpResponseNoContent()
 
 @api_view(['GET'])

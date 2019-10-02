@@ -349,6 +349,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["chapter"] = courseChapterObj
         kwargs["ContentHeading"] = 'Contents'
         kwargs["bucketname"] = courseOwnerObj.bucketname
+        if sessionObj.bucketname != 'gyaanhive':
+            kwargs["bucketname"] = sessionObj.bucketname
         kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
 

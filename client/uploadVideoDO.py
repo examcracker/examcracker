@@ -85,7 +85,7 @@ class uploadVideoDO:
 		LOG.info ("Uploading mpd folder to CDN: "+str(local_folder_path))
 		client = self.getUploadClient(dokey, dokeysecret)
 		parentFolder = os.path.dirname(local_folder_path)
-
+		self.alreadyUploadedList = []
 		if uploaderInstance:
 			totalFileCount = 0
 			for root, dirs, files in os.walk(local_folder_path):
@@ -144,9 +144,8 @@ class uploadVideoDO:
 
 								LOG.info("Internet conectivity status: " + str(status))
 								
-	def uploadFileToBunnyCDN(self,storagename,storagepassword,complete_file_path,file):
-		hdr = {'AccessKey':storagepassword}
-		http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',ca_certs=certifi.where())
+	def uploadFileToBunnyCDN(self,storagename,complete_file_path,file,hdr,http):
+
 		with open(complete_file_path, 'rb') as fp:
 			binary_data = fp.read()
 			response = http.request('PUT', 'https://storage.bunnycdn.com/' + storagename + '//'+file,body=binary_data,headers=hdr)
@@ -156,7 +155,9 @@ class uploadVideoDO:
 		# Initialize a session using DigitalOcean Spaces.
 		LOG.info ("Uploading mpd folder to CDN: "+str(local_folder_path))
 		parentFolder = os.path.dirname(local_folder_path)
-
+		hdr = {'AccessKey':storagepassword}
+		http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',ca_certs=certifi.where())
+		self.alreadyUploadedList = []
 		if uploaderInstance:
 			totalFileCount = 0
 			for root, dirs, files in os.walk(local_folder_path):
@@ -177,7 +178,7 @@ class uploadVideoDO:
 					if complete_file_path in self.alreadyUploadedList:
 						continue
 					file = nested_dir + file if nested_dir else file
-					status = self.uploadFileToBunnyCDN(storagename, storagepassword,complete_file_path,file)
+					status = self.uploadFileToBunnyCDN(storagename,complete_file_path,file,hdr,http)
 					if status != 201:
 						raise Exception('BunnyCDN : Failed to upload successfully. Throwing to retry on : ' + file)
 					self.alreadyUploadedList.append(complete_file_path)
@@ -190,7 +191,7 @@ class uploadVideoDO:
 					while retryCount < self.uploadRetryCount:
 						LOG.info ("Retrying the upload: " + str(file))
 						try:
-							status = self.uploadFileToBunnyCDN(storagename, storagepassword,complete_file_path,file)
+							status = self.uploadFileToBunnyCDN(storagename,complete_file_path,file,hdr,http)
 							if status != 201:
 								LOG.info('File upload failed for :' + str(file))
 								raise Exception('BunnyCDN : Failed to upload successfully. Throwing to retry on : ' + file)

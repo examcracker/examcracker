@@ -37,6 +37,10 @@ UPLOADING = 2
 os.environ['CACERT_PATH'] = 'cacert.pem'
 os.environ['HTTPLIB2_CA_CERTS'] = 'cacert.pem'
 
+# Macros for Storage locations
+DO = 1
+BUNNY = 2
+
 try:
     import thread
 except ImportError:
@@ -161,6 +165,19 @@ def on_message(message):
                         serviceObj.email = messageDict["email"]
                     if "email_password" in messageDict.keys():
                         serviceObj.email_password = messageDict["email_password"]
+                    
+                    if "bunnyCDNStorageName" in messageDict.keys():
+                        serviceObj.bunnyCDNStorageName = messageDict["bunnyCDNStorageName"]
+                    if "DoUpload" in messageDict.keys():
+                        serviceObj.DoUpload = messageDict["DoUpload"]
+                    if "bunnyUpload" in messageDict.keys():
+                        serviceObj.bunnyUpload = messageDict["bunnyUpload"]
+                    if "bunnyCDNStoragePassword" in messageDict.keys():
+                        serviceObj.bunnyCDNStoragePassword = messageDict["bunnyCDNStoragePassword"]
+                    else:
+                        serviceObj.bunnyUpload = False
+                    if "primary" in messageDict.keys():
+                        serviceObj.primary = messageDict["primary"]
 
                     serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
                     serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
@@ -310,6 +327,11 @@ class ClientService(object):
     tmpFiles = []
     email = ''
     email_password = ''
+    bunnyCDNStorageName = ''
+    bunnyCDNStoragePassword = ''
+    DoUpload = True
+    bunnyUpload = False
+    primary = DO
     
     def __init__(self):
         websocket.enableTrace(True)
@@ -613,8 +635,13 @@ class ClientService(object):
                 
                 filename = os.path.basename(filePath)
                 # upload mpd file to digital ocean
-                self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret, uploaderInstance)
-                #self.upload.uploadVideoBunnyCDNStorage(self.mpdoutpath,'gyaanhive3', 'Enter Key pass word here', uploaderInstance)
+                if self.DoUpload == True and self.primary == DO:
+                    LOG.info ("Uploading to DO")
+                    self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret, uploaderInstance)
+                if self.bunnyUpload == True and self.primary == BUNNY:
+                    LOG.info ("Uploading to bunny CDN storage")
+                    self.upload.uploadVideoBunnyCDNStorage(self.mpdoutpath,self.bunnyCDNStorageName, self.bunnyCDNStoragePassword, uploaderInstance)
+                
                 uploadResponse = {'responseCode': '200', 'videoKey': self.videoKey, 'completeResponse': 'success', 'sessionName': filename}
                 LOG.info ("Uploading done")
                 LOG.info("Video Server response: " + str(uploadResponse))
@@ -632,7 +659,7 @@ class ClientService(object):
             # Now remove all temporary files created
             if sendResponse:
                 sendCaptureResponse(STOPPED, self.encryptedid, scheduleid)
-            self.removeTempFiles(self.tmpFiles)
+            #self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
         return uploadResponse
@@ -647,6 +674,10 @@ class ClientService(object):
         responseDict["dokey"] = self.dokey
         responseDict["dokeysecret"] = self.dokeysecret
         responseDict["multiBitRate"] = self.multiBitRate
+        responseDict["primary"] = self.primary
+        if self.bunnyUpload == True:
+            responseDict["bunnyCDNStorageName"] = self.bunnyCDNStorageName
+            #responseDict["bunnyCDNStoragePassword"] = self.bunnyCDNStoragePassword
         scheduleid = self.scheduleid
 
         res = self.uploadFileToCDNThreaded(filePath, sendResponse, scheduleid)
@@ -658,21 +689,32 @@ class ClientService(object):
                 responseDict["duration"] = res["duration"]
             else:
                 responseDict["duration"] = self.duration
+            apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+            retryCount = 0
+            while apiResponse.status_code != 200:
+                LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
+                time.sleep(10)
+                apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+                retryCount += 1
+                if retryCount > 10:
+                    LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
+                    break
         else:
             responseDict["result"] = api.status_upload_fail
-            responseDict["fail_response"] = res
+            responseDict["fail_response"] = res       
+        # Backup upload
+        if self.bunnyUpload == True and self.primary != BUNNY:
+            self.osleep.inhibit()
+            LOG.info ("Uploading to Bunny Storage")
+            self.upload.uploadVideoBunnyCDNStorage(self.mpdoutpath,self.bunnyCDNStorageName, self.bunnyCDNStoragePassword)
+            self.osleep.uninhibit()
+        if self.DoUpload == True and self.primary != DO:
+            self.osleep.inhibit()
+            LOG.info ("Uploading to DO")
+            self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
+            self.osleep.uninhibit()
 
-        apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-        retryCount = 0
-        while apiResponse.status_code != 200:
-            LOG.error("Retrying the save client sesion, last error code: " + str(apiResponse.status_code))
-            time.sleep(10)
-            apiResponse = httpReq.send(self.url, "/cdn/saveClientSession/", json.dumps(responseDict))
-            retryCount += 1
-            if retryCount > 10:
-                LOG.error("Failed to update the save client session, error code: " + str(apiResponse.status_code))
-                break
-
+        self.removeTempFiles(self.tmpFiles)
         #self.uploadOriginalFileToCDN(self.capture.outputFileName)
 
 

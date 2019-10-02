@@ -47,6 +47,10 @@ STOPPED = 0
 RUNNING = 1
 UPLOADING = 2
 
+# Macros for Storage locations
+DO = 1
+BUNNY = 2
+
 class HttpResponseNoContent(HttpResponse):
     status_code = 200
 
@@ -457,7 +461,15 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
 
         pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
         scheduleDict = createDictSchedule(scheduleObj, command_start)
+        
+        # Cloud storage names and flags whether to upload to them or not
+        # some hard coded values for trial only
         scheduleDict['bucketname'] = providerObj.bucketname
+        scheduleDict['bunnyCDNStorageName'] = 'gyaanhive3'
+        scheduleDict['DoUpload'] = True
+        scheduleDict['bunnyUpload'] = True
+        scheduleDict['bunnyCDNStoragePassword'] = 'cfd2b3ce-d992-4982-b773655db4f7-f224-4e7c'
+        scheduleDict['primary'] = DO
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")
 
