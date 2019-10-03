@@ -469,7 +469,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleDict['DoUpload'] = True
         scheduleDict['bunnyUpload'] = True
         scheduleDict['bunnyCDNStoragePassword'] = 'cfd2b3ce-d992-4982-b773655db4f7-f224-4e7c'
-        scheduleDict['primary'] = DO
+        scheduleDict['primary'] = BUNNY
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")
 
