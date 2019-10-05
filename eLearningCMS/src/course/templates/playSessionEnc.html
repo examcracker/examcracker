@@ -387,12 +387,12 @@ window.addEventListener('resize', function() {
 				},
                 streaming: {
                     bufferingGoal: 300,
-                    rebufferingGoal: 10,
-                    bufferBehind:20,
+                    rebufferingGoal: 5,
+                    bufferBehind:10,
                     jumpLargeGaps: true,
                     retryParameters: {
-                        timeout: 10000,       // timeout in ms, after which we abort; 0 means never
-                        maxAttempts: 10,   // the maximum number of requests before we fail
+                        timeout: 5000,       // timeout in ms, after which we abort; 0 means never
+                        maxAttempts: 5,   // the maximum number of requests before we fail
                         baseDelay: 2000,  // the base delay in ms between retries
                     }
                 }
