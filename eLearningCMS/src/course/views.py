@@ -271,7 +271,12 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         user_email = request.user.email
         kwargs["userip"] = user_ip
         kwargs["user_email"] = user_email
-        
+
+        # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
+        courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
+        courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+        if courseOwnerObj.approved == False:
+            raise Http404()
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
             index = sessions.index(str(sessionid))
@@ -330,9 +335,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                     enrolledCourseObj.sessions = algos.intListToStr(sessionsPlayed)
                     enrolledCourseObj.save()
 
-        # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
-        courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
-        courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+
+        
         if request.user.is_staff:
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
             
