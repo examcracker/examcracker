@@ -275,6 +275,7 @@ class addShowSchedule(showProviderHome):
                 scheduleInfo['eventsRemaining'] = schedule.eventcount - sessionsCount
                 scheduleInfo['autoPublish'] = schedule.autopublish
                 scheduleInfo['encrypt'] = schedule.autopublish
+                scheduleInfo['start'] = schedule.start
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
         return super().get(request, *args, **kwargs)
