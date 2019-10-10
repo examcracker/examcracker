@@ -40,6 +40,12 @@ class worker(QThread):
 		self.serviceObj.bucketname = self.userInfo["bucketname"]
 		self.serviceObj.multiBitRate = self.userInfo["multiBitRate"]
 
+		self.serviceObj.bunnyCDNStorageName = self.userInfo["bunnyCDNStorageName"]
+		self.serviceObj.DoUpload = False
+		self.serviceObj.bunnyUpload = True
+		self.serviceObj.bunnyCDNStoragePassword = self.userInfo["bunnyCDNStoragePassword"]
+		self.serviceObj.primary = self.userInfo["primary"]
+
 	def updateUploadStatus(self, res):
 		responseDict = {}
 		if 'videoKey' in res.keys():
@@ -57,10 +63,10 @@ class worker(QThread):
 		responseDict["drmkeyid"] = self.serviceObj.drmkeyid
 		responseDict["drmkey"] = self.serviceObj.drmkey
 		responseDict["bucketname"] = self.serviceObj.bucketname
-		responseDict["dokey"] = self.serviceObj.dokey
-		responseDict["dokeysecret"] = self.serviceObj.dokeysecret
+		#responseDict["dokey"] = self.serviceObj.dokey
+		#responseDict["dokeysecret"] = self.serviceObj.dokeysecret
 		responseDict["multiBitRate"] = self.serviceObj.multiBitRate
-
+		responseDict["bunnyCDNStorageName"] = self.serviceObj.bunnyCDNStorageName
 		responseDict["id"] = self.serviceObj.clientid
 		httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
 

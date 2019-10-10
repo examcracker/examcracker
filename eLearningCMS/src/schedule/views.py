@@ -466,11 +466,19 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         # Cloud storage names and flags whether to upload to them or not
         # some hard coded values for trial only
         scheduleDict['bucketname'] = providerObj.bucketname
-        scheduleDict['bunnyCDNStorageName'] = 'gyaanhive3'
+        bnStorage = 'gyaanhive' + str(providerObj.id)
+        storageObj = provider.models.Storage.objects.filter(name=bnStorage)
         scheduleDict['DoUpload'] = True
-        scheduleDict['bunnyUpload'] = True
-        scheduleDict['bunnyCDNStoragePassword'] = 'cfd2b3ce-d992-4982-b773655db4f7-f224-4e7c'
-        scheduleDict['primary'] = BUNNY
+        if storageObj:
+            storageObj = storageObj[0]
+            scheduleDict['bunnyCDNStorageName'] = storageObj.name
+            scheduleDict['bunnyUpload'] = True
+            scheduleDict['bunnyCDNStoragePassword'] = storageObj.key
+            scheduleDict['bunnyUpload'] = True
+            scheduleDict['primary'] = BUNNY
+        else:   
+            scheduleDict['bunnyUpload'] = False
+            scheduleDict['primary'] = DO
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")
 

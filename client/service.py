@@ -659,7 +659,9 @@ class ClientService(object):
             # Now remove all temporary files created
             if sendResponse:
                 sendCaptureResponse(STOPPED, self.encryptedid, scheduleid)
-            #self.removeTempFiles(self.tmpFiles)
+            # if upload to only single storage, then delete temporary here
+            if self.DoUpload == False or self.bunnyUpload == False:
+                self.removeTempFiles(self.tmpFiles)
             self.osleep.uninhibit()
 
         return uploadResponse
@@ -713,8 +715,9 @@ class ClientService(object):
             LOG.info ("Uploading to DO")
             self.upload.uploadVideoDO(self.mpdoutpath,self.bucketname, self.dokey, self.dokeysecret)
             self.osleep.uninhibit()
-
-        self.removeTempFiles(self.tmpFiles)
+        # delete temporary files here if files uploaded to both storage locations
+        if self.bunnyUpload == True and self.DoUpload == True:
+            self.removeTempFiles(self.tmpFiles)
         #self.uploadOriginalFileToCDN(self.capture.outputFileName)
 
 
