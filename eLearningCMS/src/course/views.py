@@ -354,7 +354,14 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         kwargs["ContentHeading"] = 'Contents'
         kwargs["bucketname"] = courseOwnerObj.bucketname
         if sessionObj.bucketname != 'gyaanhive':
-            kwargs["bucketname"] = sessionObj.bucketname
+            # that means this session is not coming from DO
+            # pick bucketname from provider.Storage table
+            storageObj = provider.models.Storage.objects.filter(name=sessionObj.bucketname)
+            if storageObj:
+                storageObj = storageObj[0]
+                kwargs["bucketname"] = storageObj.pullzone
+            else:
+                kwargs["bucketname"] = sessionObj.bucketname
         kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
 
