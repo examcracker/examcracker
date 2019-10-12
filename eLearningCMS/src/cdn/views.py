@@ -418,7 +418,9 @@ def getProviderStudentsInt(start, end, courseid):
         studentInfo['id'] = studentDetails.id
         studentInfo['name'] = course.algos.getUserNameAndPic(studentDetails.user_id)['name']
 
-        datetoshow = str(studentItem.enrolled.day) + " " + calendar.month_name[studentItem.enrolled.month] + " " + str(studentItem.enrolled.year) + ", "
+        datetoshow = str(studentItem.enrolled.day) + " " + calendar.month_name[studentItem.enrolled.month][:3] + " " + str(studentItem.enrolled.year) + ", "
+        expiry = str(studentItem.expiry.day) + " " + calendar.month_name[studentItem.expiry.month][:3] + " " + str(studentItem.expiry.year) + ", "
+        '''
         meridian = "A.M"
         hours = studentItem.enrolled.hour
         minutes = studentItem.enrolled.minute
@@ -432,8 +434,9 @@ def getProviderStudentsInt(start, end, courseid):
         if minutes < 10:
             strm = "0" + strm
         datetoshow = datetoshow + strh + ":" + strm + " " + meridian
+        '''
         studentInfo['enrolled_date'] = datetoshow
-
+        studentInfo['course_expiry'] = expiry
         studentInfo['remarks'] = studentItem.remarks
         studentInfo['viewhours'] = studentItem.viewhours
         studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
