@@ -65,4 +65,11 @@ class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     subdomain = models.CharField(max_length=500)
 
+class Storage(models.Model):
+    name = models.CharField(default='', max_length=100) # storage name
+    key = models.CharField(default='', max_length=500)
+    secret = models.CharField(default='', max_length=500) # blank for BNNY
+    pullzone = models.CharField(default='', max_length=500) # name --> pull zone
+
+
 

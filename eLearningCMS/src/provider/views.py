@@ -637,6 +637,7 @@ class addStudents(showProviderHome):
         emailsList = str.split(emails, ',')
         studentnamesList = str.split(studentnames, ',')
         viewhoursList = str.split(viewhours, ',')
+        #expiryDate = self.request.POST.get('expiryDate','')
         if len(emailsList) == 0:
             return self.get(request, *args, **kwargs)
         
@@ -718,6 +719,7 @@ Gyaanhive Team</p>'
                 enrolledCourse.viewhours = vh
                 enrolledCourse.active = True
                 enrolledCourse.remarks = "Active"
+                #enrolledCourse.expiry = expiryDate
                 enrolledCourse.save()
             for module in modules:
                 chapterList = request.POST.getlist(module)
@@ -768,7 +770,6 @@ class ProviderCourseDetails(generic.TemplateView):
         decryptedpassword = decipherObj.decrypt(base64pass).decode()
 
         result = {}
-
         userObj = authenticate(username=email, password=decryptedpassword)
         if not userObj:
             result['result'] = False
@@ -802,6 +803,22 @@ class ProviderCourseDetails(generic.TemplateView):
 
         result['clientid'] = providerObj.encryptedid
         result['bucketname'] = providerObj.bucketname
+
+        # BN storage details
+        bnStorage = 'gyaanhive' + str(providerObj.id)
+        storageObj = models.Storage.objects.filter(name=bnStorage)
+        if storageObj:
+            storageObj = storageObj[0]
+            result['bunnyCDNStorageName'] = bnStorage
+            result['bunnyCDNStoragePassword'] = storageObj.key
+            result['primary'] = schedule.views.BUNNY
+            result['DoUpload'] = False
+            result['bunnyUpload'] = True
+        else:
+            result['DoUpload'] = True
+            result['bunnyUpload'] = False
+            result['primary'] = schedule.views.DO
+
         result['courses'] = []
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         for c in courses:
