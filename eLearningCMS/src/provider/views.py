@@ -28,6 +28,8 @@ import string
 import random
 import csv
 from django.http import HttpResponse
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -638,6 +640,8 @@ class addStudents(showProviderHome):
         studentnamesList = str.split(studentnames, ',')
         viewhoursList = str.split(viewhours, ',')
         #expiryDate = self.request.POST.get('expiryDate','')
+        #print(expiryDate)
+        #return self.get(request, *args, **kwargs)
         if len(emailsList) == 0:
             return self.get(request, *args, **kwargs)
         
@@ -871,3 +875,14 @@ def export_users_csv(request,studentid):
     for stat in studentStatsObj:
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
     return response
+
+def fix_expiry(request):
+    enrollcourseObj = course.models.EnrolledCourse.objects.all()
+    for ec in enrollcourseObj:
+        expiry = ec.expiry
+        #print(expiry)
+        expiry = expiry + relativedelta(months=6)
+        ec.expiry = expiry
+        ec.save()
+        #print(expiry)
+    return redirect("provider:provider_home")
