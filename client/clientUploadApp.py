@@ -254,6 +254,8 @@ class filedialogdemo(QFrame):
 			self.comboBoxCourse.addItem(course['name'])
 			self.comboBoxCourse.setItemData(index, course['id'], Qt.UserRole + 1)
 			index +=  1
+			
+		self.comboBoxCourse.setSizeAdjustPolicy(QComboBox.AdjustToContents)
 
 		self.onCourseSelection(0)
 
@@ -269,6 +271,8 @@ class filedialogdemo(QFrame):
 					self.comboBoxChapter.setItemData(index, chapter['id'], Qt.UserRole + 1)
 					index += 1
 
+		self.comboBoxChapter.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+
 
 	def populateBitrateOptions(self):
 		self.resolutionList = service.bitRateAndResolutionList
@@ -280,9 +284,12 @@ class filedialogdemo(QFrame):
 		self.comboBoxBitrate2.setCurrentIndex(len(self.resolutionList)-1)
 
 	def initWidget(self):
-		
-		self.setMinimumWidth(700)
-		self.setMinimumHeight(400)
+		screen = QtWidgets.QDesktopWidget().screenGeometry(-1)
+		self.setMinimumWidth(screen.width()-400)
+		self.setMinimumHeight(screen.height()-200)
+
+		size = self.geometry()
+		self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
 		self.settings = QSettings("GyaanHive", "UserDetails")
 
