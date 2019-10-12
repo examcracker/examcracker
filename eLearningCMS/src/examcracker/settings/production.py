@@ -67,13 +67,13 @@ LOGGING = {
     },
     'handlers': {
         'proj_log_file': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': str(LOGFILE_ROOT / 'project.log'),
             'formatter': 'verbose'
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         }
@@ -81,7 +81,7 @@ LOGGING = {
     'loggers': {
         'project': {
             'handlers': ['proj_log_file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
     }
 }
