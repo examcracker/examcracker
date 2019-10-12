@@ -875,6 +875,7 @@ def export_users_csv(request,studentid):
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
     return response
 
+'''
 def fix_expiry(request):
     enrollcourseObj = course.models.EnrolledCourse.objects.all()
     for ec in enrollcourseObj:
@@ -883,3 +884,4 @@ def fix_expiry(request):
         ec.save()
         #print(expiry)
     return redirect("provider:provider_home")
+'''
