@@ -19,5 +19,6 @@ urlpatterns = [
      path('getProviderProfile/<str:email>/<str:encpassword>', views.ProviderCourseDetails.as_view(), name="provider_profile"),
      path('deleteCourse/<int:id>', views.deleteCourse.as_view(), name="delete_course"),
      path('export_studentdata/<int:studentid>', views.export_users_csv, name='export_studentdata'),
+     path('clear_enrollments/<int:id>', views.clear_enrollments.as_view(), name="clear_enrollments"),
      #path('fix_expiry', views.fix_expiry, name='fix_expiry')
 ]

@@ -60,6 +60,7 @@ class Plan(models.Model):
     multibitrate = models.BooleanField(default=True)
     expiry = models.DateTimeField(default=datetime.now())
     startdate = models.DateTimeField(default=datetime.now())
+    completedminutes = models.FloatField(default=0)
 
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)

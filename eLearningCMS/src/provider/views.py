@@ -91,7 +91,12 @@ def getProviderStats(providerId):
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
     providerStatsInfo['piechartArray'] = courses
     providerStatsInfo['completedtime'] = str(int(totalViewedMinutes/60)) + " : " + str(int(totalViewedMinutes%60))
-    providerStatsInfo['totalStudentsPlayedTime'] = int (getTotalStudentsPlayedTime(providerId)/60)
+    viewMinutesByStudents = getTotalStudentsPlayedTime(providerId)
+    planObj = models.Plan.objects.filter(provider_id=providerId)
+    if planObj:
+        planObj = planObj[0]
+        viewMinutesByStudents = viewMinutesByStudents + planObj.completedminutes
+    providerStatsInfo['totalStudentsPlayedTime'] = int (viewMinutesByStudents/60)
     return providerStatsInfo
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
@@ -590,7 +595,7 @@ class addStudents(showProviderHome):
         # with module level access.
         studentid = int(slug)
         providerObj = getProvider(request)
-        courses = course.models.Course.objects.filter(provider_id=providerObj.id)
+        courses = course.models.Course.objects.filter(provider_id=providerObj.id, published=1)
         courseDict = []
         viewhours = '10'
         courseexpiry = str(datetime.now().date()+relativedelta(months=6))
@@ -627,7 +632,10 @@ class addStudents(showProviderHome):
         kwargs['mycourses'] = courseDict
         kwargs['viewhours'] = viewhours
         kwargs['courseexpiry'] = courseexpiry
-            # store 3 info , name, subject and id
+        kwargs['submitDisabled'] = False
+        if len(courseDict) == 0:
+            kwargs['submitDisabled'] = True
+        # store 3 info , name, subject and id
         kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
 
@@ -890,3 +898,29 @@ def fix_expiry(request):
         #print(expiry)
     return redirect("provider:provider_home")
 '''
+class clear_enrollments(viewCourses):
+    http_method_names = ['post']
+
+    def post(self, request, id, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)
+        if len(courseObj) == 0:
+            raise Http404()
+        courseObj = courseObj[0]
+        providerObj = getProvider(request)
+        if courseObj.provider_id != providerObj.id:
+            raise Http404()
+        enrollcourseObj = course.models.EnrolledCourse.objects.filter(course_id=id)
+        # Store view hours somewhere
+        planObj = models.Plan.objects.filter(provider_id=providerObj.id)
+        viewMinutes = 0
+        for ec in enrollcourseObj:
+            viewMinutes = viewMinutes + int(ec.completedminutes)
+            ec.delete()
+        if planObj:
+            planObj = planObj[0]
+            planObj.completedminutes = planObj.completedminutes + viewMinutes
+            planObj.save()
+        return super().get(request, *args, **kwargs)

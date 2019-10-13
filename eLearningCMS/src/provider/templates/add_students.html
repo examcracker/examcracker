@@ -193,7 +193,7 @@ function Upload() {
 		<label for="inputDate" class="col-sm-2 col-form-label">Expiry</label>
 		<div class="col-sm-10">
 			<input class="form-control" id="date" name="expiryDate" placeholder="MM/DD/YYY" type="date" value="{{courseexpiry}}"/>
-			<small>Format <strong>MM/DD/YYY</strong>. Default is <strong>6 months</strong> from today</small>
+			<small>Format <strong>MM/DD/YYYY</strong>. Default is <strong>6 months</strong> from today</small>
 		</div>
 	</div>
 	<h4>Assign Course and permissions</h2>
@@ -234,9 +234,11 @@ function Upload() {
 </div>
 {% endfor %}
 
-<button type="submit" >Submit</button><br>
+<button type="submit" {% if submitDisabled %} disabled {% endif %} >Submit</button><br>
 </form>
-
+{% if submitDisabled %}
+<h4>Courses may not be published. Go to Course Edit page and click on Publish</h4>
+{% endif %}
 <script>
 	$('#enrollStudents').submit(function() {
 		emails = document.getElementById('inputEmail3').value;
