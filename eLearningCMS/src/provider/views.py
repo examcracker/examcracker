@@ -319,6 +319,7 @@ class createCourse(coursePageBase):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
+        courseSubjectOthers = request.POST.get('courseSubjectOthers','')
         if 'coursePublic' in self.request.POST:
             courseObj.public = True
         else:
@@ -348,7 +349,12 @@ class createCourse(coursePageBase):
         
         if (len(subjects) > 0):
             subj = subjects[0].split(':')[1]
-            courseObj.subjects = subj
+            if subj != "Others":
+                courseObj.subjects = subj
+            elif courseSubjectOthers != '':
+                courseObj.subjects = courseSubjectOthers
+            else:
+                courseObj.subjects = subj
             i=1
             while(i<len(subjects)):
                 subj = subjects[i].split(':')[1]

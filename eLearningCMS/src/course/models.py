@@ -7,9 +7,9 @@ from datetime import datetime
 # Create your models here.
 
 # All exams dictionary
-IITJEE = ['Physics', 'Chemistry', 'Mathematics']
-CAT = ['Quantitative Ability', 'Data Interpretation, Logical Reasoning', 'Verbal Ability']
-PMT = ['Physics', 'Chemistry', 'Biology']
+IITJEE = ['Physics', 'Chemistry', 'Mathematics', 'Others']
+CAT = ['Quantitative Ability', 'Data Interpretation, Logical Reasoning', 'Verbal Ability', 'Others']
+PMT = ['Physics', 'Chemistry', 'Biology', 'Others']
 
 IAS = [
     'Agriculture',
@@ -38,7 +38,9 @@ IAS = [
     'Statistics',
     'Zoology',
     'GS',
-    'Ethics'
+    'Ethics',
+    'Others'
+
 ]
 
 GATE = [
@@ -51,10 +53,11 @@ GATE = [
     'Mechanical',
     'Metallurgy',
     'Polymer Science',
+    'Others'
 ]
 
-GRE = ['Verbal Reasoning', 'Quantitative','Logical Reasoning']
-TOEFL = ['Verbal Ability']
+GRE = ['Verbal Reasoning', 'Quantitative','Logical Reasoning', 'Others']
+TOEFL = ['Verbal Ability', 'Others']
 
 ExamDict = {'IIT-JEE': IITJEE, 
     'AIEEE': IITJEE,

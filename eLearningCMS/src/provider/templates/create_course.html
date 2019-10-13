@@ -93,6 +93,7 @@
 											{% endif %}
 											</select>
 										</div>
+										{% if editCourse is None %}
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Subject(s)</label>
 											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} disabled="true" {% endif %} required multiple>
@@ -122,11 +123,17 @@
 											{% endif %}
 											</select>
 										</div>
+										{% endif %}
 								</div>
 								<div class="form-row">
-									<div class="col-md-12 mb-3">
+										<div class="col-md-4 mb-3">
+												<label for="cSubjectOthers">Subject</label>
+												<textarea class="form-control" name="courseSubjectOthers" id="cSubjectOthers" placeholder="Add Subject if Subject(s) is Others" rows="3"
+												{% if editCourse %} disabled="true" {% endif %} >{% if editCourse %}{{editCourse.subjects}}{% endif %}</textarea>
+											</div>
+									<div class="col-md-8 mb-3">
 										<label for="cDescription">Summary</label>
-										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Add Summary" rows="3">{% if editCourse %}{{editCourse.description}}{% endif %}</textarea>
+										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Add Summary" rows="3">{% if editCourse %}{{editCourse.description}} {% endif %}</textarea>
 									</div>
 								</div>
 								<div class="form-row">
