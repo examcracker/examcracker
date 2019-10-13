@@ -776,8 +776,8 @@ Gyaanhive Team</p>'
                     cd.remarks = "Enrolled removed"
                     cd.save()
                 #coursesToDelete.delete()
-
-            profiles.signals.sendMail(fixedEmail, subject, emailBody)
+            cc = request.user.email
+            profiles.signals.sendMail(fixedEmail, subject, emailBody, cc)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
