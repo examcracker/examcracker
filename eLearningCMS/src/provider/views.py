@@ -912,12 +912,23 @@ class clear_enrollments(viewCourses):
         providerObj = getProvider(request)
         if courseObj.provider_id != providerObj.id:
             raise Http404()
+        subject = request.user.name + ' : Enrollment Removed'
+        User = get_user_model()
+
         enrollcourseObj = course.models.EnrolledCourse.objects.filter(course_id=id)
         # Store view hours somewhere
         planObj = models.Plan.objects.filter(provider_id=providerObj.id)
         viewMinutes = 0
         for ec in enrollcourseObj:
             viewMinutes = viewMinutes + int(ec.completedminutes)
+            studentObj = student.models.Student.objects.filter(id=ec.student_id)[0]
+            userObj = User.objects.filter(id=studentObj.user_id)[0]
+            emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
+<p>Your Enrollment has been removed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
+Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the details.<br />\n\
+Thanks<br />\n\
+Gyaanhive Team</p>'
+            profiles.signals.sendMail(userObj.email, subject, emailBody)
             ec.delete()
         if planObj:
             planObj = planObj[0]
