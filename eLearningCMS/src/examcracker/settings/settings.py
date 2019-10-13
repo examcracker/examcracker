@@ -80,19 +80,19 @@ LOGGING = {
     },
     'handlers': {
         'django_log_file': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': str(LOGFILE_ROOT / 'django.log'),
             'formatter': 'verbose'
         },
         'proj_log_file': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': str(LOGFILE_ROOT / 'project.log'),
             'formatter': 'verbose'
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         }
@@ -101,11 +101,11 @@ LOGGING = {
         'django': {
             'handlers': ['django_log_file'],
             'propagate': True,
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
         'project': {
             'handlers': ['proj_log_file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
     }
 }
