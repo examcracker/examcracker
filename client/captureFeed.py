@@ -44,6 +44,7 @@ class captureFeed:
 
         self.captureAppLogPath = os.path.join(self.dir_path, "Capturing.log")
         self.captureAppLog = None
+        self.captureAppProc = None
 		
         # capturing timeout in seconds
         self.timeout = 30
@@ -90,31 +91,25 @@ class captureFeed:
 
     def stopCapturing(self):
         try:
-            os.remove(self.captureTmpFilePath)
-            time.sleep(5)
-            waitCount = 0
-            retryCount = 0
-            
-            while self.captureAppProc.poll() is None:
-                time.sleep(0.5)
-                waitCount += 1
-                if waitCount > 60:
-                    if retryCount < 4:
-                        self.LOG.info("Retring to kill the captureApp process")
-                        os.kill(self.captureAppProc.pid, signal.CTRL_BREAK_EVENT)
-                        time.sleep(3)
-                        retryCount += 1
-                    else:
-                        self.LOG.error("Not able to kill captureApp process")
+            if os.path.exists(self.captureTmpFilePath):
+                os.remove(self.captureTmpFilePath)
+                time.sleep(5)
+                waitCount = 0
+                retryCount = 0
+                
+                while self.captureAppProc and self.captureAppProc.poll() is None:
+                    time.sleep(0.5)
+                    waitCount += 1
+                    if waitCount > 60:
                         break
-                    waitCount = 0
 
-            if self.captureAppProc.poll() is None:
+            if self.captureAppProc and self.captureAppProc.poll() is None:
                 self.killProcessForcefully(self.captureAppProc.pid)
             
         except Exception as ex:
             self.LOG.error("Exception in killing captureApp process: "+ str(ex))
-            self.killProcessForcefully(self.captureAppProc.pid)
+            if self.captureAppProc:
+                self.killProcessForcefully(self.captureAppProc.pid)
 			
 	
 	

@@ -158,8 +158,13 @@ def main():
     capture.fillMediaServerSettings(mediaServer, mediaServerApp, liveFlag, liveStreamName)
 
     capture.startCapturing(outputFileName)
+    captureStartTime = time.time()
+
     while os.path.exists(captureTmpFilePath):
         time.sleep(1)
+        timeDiff = int(round(time.time())) - captureStartTime
+        if timeDiff >= self.timeout:
+            break
 
     capture.stopCapturing()
 

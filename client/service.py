@@ -357,6 +357,7 @@ class ClientService(object):
         self.timeout = 0
         self.captureStartTime = -1
         self.captureAppProcName = "captureApp.exe"
+        self.captureLaunchAppProcName = "captureFeedApp.exe"
 
         self.uploadRetryCount = 5
 
@@ -415,11 +416,19 @@ class ClientService(object):
                     pass
 
     def checkAndKillProcess(self):
+        self.capture.stopCapturing()
+        time.sleep(5)
         self.osleep.uninhibit()
         for proc in psutil.process_iter():
-            # check whether the process name matches
-            if proc.name() == self.captureAppProcName:
-                proc.kill()
+            try:
+                # check whether the process name matches
+                if proc.name() == self.captureAppProcName:
+                    proc.kill()
+                if proc.name() == self.captureLaunchAppProcName:
+                    proc.kill()
+            except Exception as ex:
+                LOG.error("Exception in killing capture app process: " + str(ex))
+                continue
 
     def startCapture(self):
         if self.capturing:
@@ -433,7 +442,6 @@ class ClientService(object):
         self.capturing = True
         self.captureStartTime = int(round(time.time()))
         self.capture.startCapturing()
-
     
 
     def upload_directory_to_DO(self,path,bucketname):
