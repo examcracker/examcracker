@@ -15,6 +15,7 @@ import student
 import payments
 import schedule
 from django.forms.models import model_to_dict
+from datetime import datetime
 
 DELIMITER = ','
 SUBJECTS_DELIMITER = ';'
@@ -371,7 +372,7 @@ def getEnrolledCourseIds(request):
   sd = getSubDomain(request)
   subDomainObj = provider.models.Subdomain.objects.filter(subdomain = sd)
   enrolledCoursesObj = models.EnrolledCourse.objects.filter(student_id=studentObj.id,active=True)
-
+  todayDate = datetime.now()
   if subDomainObj:
     subDomainObj = subDomainObj[0]
     coursesObj = models.Course.objects.filter(provider_id = subDomainObj.provider_id)
@@ -387,6 +388,8 @@ def getEnrolledCourseIds(request):
     if courseObjsNotApproved:
       cids = courseObjsNotApproved.values('id')
       enrolledCoursesObj = enrolledCoursesObj.exclude(course_id__in=cids)
+  
+  enrolledCoursesObj = enrolledCoursesObj.filter(expiry__gte = todayDate)
 
   for ec in enrolledCoursesObj:
     courseids.append(ec.course_id)

@@ -28,6 +28,8 @@ import string
 import random
 import csv
 from django.http import HttpResponse
+from datetime import date,datetime
+from dateutil.relativedelta import relativedelta
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -591,6 +593,7 @@ class addStudents(showProviderHome):
         courses = course.models.Course.objects.filter(provider_id=providerObj.id)
         courseDict = []
         viewhours = '10'
+        courseexpiry = str(datetime.now().date()+relativedelta(months=6))
         for c in courses:
             courseDetails = course.algos.getCourseDetails(c.id, False,False)
             courseInfo = {}
@@ -606,6 +609,7 @@ class addStudents(showProviderHome):
                 enrolledCourseObj = course.models.EnrolledCourse.objects.filter(course_id=c.id,student_id=studentid,active=True)
                 if enrolledCourseObj:
                     enrolledCourseObj = enrolledCourseObj[0]
+                    courseexpiry = str(enrolledCourseObj.expiry.date())
                     viewhours = enrolledCourseObj.viewhours
                     courseInfo['viewhours'] = enrolledCourseObj.viewhours
                     if enrolledCourseObj.chapteraccess == '':
@@ -622,6 +626,7 @@ class addStudents(showProviderHome):
             courseDict.append(courseInfo)
         kwargs['mycourses'] = courseDict
         kwargs['viewhours'] = viewhours
+        kwargs['courseexpiry'] = courseexpiry
             # store 3 info , name, subject and id
         kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
@@ -637,7 +642,9 @@ class addStudents(showProviderHome):
         emailsList = str.split(emails, ',')
         studentnamesList = str.split(studentnames, ',')
         viewhoursList = str.split(viewhours, ',')
-        #expiryDate = self.request.POST.get('expiryDate','')
+        expiryDate = self.request.POST.get('expiryDate','')
+        if expiryDate == '':
+            expiryDate = str(datetime.now() + relativedelta(months=6))
         if len(emailsList) == 0:
             return self.get(request, *args, **kwargs)
         
@@ -719,7 +726,7 @@ Gyaanhive Team</p>'
                 enrolledCourse.viewhours = vh
                 enrolledCourse.active = True
                 enrolledCourse.remarks = "Active"
-                #enrolledCourse.expiry = expiryDate
+                enrolledCourse.expiry = expiryDate
                 enrolledCourse.save()
             for module in modules:
                 chapterList = request.POST.getlist(module)
@@ -740,6 +747,7 @@ Gyaanhive Team</p>'
                 enrolledCourse.viewhours = vh
                 modulelist = list(map(int,chapterList))
                 enrolledCourse.chapteraccess = ','.join([str(x) for x in modulelist])
+                enrolledCourse.expiry = expiryDate
                 enrolledCourse.save()
                 # creare user
             # remove course enrollment here
@@ -871,3 +879,14 @@ def export_users_csv(request,studentid):
     for stat in studentStatsObj:
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
     return response
+
+'''
+def fix_expiry(request):
+    enrollcourseObj = course.models.EnrolledCourse.objects.all()
+    for ec in enrollcourseObj:
+        #print(expiry)
+        ec.expiry = datetime(year=2019,month=12,day=31)
+        ec.save()
+        #print(expiry)
+    return redirect("provider:provider_home")
+'''

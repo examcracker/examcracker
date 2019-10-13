@@ -186,8 +186,15 @@ function Upload() {
     <label for="inputEmail3" class="col-sm-2 col-form-label">View hours</label>
     <div class="col-sm-10">
 			<input type="text" class="form-control" name="viewHours" id="viewHours" placeholder="view Hours" 
-			{% if viewhours %} value = "{{viewhours}}" {% endif %} required>
+			 value = "{{viewhours}}" required>
     </div>
+	</div>
+	<div class="form-group row">
+		<label for="inputDate" class="col-sm-2 col-form-label">Expiry</label>
+		<div class="col-sm-10">
+			<input class="form-control" id="date" name="expiryDate" placeholder="MM/DD/YYY" type="date" value="{{courseexpiry}}"/>
+			<small>Format <strong>MM/DD/YYY</strong>. Default is <strong>6 months</strong> from today</small>
+		</div>
 	</div>
 	<h4>Assign Course and permissions</h2>
 		<br>
@@ -223,13 +230,6 @@ function Upload() {
 </div>
 	{% endfor %}
 	</div>
-	<!-- <div class="form-group row">
-    <label for="inputEmail3" class="col-sm-2 col-form-label"> <stong> View hours </stong></label>
-    <div class="col-sm-10">
-			<input type="number" class="form-control" name="viewhours{{course.cid}}" id="viewHours" placeholder="view Hours" {% if course.viewhours %} 
-			value = "{{course.viewhours}}" {% else %} value = 10 {% endif %} onwheel="this.blur()" >
-    </div>
-	</div> -->
 	<hr>
 </div>
 {% endfor %}
