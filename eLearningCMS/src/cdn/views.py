@@ -36,6 +36,8 @@ from course.algos import strToIntList
 import pusher
 import pysher
 import os
+# http
+import requests
 
 logger = logging.getLogger("project")
 
@@ -454,3 +456,40 @@ def getProviderStudents(request, start, end, courseid):
         return Response({"status":False})
     moreStudents, studentList = getProviderStudentsInt(start, end, courseid)
     return Response({"status":True, "students":studentList, "more":moreStudents})
+
+def getBunnyStats(providerid):
+    storagename = 'gyaanhive' + str(providerid)
+    pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
+    headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
+
+    try:
+        r = requests.get(pullzoneUrl, headers=headers)
+    except requests.ConnectionError:
+        return (None, None, None)
+
+    data = r.json()
+    bandwidthused = None
+    storageid = None
+
+    for d in data:
+        if d["Name"] == storagename:
+            bandwidthused = int(d["MonthlyBandwidthUsed"])
+            storageid = int(d["StorageZoneId"])
+
+    storagezoneUrl = 'https://bunnycdn.com/api/storagezone/'
+
+    try:
+        r = requests.get(storagezoneUrl, headers=headers)
+    except requests.ConnectionError:
+        return (bandwidthused, None, None)
+
+    data = r.json()
+    storageused = None
+    files = None
+
+    for d in data:
+        if int(d["Id"]) == storageid:
+            storageused = int(d["StorageUsed"])
+            files = int(d["FilesStored"])
+
+    return (bandwidthused, storageused, files)

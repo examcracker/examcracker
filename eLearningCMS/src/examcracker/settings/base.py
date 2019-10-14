@@ -98,6 +98,9 @@ VIMEO_CLIENT_ID = '0dabe4d1dc86c61dabf843461f3d57029a6e9b9c'
 VIMEO_CLIENT_SECRET = 'RlQwRiXMayDSLIZbLZYRjlMjM1k45FS55PnW1WihX7emqzdWARm8CVf3RkwXYErJ1NcVWmnkZ6O2B9nvwOCuh/ORczcnsfl5XD0Mr3vMVxzarQwwm1DH4cVLFRXJ0qbB'
 VIMEO_ACCESS_TOKEN = '69aaa4c6d5f05991df55ddf3d3955240'
 
+# Bunny CDN Api key
+BUNNY_API_KEY = '0b3694ae-2982-4539-aa60-f2573bfff3f55e1b15b4-ef95-443d-9778-d0f3a65aec4c'
+
 # Web socket details
 ASGI_APPLICATION = 'examcracker.routing.application'
 
