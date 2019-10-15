@@ -468,13 +468,13 @@ def getBunnyStats(providerid):
         return (None, None, None)
 
     data = r.json()
-    bandwidthused = None
     storageid = None
+    pullzoneid = None
 
     for d in data:
         if d["Name"] == storagename:
-            bandwidthused = int(d["MonthlyBandwidthUsed"])
             storageid = int(d["StorageZoneId"])
+            pullzoneid = int(d["Id"])
 
     storagezoneUrl = 'https://bunnycdn.com/api/storagezone/'
 
@@ -491,5 +491,18 @@ def getBunnyStats(providerid):
         if int(d["Id"]) == storageid:
             storageused = int(d["StorageUsed"])
             files = int(d["FilesStored"])
+
+    planObj = provider.models.Plan.objects.filter(provider_id=providerid)[0]
+    startdate = str(planObj.startdate).split(" ")[0]
+    apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pullzoneid)
+    print(apiUrl)
+
+    try:
+        r = requests.get(apiUrl, headers=headers)
+    except requests.ConnectionError:
+        return (None, storageused, files)
+
+    data = r.json()
+    bandwidthused = float(data["TotalBandwidthUsed"])/(1024*1024*1024)
 
     return (bandwidthused, storageused, files)
