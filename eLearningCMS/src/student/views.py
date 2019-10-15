@@ -330,9 +330,9 @@ def fillStudentPlayStats(studentid,sessionid,user_ip,user_email,device):
     # keep only last 5 days data
     statsObj = models.StudentPlayStats.objects.filter(student_id=studentid)
     if statsObj:
-        # get those objects which are older then 5 days
+        # get those objects which are older then 60 days
         now = datetime.now()
-        last7days = now - timedelta(days=15)
+        last7days = now - timedelta(days=60)
         statsObj = statsObj.filter(date__lte = last7days)
         statsObj.delete()
 
