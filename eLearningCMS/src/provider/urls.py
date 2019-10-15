@@ -8,6 +8,7 @@ urlpatterns = [
      path('createCourse', views.createCourse.as_view(), name="create_course"),
      path('editCourse/<int:id>', views.editCourse.as_view(), name="edit_course"),
      path('profile', views.ProviderProfile.as_view(), name="my_profile"),
+     path('stats', views.myStats.as_view(), name="my_stats"),
      path('viewCourse', views.viewCourses.as_view(), name="view_courses"),
      path('viewVideo', views.viewSessions.as_view(), name="view_videos"),
      path('publishCourse', views.publishCourse.as_view(), name="publish_course"),

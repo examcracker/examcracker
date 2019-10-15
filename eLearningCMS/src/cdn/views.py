@@ -457,7 +457,14 @@ def getProviderStudents(request, start, end, courseid):
     moreStudents, studentList = getProviderStudentsInt(start, end, courseid)
     return Response({"status":True, "students":studentList, "more":moreStudents})
 
+class ProviderStats:
+    storage = None
+    bandwidth = None
+    files = None
+
 def getBunnyStats(providerid):
+    p = ProviderStats()
+
     storagename = 'gyaanhive' + str(providerid)
     pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
     headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
@@ -481,28 +488,25 @@ def getBunnyStats(providerid):
     try:
         r = requests.get(storagezoneUrl, headers=headers)
     except requests.ConnectionError:
-        return (bandwidthused, None, None)
+        return p
 
     data = r.json()
-    storageused = None
-    files = None
 
     for d in data:
         if int(d["Id"]) == storageid:
-            storageused = int(d["StorageUsed"])
-            files = int(d["FilesStored"])
+            p.storage = float("{0:.2f}".format(float(d["StorageUsed"])/(1024*1024*1024)))
+            p.files = int(d["FilesStored"])
 
     planObj = provider.models.Plan.objects.filter(provider_id=providerid)[0]
     startdate = str(planObj.startdate).split(" ")[0]
     apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pullzoneid)
-    print(apiUrl)
 
     try:
         r = requests.get(apiUrl, headers=headers)
     except requests.ConnectionError:
-        return (None, storageused, files)
+        return p
 
     data = r.json()
-    bandwidthused = float(data["TotalBandwidthUsed"])/(1024*1024*1024)
+    p.bandwidth = float("{0:.2f}".format(float(data["TotalBandwidthUsed"])/(1024*1024*1024)))
 
-    return (bandwidthused, storageused, files)
+    return p

@@ -123,6 +123,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
             kwargs["live"] = 'on'
         else:
             kwargs["live"] = 'off'
+
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -564,6 +565,23 @@ class myStudents(showProviderHome):
             kwargs["debug"] = True
         else:
             kwargs["debug"] = False
+
+        return super().get(request, *args, **kwargs)
+
+class myStats(showProviderHome):
+    template_name = "my_stats.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        providerObj = getProvider(request)
+
+        p = cdn.views.ProviderStats()
+        p = cdn.views.getBunnyStats(providerObj.id)
+
+        kwargs["stats"] = p
 
         return super().get(request, *args, **kwargs)
 

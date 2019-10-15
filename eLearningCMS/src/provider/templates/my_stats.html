@@ -1,0 +1,33 @@
+{% extends "__user_base.html" %}
+{% load staticfiles %}
+
+{% block active %}
+
+ <!-- Breadcrumbs-->
+<nav class="navbar">
+  <div class="mr-lg-auto">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="#">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">My Stastics</li>
+  </ol>
+</div>
+</nav>
+
+ <table style="width:50%">
+  <tr>
+    <td><b>Bandwidth (GB)<b></td>
+    <td>{{ stats.bandwidth }}</td>
+  </tr>
+  <tr>
+    <td><b>Storage Space (GB)<b></td>
+    <td>{{ stats.storage }}</td>
+  </tr>
+  <tr>
+    <td><b>Total Files<b></td>
+    <td>{{ stats.files }}</td>
+  </tr>
+</table>
+
+{% endblock active %}
