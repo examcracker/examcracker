@@ -15,12 +15,17 @@ def getHost():
         return 'localhost:8000'
     return settings.ALLOWED_HOSTS[0]
 
-def sendMail(toEmail, emailSubj,emailBody):
+def sendMail(toEmail, emailSubj,emailBody,cc=''):
     try:
         msg = MIMEMultipart()
         msg['From'] = settings.EMAIL_HOST_USER
         msg['To'] = toEmail
         msg['Subject'] = emailSubj
+        emailsList = []
+        emailsList.append(toEmail)
+        if cc != '':
+            msg['Cc'] = cc
+            emailsList.append(cc)
         body = emailBody
         msg.attach(MIMEText(body, 'html'))
 
@@ -29,7 +34,7 @@ def sendMail(toEmail, emailSubj,emailBody):
         server.starttls()
         server.ehlo()
         server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-        server.sendmail(settings.EMAIL_HOST_USER, toEmail, msg.as_string())
+        server.sendmail(settings.EMAIL_HOST_USER, emailsList, msg.as_string())
     except:
         logger.error('Email could not be sent to {}.'.format(toEmail))
         return

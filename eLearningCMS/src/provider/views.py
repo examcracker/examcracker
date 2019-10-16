@@ -91,7 +91,12 @@ def getProviderStats(providerId):
     providerStatsInfo['activeSchedules'] = schedule.views.getActiveSchedules(providerId)
     providerStatsInfo['piechartArray'] = courses
     providerStatsInfo['completedtime'] = str(int(totalViewedMinutes/60)) + " : " + str(int(totalViewedMinutes%60))
-    providerStatsInfo['totalStudentsPlayedTime'] = int (getTotalStudentsPlayedTime(providerId)/60)
+    viewMinutesByStudents = getTotalStudentsPlayedTime(providerId)
+    planObj = models.Plan.objects.filter(provider_id=providerId)
+    if planObj:
+        planObj = planObj[0]
+        viewMinutesByStudents = viewMinutesByStudents + planObj.completedminutes
+    providerStatsInfo['totalStudentsPlayedTime'] = int (viewMinutesByStudents/60)
     return providerStatsInfo
 
 class showProviderHome(LoginRequiredMixin, generic.TemplateView):
@@ -118,6 +123,7 @@ class showProviderHome(LoginRequiredMixin, generic.TemplateView):
             kwargs["live"] = 'on'
         else:
             kwargs["live"] = 'off'
+
         return super().get(request, *args, **kwargs)
 
 class uploadVideo(LoginRequiredMixin, generic.TemplateView):
@@ -314,6 +320,7 @@ class createCourse(coursePageBase):
         courseObj.cost=request.POST.get("courseCost",'')
         courseObj.duration=request.POST.get("courseDuration",'')
         subjects = request.POST.getlist("courseSubject")
+        courseSubjectOthers = request.POST.get('courseSubjectOthers','')
         if 'coursePublic' in self.request.POST:
             courseObj.public = True
         else:
@@ -343,7 +350,12 @@ class createCourse(coursePageBase):
         
         if (len(subjects) > 0):
             subj = subjects[0].split(':')[1]
-            courseObj.subjects = subj
+            if subj != "Others":
+                courseObj.subjects = subj
+            elif courseSubjectOthers != '':
+                courseObj.subjects = courseSubjectOthers
+            else:
+                courseObj.subjects = subj
             i=1
             while(i<len(subjects)):
                 subj = subjects[i].split(':')[1]
@@ -556,6 +568,23 @@ class myStudents(showProviderHome):
 
         return super().get(request, *args, **kwargs)
 
+class myStats(showProviderHome):
+    template_name = "my_stats.html"
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+
+        providerObj = getProvider(request)
+
+        p = cdn.views.ProviderStats()
+        p = cdn.views.getBunnyStats(providerObj.id)
+
+        kwargs["stats"] = p
+
+        return super().get(request, *args, **kwargs)
+
 class liveCapture(showProviderHome):
     template_name = "live_capture.html"
     http_method_names = ['get']
@@ -590,7 +619,7 @@ class addStudents(showProviderHome):
         # with module level access.
         studentid = int(slug)
         providerObj = getProvider(request)
-        courses = course.models.Course.objects.filter(provider_id=providerObj.id)
+        courses = course.models.Course.objects.filter(provider_id=providerObj.id, published=1)
         courseDict = []
         viewhours = '10'
         courseexpiry = str(datetime.now().date()+relativedelta(months=6))
@@ -627,7 +656,10 @@ class addStudents(showProviderHome):
         kwargs['mycourses'] = courseDict
         kwargs['viewhours'] = viewhours
         kwargs['courseexpiry'] = courseexpiry
-            # store 3 info , name, subject and id
+        kwargs['submitDisabled'] = False
+        if len(courseDict) == 0:
+            kwargs['submitDisabled'] = True
+        # store 3 info , name, subject and id
         kwargs["courses"] = courses
         return super().get(request, *args, **kwargs)
 
@@ -762,8 +794,8 @@ Gyaanhive Team</p>'
                     cd.remarks = "Enrolled removed"
                     cd.save()
                 #coursesToDelete.delete()
-
-            profiles.signals.sendMail(fixedEmail, subject, emailBody)
+            cc = request.user.email
+            profiles.signals.sendMail(fixedEmail, subject, emailBody, cc)
         return self.get(request, *args, **kwargs)
 
 AES_KEY = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
@@ -890,3 +922,40 @@ def fix_expiry(request):
         #print(expiry)
     return redirect("provider:provider_home")
 '''
+class clear_enrollments(viewCourses):
+    http_method_names = ['post']
+
+    def post(self, request, id, *args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        courseid = id
+        courseObj = course.models.Course.objects.filter(id=courseid)
+        if len(courseObj) == 0:
+            raise Http404()
+        courseObj = courseObj[0]
+        providerObj = getProvider(request)
+        if courseObj.provider_id != providerObj.id:
+            raise Http404()
+        subject = request.user.name + ' : Enrollment Removed'
+        User = get_user_model()
+
+        enrollcourseObj = course.models.EnrolledCourse.objects.filter(course_id=id)
+        # Store view hours somewhere
+        planObj = models.Plan.objects.filter(provider_id=providerObj.id)
+        viewMinutes = 0
+        for ec in enrollcourseObj:
+            viewMinutes = viewMinutes + int(ec.completedminutes)
+            studentObj = student.models.Student.objects.filter(id=ec.student_id)[0]
+            userObj = User.objects.filter(id=studentObj.user_id)[0]
+            emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
+<p>Your Enrollment has been removed by <em><strong>' + request.user.name + '</strong></em>.<br />\n\
+Check your <em><strong><a href="https://www.gyaanhive.com/student">Dashboard</a></strong></em> for the details.<br />\n\
+Thanks<br />\n\
+Gyaanhive Team</p>'
+            profiles.signals.sendMail(userObj.email, subject, emailBody)
+            ec.delete()
+        if planObj:
+            planObj = planObj[0]
+            planObj.completedminutes = planObj.completedminutes + viewMinutes
+            planObj.save()
+        return super().get(request, *args, **kwargs)

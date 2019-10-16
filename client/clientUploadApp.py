@@ -52,11 +52,13 @@ class worker(QThread):
 
 	def updateUploadStatus(self, res):
 		responseDict = {}
+		success = False
 		if 'videoKey' in res.keys():
 			responseDict["result"] = api.status_stop_success
 			responseDict["videokey"] = res["videoKey"]
 			responseDict["duration"] = self.serviceObj.duration
 			responseDict["sessionName"] = res["sessionName"]
+			success = True
 		else:
 			responseDict["result"] = api.status_upload_fail
 			responseDict["fail_response"] = res
@@ -72,7 +74,8 @@ class worker(QThread):
 		responseDict["multiBitRate"] = self.serviceObj.multiBitRate
 		responseDict["bunnyCDNStorageName"] = self.serviceObj.bunnyCDNStorageName
 		responseDict["id"] = self.serviceObj.clientid
-		httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
+		if success == True:
+			httpReq.send(self.serviceObj.url, "/cdn/saveClientSession/", json.dumps(responseDict))
 
 	def updateUploadCount(self, count):
 		uploadMsg = "Uploaded " + str(int((count/self.totalUploadingFiles)*100)) + '%'

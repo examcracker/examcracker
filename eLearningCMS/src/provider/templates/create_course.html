@@ -22,6 +22,11 @@
 </ol>
 </div>
 {% if editCourse %}
+<form class="form-inline" action="{% url 'provider:clear_enrollments' editCourse.id %}" id="clear_enrollments"  method="post" enctype="multipart/form-data"> {% csrf_token %}
+	<button class="btn btn-outline-danger btn-lg float-right" type="button" id="clear_enrollmentsButton" title = "Deletes all students enrollments of this course"
+	onclick="clear_enrollments(this)" {% if not editCourse %} disabled {% endif %} >Clear Enrollments</button>
+</form>
+
 <form class="form-inline" action="{% url 'provider:delete_course' editCourse.id %}" id="deleteMyCourse"  method="post" enctype="multipart/form-data"> {% csrf_token %}
 	<button class="btn btn-outline-dark btn-lg float-right" type="button" id="deleteCourseButton" title = "Delete this course"
 	onclick="deleteMyCourse(this)" {% if not editCourse %} disabled {% endif %} >Delete</button>
@@ -88,6 +93,7 @@
 											{% endif %}
 											</select>
 										</div>
+										{% if editCourse is None %}
 										<div class="col-md-4 mb-3">
 											<label for="cSubject">Subject(s)</label>
 											<select class="form-control" name="courseSubject" id="cSubject" data-live-search="true" {% if editCourse and editCourse.subjects != "" %} disabled="true" {% endif %} required multiple>
@@ -117,11 +123,17 @@
 											{% endif %}
 											</select>
 										</div>
+										{% endif %}
 								</div>
 								<div class="form-row">
-									<div class="col-md-12 mb-3">
+										<div class="col-md-4 mb-3">
+												<label for="cSubjectOthers">Subject</label>
+												<textarea class="form-control" name="courseSubjectOthers" id="cSubjectOthers" placeholder="Add Subject if Subject(s) is Others" rows="3"
+												{% if editCourse %} disabled="true" {% endif %} >{% if editCourse %}{{editCourse.subjects}}{% endif %}</textarea>
+											</div>
+									<div class="col-md-8 mb-3">
 										<label for="cDescription">Summary</label>
-										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Add Summary" rows="3">{% if editCourse %}{{editCourse.description}}{% endif %}</textarea>
+										<textarea class="form-control" name="courseDescription" id="cDescription" placeholder="Add Summary" rows="3">{% if editCourse %}{{editCourse.description}} {% endif %}</textarea>
 									</div>
 								</div>
 								<div class="form-row">
@@ -174,6 +186,14 @@
             return false;
         }
         $('#deleteMyCourse').submit();
+        return true;
+    }
+	function clear_enrollments(el) {
+
+        if(!confirm('Do you want to clear all enrollments of this course ? Students completed view hours will be lost!!')){
+            return false;
+        }
+        $('#clear_enrollments').submit();
         return true;
     }
 
