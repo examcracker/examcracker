@@ -10,10 +10,12 @@ import service
 import api
 import json
 import time
+import queue
 		
 class worker(QThread):
 	threadOutput = pyqtSignal('QString')
 	threadUploadStatus = pyqtSignal('QString')
+	threadDone = pyqtSignal('QString')
 
 	def __init__(self, mediaFilePath, folderPath, userInfo, chapterid, multiBitRateList):
 		QThread.__init__(self, None)
@@ -24,6 +26,8 @@ class worker(QThread):
 		self.serviceObj.multiBitRateList = multiBitRateList
 		self.userInfo = userInfo
 		self.totalUploadingFiles = 0
+
+		self.taskQueue = queue.Queue()
 		
 		self.updateUserDetails()
 
@@ -80,6 +84,24 @@ class worker(QThread):
 	def uploadUpdateMsg(self, message):
 		self.threadUploadStatus.emit(message)
 
+	def convertAndUploadFile(self, filePath):
+		fileInfo = os.path.splitext(filePath)
+		outputFile = fileInfo[0] + '_conv' + fileInfo[1]
+		conversionState = service.getmp4CoversionCommand(filePath, outputFile)
+		if conversionState != 'false':
+			doneMsg = "Converting file: " + str(filePath) + "\n"
+			self.threadOutput.emit(doneMsg)
+			os.system(conversionState)
+			filePath = outputFile
+
+		res = self.serviceObj.uploadFileToCDNThreaded(filePath, False, -1, self)
+
+		if conversionState != 'false':
+			os.remove(outputFile)
+	
+		self.updateUploadStatus(res)
+
+
 	def run(self):
 		if os.path.exists(self.mediaFolderPath):
 			listOfMp4Files = []
@@ -97,28 +119,16 @@ class worker(QThread):
 
 			for item in listOfMp4Files:
 				try:
-					self.CurrentFileName = os.path.basename(item)
 					doneMsg = "Uploading lecture: " + str(item) + "\n"
 					self.threadOutput.emit(doneMsg)
-					fileInfo = os.path.splitext(item)
-					outputFile = fileInfo[0] + '_conv' + fileInfo[1]
-					conversionState = service.getmp4CoversionCommand(item, outputFile)
-					if conversionState != 'false':
-						doneMsg = "Converting file: " + str(item) + "\n"
-						self.threadOutput.emit(doneMsg)
-						os.system(conversionState)
-						item = outputFile
+					self.threadUploadStatus.emit('Upload started...')
+					self.convertAndUploadFile(item)
 
-					res = self.serviceObj.uploadFileToCDNThreaded(item, False, -1, self)
-					
-					if conversionState != 'false':
-						os.remove(outputFile)
-				
-					self.updateUploadStatus(res)
 					uploadCount += 1
 					doneMsg = "Upload done for : " + str(item) + " (" + str(uploadCount) + "/" + str(self.totalFileCount) + ")\n"
 					self.threadOutput.emit(doneMsg)
 					self.threadUploadStatus.emit('Done!')
+
 				except Exception as ex:
 					doneMsg = "Upload fail : " + str(item) + " Error: " + str(ex) + "\n"
 					self.threadOutput.emit(doneMsg)
@@ -129,31 +139,39 @@ class worker(QThread):
 			self.threadOutput.emit(doneMsg)
 		else:
 			try:
-				self.threadUploadStatus.emit('Upload started...')
-				self.CurrentFileName = os.path.basename(self.mediaFilePath)
-				fileInfo = os.path.splitext(self.mediaFilePath)
-				outputFile = fileInfo[0] + '_conv' + fileInfo[1]
-				conversionState = service.getmp4CoversionCommand(self.mediaFilePath, outputFile)
-				if conversionState != 'false':
-					doneMsg = "Converting file: " + str(self.mediaFilePath) + "\n"
-					self.threadOutput.emit(doneMsg)
-					os.system(conversionState)
-					self.mediaFilePath = outputFile
-
 				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 				self.threadOutput.emit(doneMsg)
-				res = self.serviceObj.uploadFileToCDNThreaded(self.mediaFilePath, False, -1, self)
-				if conversionState != 'false':
-					os.remove(outputFile)
+				self.threadUploadStatus.emit('Upload started...')
+				self.convertAndUploadFile(self.mediaFilePath)
 
-				self.updateUploadStatus(res)
 				doneMsg = "Upload successful: " + str(self.mediaFilePath) + "\n\nDone!!\n"
 				self.threadOutput.emit(doneMsg)
 				self.threadUploadStatus.emit('Done!')
+			
 			except Exception as ex:
 				doneMsg = "Upload fail error: " + str(ex) + "\n"
 				self.threadOutput.emit(doneMsg)
 				self.threadUploadStatus.emit('Failed!')
+
+		while not self.taskQueue.empty():
+			try:
+				self.mediaFilePath = self.taskQueue.get()
+				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
+				self.threadOutput.emit(doneMsg)
+				self.threadUploadStatus.emit('Upload started...')
+				
+				self.convertAndUploadFile(self.mediaFilePath)
+
+				doneMsg = "Upload successful: " + str(self.mediaFilePath) + "\n\nDone!!\n"
+				self.threadOutput.emit(doneMsg)
+				self.threadUploadStatus.emit('Done!')
+
+			except Exception as ex:
+				doneMsg = "Upload fail error: " + str(ex) + "\n"
+				self.threadOutput.emit(doneMsg)
+				self.threadUploadStatus.emit('Failed!')
+
+		self.threadDone.emit('Done')
 				
 
 class filedialogdemo(QFrame):
@@ -161,6 +179,9 @@ class filedialogdemo(QFrame):
 		super(filedialogdemo, self).__init__()
 		
 		self.thread = None
+
+		self.lastMessage = ''
+		self.uploadCompletedFlag = True
 		
 		self.initWidget()
 		self.initStyle()
@@ -326,6 +347,15 @@ class filedialogdemo(QFrame):
 		self.btnBrowse2.clicked.connect(self.getfolder)
 		self.btnBrowse2.setMinimumSize( 130,40)
 
+		self.labelFilePath_q = QLineEdit()
+		self.labelFilePath_q.setPlaceholderText("Provide lecture file path")
+		self.labelFilePath_q.setReadOnly(True)
+
+		self.btnBrowse_q = QPushButton('Add in queue', self)
+		self.btnBrowse_q.clicked.connect(self.addMediaFileIntoQueue)
+		self.btnBrowse_q.setMinimumSize( 130,40)
+		self.btnBrowse_q.setEnabled(False)
+
 		self.courseLabel =  QLabel('Select Course:')
 		self.comboBoxCourse = QComboBox()
 		self.comboBoxCourse.setMinimumHeight(30)
@@ -338,6 +368,7 @@ class filedialogdemo(QFrame):
 
 		layoutV = QVBoxLayout()
 		layoutH = QHBoxLayout()
+		layoutH_q = QHBoxLayout()
 		layoutH2 = QHBoxLayout()
 		layoutH3 = QHBoxLayout()
 		
@@ -347,6 +378,9 @@ class filedialogdemo(QFrame):
 
 		layoutH2.addWidget(self.labelFilePath2)
 		layoutH2.addWidget(self.btnBrowse2)
+
+		layoutH_q.addWidget(self.labelFilePath_q)
+		layoutH_q.addWidget(self.btnBrowse_q)
 		
 		layoutH3.addWidget(self.courseLabel, 0, Qt.AlignLeft)
 		layoutH3.addWidget(self.comboBoxCourse, 0, Qt.AlignLeft)
@@ -363,6 +397,7 @@ class filedialogdemo(QFrame):
 		
 		layoutV.addLayout(layoutH)
 		layoutV.addLayout(layoutH2)
+		layoutV.addLayout(layoutH_q)
 		layoutV.addWidget(self.line, 1)
 
 		layoutV.addLayout(layoutH3)
@@ -432,6 +467,7 @@ class filedialogdemo(QFrame):
 		.QPushButton{color: #ffffff;background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #4e4e4e, stop:1 #2e2e2e);border-style: outset; border-width: 1px; border-radius: 4px; border-color: #000000; font: bold 9pt;}
 		.QPushButton:hover {border-color: #00ccff;}
 		.QPushButton:pressed {color: #00ccff; background-color: #000000; border-color: #00ccff;}
+		.QPushButton:disabled {color: #ffffff; background-color: #aaaaaa; border-color: #000000;}
 		.QScrollBar:vertical {background-color: rgb(17,17,17);width: 8px;margin: 0px 0px 0px 0px;}
 		.QScrollBar::handle:vertical {background-color: #cdcdcd;border-radius: 2px;border-color: black;border-width: 1px;border-style: solid;margin: 0px 0px 0px 0px;image: url(:/scrollbar_handle_v);}
 		.QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none;}
@@ -444,6 +480,31 @@ class filedialogdemo(QFrame):
 		mediaFilePath = QDir.toNativeSeparators(mediaFilePath)
 		self.labelFilePath.setText(mediaFilePath)
 		self.labelFilePath2.setText("")
+
+	def addMediaFileIntoQueue(self):
+		mediaFilePath, _ = QFileDialog.getOpenFileName(self, 'Open file')
+		mediaFilePath = QDir.toNativeSeparators(mediaFilePath)
+		if not os.path.exists(mediaFilePath):
+			return
+
+		if not self.uploadCompletedFlag:
+			self.thread.taskQueue.put(mediaFilePath)
+		else:
+			chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
+
+			multiBitRateList = []
+			if self.comboBoxBitrate1:
+				multiBitRateList.append(str(self.comboBoxBitrate1.currentText()))
+				multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
+
+			self.thread = worker(str(mediaFilePath), "", self.userDetails, chapterId, multiBitRateList)
+			self.uploadCompletedFlag = False
+			self.thread.threadOutput.connect(self.updateOuput)
+			self.thread.threadUploadStatus.connect(self.updateUploadProgress)
+			self.thread.threadDone.connect(self.uploadCompleted)
+			self.thread.start()
+
+		self.updateUploadProgress(self.lastMessage)
 		
 	def getfolder(self):
 		mediaFolderPath = QFileDialog.getExistingDirectory(self,"Open a folder", "", QFileDialog.ShowDirsOnly)
@@ -463,14 +524,32 @@ class filedialogdemo(QFrame):
 			multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
 
 		self.thread = worker(str(mediaFilePath), str(mediaFolderPath), self.userDetails, chapterId, multiBitRateList)
+		self.uploadCompletedFlag = False
+
 		self.thread.threadOutput.connect(self.updateOuput)
 		self.thread.threadUploadStatus.connect(self.updateUploadProgress)
+		self.thread.threadDone.connect(self.uploadCompleted)
 		self.thread.start()
+		self.btnConvert.setEnabled(False)
+		self.btnBrowse.setEnabled(False)
+		self.btnBrowse2.setEnabled(False)
+		self.btnBrowse_q.setEnabled(True)
+
+	def uploadCompleted(self, msg):
+		self.uploadCompletedFlag = True
+		self.btnConvert.setEnabled(True)
+		self.btnBrowse.setEnabled(True)
+		self.btnBrowse2.setEnabled(True)
+		self.btnBrowse_q.setEnabled(False)
 			
 	def updateOuput(self, message):
 		self.output.append(message)
 
 	def updateUploadProgress(self, message):
+		queuedFiles = self.thread.taskQueue.qsize()
+		self.lastMessage = message
+		if queuedFiles > 0:
+			message = message + "\t\t Files in queue: " + str(queuedFiles)
 		self.uploadProgressLabel.setText(message)
 		
 				
