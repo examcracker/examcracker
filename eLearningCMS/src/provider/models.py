@@ -9,10 +9,17 @@ from Crypto.Cipher import AES
 import json
 import os
 import base64
+import cdn
 from datetime import datetime
 
 aes_key = base64.b64decode("iUmAAGnhWZZ75Nq38hG76w==")
 aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
+
+class Storage(models.Model):
+    name = models.CharField(default='', max_length=100) # storage name
+    key = models.CharField(default='', max_length=500)
+    secret = models.CharField(default='', max_length=500) # blank for BNNY
+    pullzone = models.CharField(default='', max_length=500) # name --> pull zone
 
 class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -25,6 +32,23 @@ class Provider(models.Model):
         cipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
         self.encryptedid = base64.b64encode(cipher.encrypt(str(self.id).encode())).decode()
         super().save()
+
+        if self.approved:
+            storage = Storage.objects.filter(name="gyaanhive"+str(self.id))
+
+            if len(storage) == 0:
+                (storagezoneid, password) = cdn.views.createStorageZone(self.id)
+
+                if storagezoneid:
+                    pullzonename = cdn.views.createPullZone(self.id, storagezoneid)
+
+                    if pullzonename:
+                        storageObj = Storage()
+                        storageObj.name = pullzonename
+                        storageObj.pullzone = pullzonename
+                        storageObj.secret = password
+                        storageObj.key = password
+                        storageObj.save()
 
 def user_directory_path(instance, filename):
     return 'sessions/{0}/{1}'.format(instance.provider.id, filename)
@@ -65,12 +89,4 @@ class Plan(models.Model):
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     subdomain = models.CharField(max_length=500)
-
-class Storage(models.Model):
-    name = models.CharField(default='', max_length=100) # storage name
-    key = models.CharField(default='', max_length=500)
-    secret = models.CharField(default='', max_length=500) # blank for BNNY
-    pullzone = models.CharField(default='', max_length=500) # name --> pull zone
-
-
 
