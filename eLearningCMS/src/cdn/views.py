@@ -510,3 +510,45 @@ def getBunnyStats(providerid):
     p.bandwidth = float("{0:.2f}".format(float(data["TotalBandwidthUsed"])/(1024*1024*1024)))
 
     return p
+
+def createStorageZone(providerId):
+    storagezoneUrl = 'https://bunnycdn.com/api/storagezone/'
+    headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
+
+    inputDict = {
+        "Name" : "gyaanhive" + str(providerId)
+    }
+
+    inputJson = json.dumps(inputDict)
+
+    try:
+        r = requests.post(storagezoneUrl, headers=headers, data = inputJson)
+    except requests.ConnectionError:
+        return None
+
+    data = r.json()
+    storagezoneid = int(data["Id"])
+    password = data["Password"]
+    return (storagezoneid, password)
+
+def createPullZone(providerId, storagezoneId):
+    pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
+    headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
+
+    inputDict = {
+        "Name" : "gyaanhive" + str(providerId),
+        "Type": 0,
+        "StorageZoneId": storagezoneId,
+        "OriginUrl": "http://gyaanhive.com" #simply giving since api returns 500 error but not used
+    }
+
+    inputJson = json.dumps(inputDict)
+
+    try:
+        r = requests.post(pullzoneUrl, headers=headers, data=inputJson)
+    except requests.ConnectionError:
+        return None
+
+    data = r.json()
+    pullzonename = data["Name"]
+    return pullzonename
