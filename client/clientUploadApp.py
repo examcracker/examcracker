@@ -155,7 +155,11 @@ class worker(QThread):
 
 		while not self.taskQueue.empty():
 			try:
-				self.mediaFilePath = self.taskQueue.get()
+				taskDetails = self.taskQueue.get()
+				self.mediaFilePath = taskDetails['mediaFilePath']
+				self.serviceObj.chapterid = taskDetails['chapterId']
+				self.serviceObj.multiBitRateList = taskDetails['multiBitRateList']
+		
 				doneMsg = "Uploading lecture: " + str(self.mediaFilePath) + "\n"
 				self.threadOutput.emit(doneMsg)
 				self.threadUploadStatus.emit('Upload started...')
@@ -182,6 +186,8 @@ class filedialogdemo(QFrame):
 
 		self.lastMessage = ''
 		self.uploadCompletedFlag = True
+
+		self.alreadyProcessedFiles = set()
 		
 		self.initWidget()
 		self.initStyle()
@@ -347,15 +353,6 @@ class filedialogdemo(QFrame):
 		self.btnBrowse2.clicked.connect(self.getfolder)
 		self.btnBrowse2.setMinimumSize( 130,40)
 
-		self.labelFilePath_q = QLineEdit()
-		self.labelFilePath_q.setPlaceholderText("Provide lecture file path")
-		self.labelFilePath_q.setReadOnly(True)
-
-		self.btnBrowse_q = QPushButton('Add in queue', self)
-		self.btnBrowse_q.clicked.connect(self.addMediaFileIntoQueue)
-		self.btnBrowse_q.setMinimumSize( 130,40)
-		self.btnBrowse_q.setEnabled(False)
-
 		self.courseLabel =  QLabel('Select Course:')
 		self.comboBoxCourse = QComboBox()
 		self.comboBoxCourse.setMinimumHeight(30)
@@ -368,7 +365,6 @@ class filedialogdemo(QFrame):
 
 		layoutV = QVBoxLayout()
 		layoutH = QHBoxLayout()
-		layoutH_q = QHBoxLayout()
 		layoutH2 = QHBoxLayout()
 		layoutH3 = QHBoxLayout()
 		
@@ -379,9 +375,6 @@ class filedialogdemo(QFrame):
 		layoutH2.addWidget(self.labelFilePath2)
 		layoutH2.addWidget(self.btnBrowse2)
 
-		layoutH_q.addWidget(self.labelFilePath_q)
-		layoutH_q.addWidget(self.btnBrowse_q)
-		
 		layoutH3.addWidget(self.courseLabel, 0, Qt.AlignLeft)
 		layoutH3.addWidget(self.comboBoxCourse, 0, Qt.AlignLeft)
 		layoutH3.addWidget(self.chapterLabel, 0, Qt.AlignRight)
@@ -397,7 +390,6 @@ class filedialogdemo(QFrame):
 		
 		layoutV.addLayout(layoutH)
 		layoutV.addLayout(layoutH2)
-		layoutV.addLayout(layoutH_q)
 		layoutV.addWidget(self.line, 1)
 
 		layoutV.addLayout(layoutH3)
@@ -430,10 +422,21 @@ class filedialogdemo(QFrame):
 			self.comboBoxBitrate1 = None
 			self.comboBoxBitrate2 = None
 
+		layoutAction = QHBoxLayout()
+
 		self.btnConvert = QPushButton('Start Upload', self)
 		self.btnConvert.setMinimumSize( 130,40)
 		self.btnConvert.clicked.connect(self.startProcess)
-		layoutV.addWidget(self.btnConvert)
+
+		self.btnQueue = QPushButton('Add in Queue', self)
+		self.btnQueue.setMinimumSize( 130,40)
+		self.btnQueue.setEnabled(False)
+		self.btnQueue.clicked.connect(self.addMediaFileIntoQueue)
+
+		layoutAction.addWidget(self.btnConvert)
+		layoutAction.addWidget(self.btnQueue)
+
+		layoutV.addLayout(layoutAction)
 
 		self.uploadProgressLabel =  QLabel('Upload Status')
 		self.uploadProgressLabel.setMinimumSize( 130,40)
@@ -467,7 +470,7 @@ class filedialogdemo(QFrame):
 		.QPushButton{color: #ffffff;background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #4e4e4e, stop:1 #2e2e2e);border-style: outset; border-width: 1px; border-radius: 4px; border-color: #000000; font: bold 9pt;}
 		.QPushButton:hover {border-color: #00ccff;}
 		.QPushButton:pressed {color: #00ccff; background-color: #000000; border-color: #00ccff;}
-		.QPushButton:disabled {color: #ffffff; background-color: #aaaaaa; border-color: #000000;}
+		.QPushButton:disabled {color: #eeeeee; background-color: #aaaaaa; border-color: #000000;}
 		.QScrollBar:vertical {background-color: rgb(17,17,17);width: 8px;margin: 0px 0px 0px 0px;}
 		.QScrollBar::handle:vertical {background-color: #cdcdcd;border-radius: 2px;border-color: black;border-width: 1px;border-style: solid;margin: 0px 0px 0px 0px;image: url(:/scrollbar_handle_v);}
 		.QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none;}
@@ -481,28 +484,60 @@ class filedialogdemo(QFrame):
 		self.labelFilePath.setText(mediaFilePath)
 		self.labelFilePath2.setText("")
 
+	def showWarningMessage(self, message):
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setText(message)
+		msg.setWindowTitle("Warning!")
+		msg.exec_()
+
 	def addMediaFileIntoQueue(self):
-		mediaFilePath, _ = QFileDialog.getOpenFileName(self, 'Open file')
-		mediaFilePath = QDir.toNativeSeparators(mediaFilePath)
-		if not os.path.exists(mediaFilePath):
+		mediaFile = self.labelFilePath.text()
+		mediaFolderPath = self.labelFilePath2.text()
+
+		if not os.path.exists(mediaFolderPath) and not os.path.exists(mediaFile):
 			return
 
-		if not self.uploadCompletedFlag:
-			self.thread.taskQueue.put(mediaFilePath)
+		chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
+
+		multiBitRateList = []
+		if self.comboBoxBitrate1:
+			multiBitRateList.append(str(self.comboBoxBitrate1.currentText()))
+			multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
+
+		mediaFilePathList = []
+
+		if os.path.exists(mediaFile):
+			mediaFilePathList.append(mediaFile)
 		else:
-			chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
+			for root, dirs, files in os.walk(mediaFolderPath):
+				for file in files:
+					if file.endswith('.mp4') or file.endswith('.mov'):
+						mediaFilePathList.append(os.path.join(root, file))
 
-			multiBitRateList = []
-			if self.comboBoxBitrate1:
-				multiBitRateList.append(str(self.comboBoxBitrate1.currentText()))
-				multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
+		for mediaFilePath in mediaFilePathList:
+			if mediaFilePath in self.alreadyProcessedFiles:
+				self.showWarningMessage("Media file: " + str(mediaFilePath) + "\n already in process, please select another file.")
+				continue
 
-			self.thread = worker(str(mediaFilePath), "", self.userDetails, chapterId, multiBitRateList)
-			self.uploadCompletedFlag = False
-			self.thread.threadOutput.connect(self.updateOuput)
-			self.thread.threadUploadStatus.connect(self.updateUploadProgress)
-			self.thread.threadDone.connect(self.uploadCompleted)
-			self.thread.start()
+			self.alreadyProcessedFiles.add(mediaFilePath)
+			if not self.uploadCompletedFlag:
+				queueData = {'chapterId': chapterId, 'multiBitRateList': multiBitRateList, 'mediaFilePath': mediaFilePath}
+				self.thread.taskQueue.put(queueData)
+			else:
+				chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
+
+				multiBitRateList = []
+				if self.comboBoxBitrate1:
+					multiBitRateList.append(str(self.comboBoxBitrate1.currentText()))
+					multiBitRateList.append(str(self.comboBoxBitrate2.currentText()))
+
+				self.thread = worker(str(mediaFilePath), "", self.userDetails, chapterId, multiBitRateList)
+				self.uploadCompletedFlag = False
+				self.thread.threadOutput.connect(self.updateOuput)
+				self.thread.threadUploadStatus.connect(self.updateUploadProgress)
+				self.thread.threadDone.connect(self.uploadCompleted)
+				self.thread.start()
 
 		self.updateUploadProgress(self.lastMessage)
 		
@@ -515,6 +550,26 @@ class filedialogdemo(QFrame):
 	def startProcess(self):
 		mediaFilePath = self.labelFilePath.text()
 		mediaFolderPath = self.labelFilePath2.text()
+
+		if not os.path.exists(mediaFolderPath) and not os.path.exists(mediaFilePath):
+			return
+
+		mediaFilePathList = []
+
+		if os.path.exists(mediaFilePath):
+			mediaFilePathList.append(mediaFilePath)
+		else:
+			for root, dirs, files in os.walk(mediaFolderPath):
+				for file in files:
+					if file.endswith('.mp4') or file.endswith('.mov'):
+						mediaFilePathList.append(os.path.join(root, file))
+
+		for mediaFile in mediaFilePathList:
+			if mediaFile in self.alreadyProcessedFiles:
+				self.showWarningMessage("Media file: " + str(mediaFile) + "\n already processed, please select another file.")
+				continue
+
+			self.alreadyProcessedFiles.add(mediaFile)
 
 		chapterId = self.comboBoxChapter.itemData(self.comboBoxChapter.currentIndex(), Qt.UserRole + 1)
 
@@ -531,16 +586,12 @@ class filedialogdemo(QFrame):
 		self.thread.threadDone.connect(self.uploadCompleted)
 		self.thread.start()
 		self.btnConvert.setEnabled(False)
-		self.btnBrowse.setEnabled(False)
-		self.btnBrowse2.setEnabled(False)
-		self.btnBrowse_q.setEnabled(True)
+		self.btnQueue.setEnabled(True)
 
 	def uploadCompleted(self, msg):
 		self.uploadCompletedFlag = True
 		self.btnConvert.setEnabled(True)
-		self.btnBrowse.setEnabled(True)
-		self.btnBrowse2.setEnabled(True)
-		self.btnBrowse_q.setEnabled(False)
+		self.btnQueue.setEnabled(False)
 			
 	def updateOuput(self, message):
 		self.output.append(message)
