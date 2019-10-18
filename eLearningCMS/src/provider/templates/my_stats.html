@@ -16,17 +16,33 @@
 </nav>
 
  <table style="width:50%">
+   <tr>
+    <td><b>Plan Cost (Rs)<b></td>
+    <td>{{ plan.cost }}</td>
+  </tr>
   <tr>
-    <td><b>Bandwidth (GB)<b></td>
+    <td><b>Start<b></td>
+    <td>{{ plan.startdate }}</td>
+  </tr>
+  <tr>
+    <td><b>Expiry<b></td>
+    <td>{{ plan.expiry }}</td>
+  </tr>
+   <tr>
+    <td><b>Total Bandwidth (GB)<b></td>
+    <td>{{ plan.bandwidth }}</td>
+  </tr>
+  <tr>
+    <td><b>Bandwidth Consumed (GB)<b></td>
     <td>{{ stats.bandwidth }}</td>
   </tr>
   <tr>
-    <td><b>Storage Space (GB)<b></td>
-    <td>{{ stats.storage }}</td>
+    <td><b>Total Storage Space (GB)<b></td>
+    <td>{{ plan.space }}</td>
   </tr>
   <tr>
-    <td><b>Total Files<b></td>
-    <td>{{ stats.files }}</td>
+    <td><b>Storage Space Consumed (GB)<b></td>
+    <td>{{ stats.storage }}</td>
   </tr>
 </table>
 

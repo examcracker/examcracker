@@ -578,10 +578,15 @@ class myStats(showProviderHome):
 
         providerObj = getProvider(request)
 
-        p = cdn.views.ProviderStats()
-        p = cdn.views.getBunnyStats(providerObj.id)
+        if not providerObj.approved:
+            raise Http404()
 
-        kwargs["stats"] = p
+        statsObj = cdn.views.getBunnyStats(providerObj.id)
+
+        planObj = models.Plan.objects.filter(provider_id=providerObj.id)[0]
+
+        kwargs["stats"] = statsObj
+        kwargs["plan"] = planObj
 
         return super().get(request, *args, **kwargs)
 
