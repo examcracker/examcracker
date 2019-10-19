@@ -466,6 +466,7 @@ def getBunnyStats(providerid):
     p = ProviderStats()
     planObj = provider.models.Plan.objects.filter(provider_id=providerid)
     providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
+    
     # not need to return stats if plan is not set
     if not planObj:
         return p
@@ -473,7 +474,11 @@ def getBunnyStats(providerid):
     storagename = 'gyaanhive' + str(providerid)
     pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
     headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
-
+    storageObj = provider.models.Storage.objects.filter(name=storagename)
+    if storageObj:
+        storageObj = storageObj[0]
+    else:
+        return p
     try:
         r = requests.get(pullzoneUrl, headers=headers)
     except requests.ConnectionError:
@@ -491,7 +496,7 @@ def getBunnyStats(providerid):
 
     if providerObj.bucketname != '':
         pullzones.append(providerObj.bucketname)
-    pullzones.append(storagename)
+    pullzones.append(storageObj.pullzone)
     for d in data:
         if d["Name"] in pullzones :
             sid = int(d["StorageZoneId"])
@@ -512,8 +517,8 @@ def getBunnyStats(providerid):
             if int(d["Id"]) == storageid:
                 p.storage = float("{0:.2f}".format(float(d["StorageUsed"])/(1024*1024*1024)))
                 p.files = int(d["FilesStored"])
-                
-    p.storage = p.storage + planObj.offsetStorage
+
+        p.storage = p.storage + planObj.offsetStorage
     startdate = str(planObj.startdate).split(" ")[0]
     for pid in pullzoneids:
         apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pid)
