@@ -173,12 +173,6 @@
             <span class="nav-link-text">Enroll Students</span>
           </a>
         </li>
-		<li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Stats">
-          <a class="nav-link" href="{% url 'provider:my_stats' %}">
-            <i class="fas fa-user-graduate fa-lg"></i>
-            <span class="nav-link-text">My Stats</span>
-          </a>
-        </li>
 		<!--<li class="nav-item" data-toggle="tooltip" data-placement="right" title="Live Capture">
           <a class="nav-link" href="{% url 'provider:live_capture' %}">
             <i class="fa fa-fw fa-bell fa-lg"></i>
@@ -300,6 +294,10 @@
             </div>
           </form>
         </li> -->
+        <li class="nav-item" title="Stats and Plan details">
+          <a class="nav-link" href="{% url 'provider:my_stats' %}">
+            <i class="fas fa-chart-bar fas-lg"></i>My Stats</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" data-toggle="modal" data-target="#exampleModal" href ="{% url 'accounts:logout' %}">
             <i class="fas fa-sign-out-alt"></i>Logout</a>

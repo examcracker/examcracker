@@ -468,7 +468,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
         scheduleDict['bucketname'] = providerObj.bucketname
         bnStorage = 'gyaanhive' + str(providerObj.id)
         storageObj = provider.models.Storage.objects.filter(name=bnStorage)
-        scheduleDict['DoUpload'] = True
+        scheduleDict['DoUpload'] = False
         if storageObj:
             storageObj = storageObj[0]
             scheduleDict['bunnyCDNStorageName'] = storageObj.name
@@ -478,6 +478,7 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
             scheduleDict['primary'] = BUNNY
         else:   
             scheduleDict['bunnyUpload'] = False
+            scheduleDict['DoUpload'] = True
             scheduleDict['primary'] = DO
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")

@@ -587,6 +587,9 @@ class myStats(showProviderHome):
 
         kwargs["stats"] = statsObj
         kwargs["plan"] = planObj
+        kwargs["liveText"] = "Under Construction"
+        if planObj.live == 0:
+            kwargs["liveText"] = "NA"
 
         return super().get(request, *args, **kwargs)
 

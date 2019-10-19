@@ -18,22 +18,22 @@ aes_iv = base64.b64decode("rgMzT3a413fIAvESuQjt1Q==")
 class Storage(models.Model):
     name = models.CharField(default='', max_length=100) # storage name
     key = models.CharField(default='', max_length=500)
-    secret = models.CharField(default='', max_length=500) # blank for BNNY
+    secret = models.CharField(default='', max_length=500, blank=True) # blank for BNNY
     pullzone = models.CharField(default='', max_length=500) # name --> pull zone
 
 class Provider(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     approved = models.BooleanField(default=False)
     encryptedid = models.CharField(default='', max_length=30)
-    bucketname = models.CharField(default='', max_length=100)
+    bucketname = models.CharField(default='', max_length=100,blank=True)
 
     def save(self):
         super().save()
         cipher = AES.new(aes_key, AES.MODE_CFB, aes_iv)
         self.encryptedid = base64.b64encode(cipher.encrypt(str(self.id).encode())).decode()
         super().save()
-
-        if self.approved:
+        
+        if not settings.DEBUG and self.approved:
             storage = Storage.objects.filter(name="gyaanhive"+str(self.id))
 
             if len(storage) == 0:
@@ -49,6 +49,7 @@ class Provider(models.Model):
                         storageObj.secret = password
                         storageObj.key = password
                         storageObj.save()
+        
 
 def user_directory_path(instance, filename):
     return 'sessions/{0}/{1}'.format(instance.provider.id, filename)
@@ -85,6 +86,8 @@ class Plan(models.Model):
     expiry = models.DateTimeField(default=datetime.now())
     startdate = models.DateTimeField(default=datetime.now())
     completedminutes = models.FloatField(default=0)
+    offsetStorage = models.IntegerField(default=0)
+    offsetBandwidth = models.IntegerField(default=0)
 
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)

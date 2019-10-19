@@ -459,12 +459,17 @@ def getProviderStudents(request, start, end, courseid):
 
 class ProviderStats:
     storage = None
-    bandwidth = None
+    bandwidth = 0
     files = None
 
 def getBunnyStats(providerid):
     p = ProviderStats()
-
+    planObj = provider.models.Plan.objects.filter(provider_id=providerid)
+    providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
+    # not need to return stats if plan is not set
+    if not planObj:
+        return p
+    planObj = planObj[0]
     storagename = 'gyaanhive' + str(providerid)
     pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
     headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
@@ -473,42 +478,52 @@ def getBunnyStats(providerid):
         r = requests.get(pullzoneUrl, headers=headers)
     except requests.ConnectionError:
         return (None, None, None)
-
+    
+    
     data = r.json()
     storageid = None
-    pullzoneid = None
+    #pullzoneid = None
+    pullzones = []
+    pullzoneids = []
 
+    # To fetch data from pullzones connected to DO spaces
+    # bucketname = pullzonename
+
+    if providerObj.bucketname != '':
+        pullzones.append(providerObj.bucketname)
+    pullzones.append(storagename)
     for d in data:
-        if d["Name"] == storagename:
-            storageid = int(d["StorageZoneId"])
-            pullzoneid = int(d["Id"])
+        if d["Name"] in pullzones :
+            sid = int(d["StorageZoneId"])
+            if sid != 0:
+                storageid = sid
+            pullzoneids.append(int(d["Id"]))
+            #pullzoneid = int(d["Id"])
 
-    storagezoneUrl = 'https://bunnycdn.com/api/storagezone/'
-
-    try:
-        r = requests.get(storagezoneUrl, headers=headers)
-    except requests.ConnectionError:
-        return p
-
-    data = r.json()
-
-    for d in data:
-        if int(d["Id"]) == storageid:
-            p.storage = float("{0:.2f}".format(float(d["StorageUsed"])/(1024*1024*1024)))
-            p.files = int(d["FilesStored"])
-
-    planObj = provider.models.Plan.objects.filter(provider_id=providerid)[0]
+    # Find storage used
+    if storageid != None:
+        storagezoneUrl = 'https://bunnycdn.com/api/storagezone/'
+        try:
+            r = requests.get(storagezoneUrl, headers=headers)
+        except requests.ConnectionError:
+            return p
+        data = r.json()
+        for d in data:
+            if int(d["Id"]) == storageid:
+                p.storage = float("{0:.2f}".format(float(d["StorageUsed"])/(1024*1024*1024)))
+                p.files = int(d["FilesStored"])
+                
+    p.storage = p.storage + planObj.offsetStorage
     startdate = str(planObj.startdate).split(" ")[0]
-    apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pullzoneid)
-
-    try:
-        r = requests.get(apiUrl, headers=headers)
-    except requests.ConnectionError:
-        return p
-
-    data = r.json()
-    p.bandwidth = float("{0:.2f}".format(float(data["TotalBandwidthUsed"])/(1024*1024*1024)))
-
+    for pid in pullzoneids:
+        apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pid)
+        try:
+            r = requests.get(apiUrl, headers=headers)
+        except requests.ConnectionError:
+            continue
+        data = r.json()
+        p.bandwidth = p.bandwidth + float("{0:.2f}".format(float(data["TotalBandwidthUsed"])/(1000*1000*1000)))
+    p.bandwidth = p.bandwidth + planObj.offsetBandwidth
     return p
 
 def createStorageZone(providerId):

@@ -21,29 +21,34 @@
     <td>{{ plan.cost }}</td>
   </tr>
   <tr>
-    <td><b>Start<b></td>
+    <td><b>Plan Start Date<b></td>
     <td>{{ plan.startdate }}</td>
   </tr>
   <tr>
-    <td><b>Expiry<b></td>
+    <td><b>Plan Expiry<b></td>
     <td>{{ plan.expiry }}</td>
   </tr>
    <tr>
-    <td><b>Total Bandwidth (GB)<b></td>
+    <td><b>Alloted Bandwidth (GB)<b></td>
     <td>{{ plan.bandwidth }}</td>
   </tr>
   <tr>
-    <td><b>Bandwidth Consumed (GB)<b></td>
+    <td><b>Bandwidth Consumed (GB) <font color="red">(Stored Files)<b></font></td>
     <td>{{ stats.bandwidth }}</td>
   </tr>
   <tr>
-    <td><b>Total Storage Space (GB)<b></td>
+    <td><b>Bandwidth Consumed (GB) <font color="red">(Live)<b></font></td>
+    <td>{{ liveText }}</td>
+  </tr>
+  <tr>
+    <td><b>Alloted Storage (GB)<b></td>
     <td>{{ plan.space }}</td>
   </tr>
   <tr>
     <td><b>Storage Space Consumed (GB)<b></td>
     <td>{{ stats.storage }}</td>
   </tr>
+
 </table>
 
 {% endblock active %}
