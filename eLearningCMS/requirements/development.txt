@@ -1,6 +1,6 @@
--r base.txt
-django>=2.0.4
-django-debug-toolbar>=1.9.1 
-pytz>=2018.3
-sqlparse>=0.2.4
-werkzeug>=0.14.1
+-i https://pypi.python.org/simple/
+django-debug-toolbar==1.9.1
+django==2.0.12
+pytz==2019.3
+sqlparse==0.3.0
+werkzeug==0.14.1
