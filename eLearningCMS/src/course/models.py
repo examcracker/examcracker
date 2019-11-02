@@ -107,9 +107,10 @@ class EnrolledCourse(models.Model):
     sessions = models.CharField(max_length=10000, blank=True)
     viewhours = models.IntegerField(default=0) # 0 => no restriction in view hours
     completedminutes = models.FloatField(default=0)
+    completedminuteslive = models.FloatField(default=0)
     chapteraccess = models.CharField(max_length=1000, blank=True) # => Blank means full course access
     active = models.BooleanField(default=True)
-    expiry = models.DateTimeField(default=datetime.now()) # => expiry data of course for this student.
+    expiry = models.DateTimeField(default=datetime.now()) # => expiry date of course for this student.
     remarks = models.CharField(max_length=1000, default="Active")
     accessdevice = models.CharField(max_length=1000, default="any")
 

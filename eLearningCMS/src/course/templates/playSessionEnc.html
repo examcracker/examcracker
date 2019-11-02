@@ -255,10 +255,12 @@ window.addEventListener('resize', function() {
 	var client = new coreapi.Client();
 	var lastdurationsent = 0;
 	var playergap = 0;
-    var player;
+	var player;
+	var live = 0;
 
     // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
     if (isLive == "true") {
+         live = 1;
         document.addEventListener('DOMContentLoaded', initApp); 
     }  else {
         document.addEventListener('shaka-ui-loaded', initPlayer);
@@ -278,7 +280,7 @@ window.addEventListener('resize', function() {
 		}
 
 		if (isOwner != "yes") {
-			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff);
+			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff) + "/" + live;
 		}
 		else {
 			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(durationdiff);

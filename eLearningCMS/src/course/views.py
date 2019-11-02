@@ -415,9 +415,12 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
-def updateDuration(request, enrolledcourseid, duration, format=None):
+def updateDuration(request, enrolledcourseid, duration, live, format=None):
     enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
-    enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
+    if live:
+        enrolledCourseObj.completedminuteslive = enrolledCourseObj.completedminuteslive + duration/60
+    else:
+        enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
     enrolledCourseObj.save()
     return Response({"result":True})
 
