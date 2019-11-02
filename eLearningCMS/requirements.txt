@@ -36,3 +36,4 @@ django-user-agents==0.3.2
 python-dotenv
 pusher==2.0.2
 pysher==1.0.4
+python-dateutil
