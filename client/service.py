@@ -520,7 +520,7 @@ class ClientService(object):
 
     '''
         originalCommand
-        captureApp.exe -i inputFile -strict experimental -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
+        captureApp.exe -i inputFile -strict experimental -codec:a aac -ac 2 -ab 128k -preset fast -map_metadata -1 -codec:v libx264 -profile:v baseline -map 0 -force_key_frames "expr:eq(mod(n,30),0)" -bufsize 500k -maxrate 750k -x264opts rc-lookahead=300 -s 708x480 -f mp4 video_00500.mp4
     '''
 
     def resizeMediaFile(self, resolution):
@@ -528,9 +528,9 @@ class ClientService(object):
         fileNameDetails = os.path.splitext(filePath)
         outputFilePath = fileNameDetails[0] + '_' + resolution + fileNameDetails[1]
         if resolution != 'Default' and resolution in self.resolutionBitRateMap:
-            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ self.resolutionBitRateMap[resolution]['resolution'] + ' -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset fast -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap[resolution]['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap[resolution]['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap[resolution]['maxrate'] + ' -x264opts rc-lookahead=300 -s '+ self.resolutionBitRateMap[resolution]['resolution'] + ' -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
         else:
-            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset slow -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap['Default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['Default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['Default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
+            commandToResize = str(self.captureAppProcName) + ' -i "' + str(filePath) +'" -codec:a aac -ac 2 -ab 128k -preset fast -map_metadata -1 -codec:v libx264 -map 0 -force_key_frames "expr:eq(mod(n,60),0)" -b:v ' + self.resolutionBitRateMap['Default']['bitrate'] + ' -bufsize '+ self.resolutionBitRateMap['Default']['bufsize'] + ' -maxrate ' + self.resolutionBitRateMap['Default']['maxrate'] + ' -x264opts rc-lookahead=300 -loglevel ' + self.loglevel + ' "' + str(outputFilePath) + '"'
 
         try:
             os.system(commandToResize)
