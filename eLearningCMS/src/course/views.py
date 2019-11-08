@@ -153,7 +153,7 @@ class courseDetails(fillCartCourses):
                     # check for view hours restriction
                     if enrolledCourseObj.viewhours > 0:
                         courseOverviewMap["viewhours"] = enrolledCourseObj.viewhours
-                        courseOverviewMap["completedminutes"] = enrolledCourseObj.completedminutes
+                        courseOverviewMap["completedminutes"] = enrolledCourseObj.completedminutes + enrolledCourseObj.completedminuteslive
 
                     if enrolledCourseObj.sessions != '':
                         sessionsPlayed = course.algos.strToIntList(enrolledCourseObj.sessions)

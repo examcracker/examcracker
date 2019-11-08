@@ -56,12 +56,15 @@ def getSessionsBySubjects(providerId,subjects):
     sessionObj = sessionObj.filter(q_objects)
     return sessionObj
 
-def getTotalStudentsPlayedTime(providerId):
+def getTotalStudentsPlayedTime(providerId,onlyLive=False):
     providerCourses = course.models.Course.objects.filter(provider_id=providerId)
     myec = course.models.EnrolledCourse.objects.filter(course_id__in=providerCourses.values('id'))
     viewHours = 0
     for ec in myec:
-        viewHours = viewHours + ec.completedminutes
+        if onlyLive == True:
+            viewHours = viewHours + ec.completedminuteslive
+        else:
+            viewHours = viewHours + ec.completedminutes + ec.completedminuteslive
     return (int(viewHours))
 
 
@@ -95,7 +98,7 @@ def getProviderStats(providerId):
     planObj = models.Plan.objects.filter(provider_id=providerId)
     if planObj:
         planObj = planObj[0]
-        viewMinutesByStudents = viewMinutesByStudents + planObj.completedminutes
+        viewMinutesByStudents = viewMinutesByStudents + planObj.completedminutes + planObj.completedminuteslive
     providerStatsInfo['totalStudentsPlayedTime'] = int (viewMinutesByStudents/60)
     return providerStatsInfo
 
@@ -584,10 +587,19 @@ class myStats(showProviderHome):
         statsObj = cdn.views.getBunnyStats(providerObj.id)
 
         planObj = models.Plan.objects.filter(provider_id=providerObj.id)[0]
+        liveViewMinutes = getTotalStudentsPlayedTime(providerObj.id,True) + planObj.completedminuteslive
+        # Assuming 150 minutes = 600 MB
+        # Need to rework on this
+        liveBandwidth = planObj.offsetBandwidthlive
+        liveMinutesToBandwith = (liveViewMinutes*4)/1000 # GB
+        liveBandwidth = liveBandwidth + liveMinutesToBandwith
 
+        # total bandwidth consumed
+        totalConsumed = liveBandwidth + statsObj.bandwidth
         kwargs["stats"] = statsObj
         kwargs["plan"] = planObj
-        kwargs["liveText"] = "Under Construction"
+        kwargs["liveText"] = liveBandwidth
+        kwargs["TotalBandwidth"] = totalConsumed
         if planObj.live == 0:
             kwargs["liveText"] = "NA"
 
@@ -951,8 +963,10 @@ class clear_enrollments(viewCourses):
         # Store view hours somewhere
         planObj = models.Plan.objects.filter(provider_id=providerObj.id)
         viewMinutes = 0
+        viewMinutesLive = 0
         for ec in enrollcourseObj:
             viewMinutes = viewMinutes + int(ec.completedminutes)
+            viewMinutesLive = viewMinutesLive + int(ec.completedminuteslive)
             studentObj = student.models.Student.objects.filter(id=ec.student_id)[0]
             userObj = User.objects.filter(id=studentObj.user_id)[0]
             emailBody = '<p>Dear <span style="color: #ff0000;">' + userObj.name + '</span>,</p>\n\
@@ -965,5 +979,6 @@ Gyaanhive Team</p>'
         if planObj:
             planObj = planObj[0]
             planObj.completedminutes = planObj.completedminutes + viewMinutes
+            planObj.completedminuteslive =  planObj.completedminuteslive + viewMinutesLive
             planObj.save()
         return super().get(request, *args, **kwargs)
