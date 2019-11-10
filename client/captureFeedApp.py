@@ -73,7 +73,7 @@ class captureFeedApp:
             self.LOG.info(rtmpUrl)
             #self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'scale=854x480,setsar=1,yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             #self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-b', self.captureBitRate,'-vf', 'scale=720*406,setsar=1,yadif','-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[onfail=ignore]{}|[select=v,\'a:0\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-            CREATE_NO_WINDOW = 0x08000000
+            
             self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource,'-b:v', self.captureBitRate,'-filter_complex','[0:v]split=2[s0][s1];[s0]scale='+ self.captureResolution +',setsar=1,yadif[v0];[s1]scale='+ self.liveResolution +',setsar=1,yadif[v1]','-threads', '2', '-flags','+global_header','-map','[v0]','-map','[v1]','-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-map', '0:a','-preset','fast','-f', 'tee', r'[select=\'v:0,a\']{}|[select=\'v:1,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore:queue_size=180:format_opts=flvflags=no_duration_filesize]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             self.LOG.info("Start streaming")
             time.sleep(2)
@@ -84,17 +84,14 @@ class captureFeedApp:
                 self.LOG.error("Could not allocate console. Error code:" + str(err))'''
         else:
             self.LOG.info("Live streaming flag is false")
-            CREATE_NO_WINDOW = 0x08000000
-            if self.videoFramerate:
-                self.LOG.info("Start capturing")
-                self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-                time.sleep(2)
-                '''result = self.kernel32.AttachConsole(self.captureAppProc.pid)
-                if not result:
-                    err = ctypes.get_last_error()
-                    self.LOG.error("Could not allocate console. Error code:" + err)'''
-            else:
-                self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow','-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, self.outputFileName, '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+            
+            self.LOG.info("Start capturing")
+            self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-pix_fmt', 'yuv420p', self.outputFileName, '-loglevel', self.loglevel], creationflags= subprocess.CREATE_NEW_PROCESS_GROUP)
+            time.sleep(2)
+            '''result = self.kernel32.AttachConsole(self.captureAppProc.pid)
+            if not result:
+                err = ctypes.get_last_error()
+                self.LOG.error("Could not allocate console. Error code:" + err)'''
 
     def killProcessForcefully(self, pid):
         try:

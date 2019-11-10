@@ -40,6 +40,11 @@ class captureFeed:
         self.outputFolder = config.get("config","outputFolder")
         self.loglevel = config.get("config","loglevel")
 
+        try:
+            self.showConsole = config.getboolean("config","showConsole")
+        except:
+            self.showConsole = True
+
         self.outputFileName = ''
 
         self.captureAppLogPath = os.path.join(self.dir_path, "Capturing.log")
@@ -78,7 +83,12 @@ class captureFeed:
         self.captureTmpFile.close()
 
         CREATE_NO_WINDOW = 0x08000000
-        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+        if self.showConsole:
+            CREATE_WINDOW_FLAG = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            CREATE_WINDOW_FLAG = CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+
+        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName], creationflags=CREATE_WINDOW_FLAG)
 
     def killProcessForcefully(self, pid):
         try:
