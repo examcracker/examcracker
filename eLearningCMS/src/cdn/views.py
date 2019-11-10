@@ -441,7 +441,7 @@ def getProviderStudentsInt(start, end, courseid):
         studentInfo['course_expiry'] = expiry
         studentInfo['remarks'] = studentItem.remarks
         studentInfo['viewhours'] = studentItem.viewhours
-        studentInfo['completedminutes'] = int(studentItem.completedminutes+0.5)
+        studentInfo['completedminutes'] = int(studentItem.completedminutes + studentItem.completedminuteslive + 0.5)
         studentList.append(studentInfo)
         start = start + 1
         i = i + 1

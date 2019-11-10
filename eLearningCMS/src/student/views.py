@@ -39,7 +39,7 @@ def getStudentViewAllotedHoursProviderWise(studentid,providerid):
     allotedHours = 0
     for c in myCourses:
         allotedHours = max(c.viewhours,allotedHours)
-        viewMinutes = viewMinutes + c.completedminutes
+        viewMinutes = viewMinutes + c.completedminutes + c.completedminuteslive
     return int(viewMinutes),allotedHours
 
 
@@ -61,7 +61,7 @@ class showStudentHome(LoginRequiredMixin, generic.TemplateView):
         kwargs["courses"] = len(myCourses)
         viewMinutes = 0
         for c in myCourses:
-            viewMinutes = viewMinutes + c.completedminutes
+            viewMinutes = viewMinutes + c.completedminutes + c.completedminuteslive
         kwargs["viewMinutes"] = int(viewMinutes)
         
         if isAnyEventLive(request):

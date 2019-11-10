@@ -88,6 +88,8 @@ class Plan(models.Model):
     completedminutes = models.FloatField(default=0)
     offsetStorage = models.IntegerField(default=0)
     offsetBandwidth = models.IntegerField(default=0)
+    offsetBandwidthlive = models.IntegerField(default=0)
+    completedminuteslive = models.FloatField(default=0)
 
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
