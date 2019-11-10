@@ -66,7 +66,7 @@ class captureFeedApp:
         self.outputFileName = outputFileName
         self.captureAppLog = open(self.captureAppLogPath, 'w')
 		#os.path.join(self.outputFolder, time.strftime("%c").replace(':', '_').replace(' ','_') + '.mp4')
-        if self.mediaServer != None and self.liveFlag == 'True':
+        if self.liveFlag == 'True':
             self.outputFileName = self.outputFileName.replace('\\','/')
             scheduleid = self.liveStreamName.split('__')[1]
             rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName+'?providerid='+self.clientId+'&scheduleid='+scheduleid
@@ -148,14 +148,15 @@ def main():
     mediaServerApp = sys.argv[4]
     liveStreamName = sys.argv[5]
     liveFlag = sys.argv[6]
-    timeout = sys.argv[7]
+    timeout = int(sys.argv[7])
     captureTmpFilePath = sys.argv[8]
     clientId = sys.argv[9]
     outputFileName = sys.argv[10]
 
     capture = captureFeedApp(clientId, configPath, captureAppPath)
     capture.setCapturingTimeout(timeout)
-    capture.fillMediaServerSettings(mediaServer, mediaServerApp, liveFlag, liveStreamName)
+    if liveFlag == 'True':
+        capture.fillMediaServerSettings(mediaServer, mediaServerApp, liveFlag, liveStreamName)
 
     capture.startCapturing(outputFileName)
     captureStartTime = time.time()
@@ -163,7 +164,7 @@ def main():
     while os.path.exists(captureTmpFilePath):
         time.sleep(1)
         timeDiff = int(round(time.time())) - captureStartTime
-        if timeDiff >= self.timeout:
+        if timeDiff >= timeout:
             break
 
     capture.stopCapturing()

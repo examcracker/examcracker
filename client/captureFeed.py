@@ -49,9 +49,9 @@ class captureFeed:
         # capturing timeout in seconds
         self.timeout = 30
         self.clientId = clientId
-        self.mediaServer = None
-        self.mediaServerApp = None
-        self.liveStreamName = ''
+        self.mediaServer = 'None'
+        self.mediaServerApp = 'None'
+        self.liveStreamName = 'None'
         self.liveFlag = 'False'
         self.captureTmpFilePath = 'capture.tmp'
 
@@ -78,7 +78,7 @@ class captureFeed:
         self.captureTmpFile.close()
 
         CREATE_NO_WINDOW = 0x08000000
-        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName], creationflags=CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP)
+        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
 
     def killProcessForcefully(self, pid):
         try:

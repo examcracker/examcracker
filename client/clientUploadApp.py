@@ -11,6 +11,7 @@ import api
 import json
 import time
 import queue
+import captureFeed
 		
 class worker(QThread):
 	threadOutput = pyqtSignal('QString')
@@ -181,8 +182,13 @@ class worker(QThread):
 class filedialogdemo(QFrame):
 	def __init__(self):
 		super(filedialogdemo, self).__init__()
+
+		dir_path = os.path.dirname(os.path.realpath(__file__))
+		if getattr(sys, 'frozen', False):
+			dir_path = os.path.dirname(sys.executable)
 		
 		self.thread = None
+		configPath = os.path.join(dir_path, "arguments.cfg")
 
 		self.lastMessage = ''
 		self.uploadCompletedFlag = True
@@ -191,6 +197,12 @@ class filedialogdemo(QFrame):
 		
 		self.initWidget()
 		self.initStyle()
+
+		serviceObj = service.ClientService()
+		serviceObj.encryptedid = self.userDetails['clientid']
+		serviceObj.decodeClientId()
+		
+		self.capture = captureFeed.captureFeed(serviceObj.clientid, configPath, os.path.join(dir_path, "captureApp.exe"))
 
 	def dailogStylesheet(self):
 		self.loginDialog.setStyleSheet("""
@@ -433,8 +445,14 @@ class filedialogdemo(QFrame):
 		self.btnQueue.setEnabled(False)
 		self.btnQueue.clicked.connect(self.addMediaFileIntoQueue)
 
+		self.btnCapture = QPushButton('Start Capture', self)
+		self.btnCapture.setCheckable(True)
+		self.btnCapture.setMinimumSize( 130,40)
+		self.btnCapture.clicked.connect(self.startCapturing)
+
 		layoutAction.addWidget(self.btnConvert)
 		layoutAction.addWidget(self.btnQueue)
+		layoutAction.addWidget(self.btnCapture)
 
 		layoutV.addLayout(layoutAction)
 
@@ -490,6 +508,17 @@ class filedialogdemo(QFrame):
 		msg.setText(message)
 		msg.setWindowTitle("Warning!")
 		msg.exec_()
+
+	def startCapturing(self):
+		if self.btnCapture.text() == "Start Capture":
+			self.btnCapture.setText("Stop Capture")
+			self.btnConvert.setEnabled(False)
+			self.capture.startCapturing()
+		else:
+			self.capture.stopCapturing()
+			self.btnCapture.setText("Start Capture")
+			self.labelFilePath.setText(self.capture.outputFileName)
+			self.startProcess()
 
 	def addMediaFileIntoQueue(self):
 		mediaFile = self.labelFilePath.text()
@@ -567,7 +596,7 @@ class filedialogdemo(QFrame):
 		for mediaFile in mediaFilePathList:
 			if mediaFile in self.alreadyProcessedFiles:
 				self.showWarningMessage("Media file: " + str(mediaFile) + "\n already processed, please select another file.")
-				continue
+				return
 
 			self.alreadyProcessedFiles.add(mediaFile)
 
@@ -587,10 +616,12 @@ class filedialogdemo(QFrame):
 		self.thread.start()
 		self.btnConvert.setEnabled(False)
 		self.btnQueue.setEnabled(True)
+		self.btnCapture.setEnabled(False)
 
 	def uploadCompleted(self, msg):
 		self.uploadCompletedFlag = True
 		self.btnConvert.setEnabled(True)
+		self.btnCapture.setEnabled(True)
 		self.btnQueue.setEnabled(False)
 			
 	def updateOuput(self, message):
