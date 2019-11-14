@@ -178,9 +178,12 @@ def on_message(message):
                         serviceObj.bunnyUpload = False
                     if "primary" in messageDict.keys():
                         serviceObj.primary = messageDict["primary"]
-
+                    if "liveABR" in messageDict.keys():
+                        serviceObj.liveABR = messageDict["liveABR"]
+                    
                     serviceObj.liveStreamName = str(serviceObj.clientid)+'__'+str(serviceObj.scheduleid) + '__' + str(serviceObj.chapterid)
-                    serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName)
+                    serviceObj.capture.setCapturingTimeout(serviceObj.timeout)
+                    serviceObj.capture.fillMediaServerSettings(serviceObj.mediaServer, serviceObj.mediaServerApp, serviceObj.live,serviceObj.liveStreamName, serviceObj.liveABR)
                     sendCaptureResponse(RUNNING, serviceObj.encryptedid, serviceObj.scheduleid, serviceObj.liveStreamName)
                     serviceObj.startCapture()
             elif command == api.command_stop:
@@ -332,6 +335,7 @@ class ClientService(object):
     DoUpload = True
     bunnyUpload = False
     primary = DO
+    liveABR = 'False'
     
     def __init__(self):
         websocket.enableTrace(True)

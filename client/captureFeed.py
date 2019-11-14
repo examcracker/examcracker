@@ -59,10 +59,11 @@ class captureFeed:
         self.liveStreamName = 'None'
         self.liveFlag = 'False'
         self.captureTmpFilePath = 'capture.tmp'
+        self.liveABR = 'False'
 
         #self.kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
     
-    def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName):
+    def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName, liveABR='False'):
         self.mediaServer = mediaServer
         self.mediaServerApp = mediaServerApp
         self.liveStreamName = liveStreamName
@@ -70,6 +71,7 @@ class captureFeed:
             self.liveFlag = 'True'
         else:
             self.liveFlag = 'False'
+        self.liveABR = liveABR
 
     def setCapturingTimeout(self, timeout):
         self.timeout = timeout
@@ -88,7 +90,7 @@ class captureFeed:
         else:
             CREATE_WINDOW_FLAG = CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
 
-        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName], creationflags=CREATE_WINDOW_FLAG)
+        self.captureAppProc = subprocess.Popen(['captureFeedApp.exe', self.configPath, self.captureAppPath, self.mediaServer, self.mediaServerApp, self.liveStreamName, self.liveFlag, str(self.timeout), self.captureTmpFilePath, self.clientId, self.outputFileName, self.liveABR], creationflags=CREATE_WINDOW_FLAG)
 
     def killProcessForcefully(self, pid):
         try:

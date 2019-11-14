@@ -336,6 +336,7 @@ def createDictSchedule(scheduleObj, command):
     dictObj["machine"] = scheduleObj.system
     dictObj["mediaServer"] = settings.MEDIA_SERVER_IP
     dictObj["mediaServerApp"] = settings.MEDIA_SERVER_APP
+    
     dictObj["live"] = True
     dictObj["dokey"] = settings.DIGITAL_OCEAN_SPACE_KEY
     dictObj["dokeysecret"] = settings.DIGITAL_OCEAN_SPACE_KEY_SECRET
@@ -349,9 +350,18 @@ def createDictSchedule(scheduleObj, command):
 
     return dictObj
 
-def getStreamUrl(streamname):
+def getStreamUrl(streamname,providerid):
+    planObj = provider.models.Plan.objects.filter(provider_id=providerid)
+    liveABR = False
+    if planObj:
+        planObj = planObj[0]
+        if planObj.liveABR == True:
+            liveABR = True
+    if liveABR == True:
+        url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN_ABR + '/dashABR/' + streamname + '.mpd'
+    else:
+        url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
     #hlsurl = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + ':' + settings.MEDIA_SERVER_HTTPS_PORT + '/hls/' + streamname + '.m3u8'
-    url = 'https://' + settings.MEDIA_SERVER_SUB_DOMAIN + '/dash/' + streamname + '.mpd'
     return url
 
 class playStream(LoginRequiredMixin, generic.TemplateView):
@@ -386,10 +396,12 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
         scheduleObj = scheduleObj[0]
         userString = '?'
         courseChapterObj = course.models.CourseChapter.objects.filter(id=scheduleObj.chapter_id)
+        providerid = 0
         if request.user.is_staff:
             courseChapterObj = courseChapterObj[0]
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
+            providerid = providerObj.id
             if scheduleObj.provider_id != providerObj.id:
                 raise Http404()
             
@@ -422,6 +434,7 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             #check view hours and alloted hours before proceed further
             courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
             viewMinutes,allotedHours = student.views.getStudentViewAllotedHoursProviderWise(studentObj.id,courseObj.provider_id)
+            providerid = courseObj.provider_id
             if allotedHours > 0 and viewMinutes >= allotedHours*60:
                 raise Http404()
             userString = userString+'studentid='+str(studentObj.id)+'&'
@@ -442,8 +455,8 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             student.views.fillStudentPlayStats(studentObj.id,-1,ip,request.user.email,deviceinfo)
         #HttpResponse.set_cookie('GyaanHiveIP', ip)
         kwargs["isLive"] = "true"
-        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
-        kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
+        kwargs["signedurl"] = getStreamUrl(scheduleObj.streamname,providerid) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
+        kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname,providerid) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         kwargs["user_email"] = request.user.email
         kwargs["userip"] = ip
 
@@ -480,6 +493,19 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
             scheduleDict['bunnyUpload'] = False
             scheduleDict['DoUpload'] = True
             scheduleDict['primary'] = DO
+        # Fill live ABR here
+        planObj = provider.models.Plan.objects.filter(provider_id=providerObj.id)
+        liveABR = 'False'
+        if planObj:
+            planObj = planObj[0]
+            if planObj.liveABR == True:
+                liveABR = 'True'
+
+        scheduleDict['liveABR'] = liveABR
+        if liveABR == 'True':
+            scheduleDict['liveABR'] = 'True'
+            scheduleDict["mediaServer"] = settings.MEDIA_SERVER_IP_ABR
+            scheduleDict["mediaServerApp"] = settings.MEDIA_SERVER_APP_ABR
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
         return redirect("schedule:add_show_schedule")
 

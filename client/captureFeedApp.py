@@ -49,12 +49,14 @@ class captureFeedApp:
         self.mediaServerApp = None
         self.liveStreamName = ''
         self.liveFlag = 'False'
+        self.liveABR = 'False'
 
-    def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName):
+    def fillMediaServerSettings(self, mediaServer, mediaServerApp, liveFlag, liveStreamName, liveABR='False'):
         self.mediaServer = mediaServer
         self.mediaServerApp = mediaServerApp
         self.liveStreamName = liveStreamName
         self.liveFlag = liveFlag
+        self.liveABR = liveABR
 
     def setCapturingTimeout(self, timeout):
         self.timeout = timeout
@@ -69,13 +71,23 @@ class captureFeedApp:
         if self.liveFlag == 'True':
             self.outputFileName = self.outputFileName.replace('\\','/')
             scheduleid = self.liveStreamName.split('__')[1]
-            rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName+'?providerid='+self.clientId+'&scheduleid='+scheduleid
-            self.LOG.info(rtmpUrl)
+            rtmpArgs = '?providerid='+self.clientId+'&scheduleid='+scheduleid
+            if self.liveABR == 'False':
+                rtmpUrl = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName + rtmpArgs
+                self.LOG.info(rtmpUrl)
             #self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'scale=854x480,setsar=1,yadif', '-b', self.captureBitRate, '-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[select=v,\'a:0\':f=flv]{}|{}'.format(rtmpUrl, self.outputFileName), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             #self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-b', self.captureBitRate,'-vf', 'scale=720*406,setsar=1,yadif','-threads', '2', '-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-f', 'tee', '-flags', '+global_header', '-map', '0:v', '-map', '0:a', r'[onfail=ignore]{}|[select=v,\'a:0\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
             
-            self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource,'-b:v', self.captureBitRate,'-filter_complex','[0:v]split=2[s0][s1];[s0]scale='+ self.captureResolution +',setsar=1,yadif[v0];[s1]scale='+ self.liveResolution +',setsar=1,yadif[v1]','-threads', '2', '-flags','+global_header','-map','[v0]','-map','[v1]','-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-map', '0:a','-preset','fast','-f', 'tee', r'[select=\'v:0,a\']{}|[select=\'v:1,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore:queue_size=180:format_opts=flvflags=no_duration_filesize]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
-            self.LOG.info("Start streaming")
+                self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource,'-b:v', self.captureBitRate,'-filter_complex','[0:v]split=2[s0][s1];[s0]scale='+ self.captureResolution +',setsar=1,yadif[v0];[s1]scale='+ self.liveResolution +',setsar=1,yadif[v1]','-threads', '2', '-flags','+global_header','-map','[v0]','-map','[v1]','-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-map', '0:a','-preset','fast','-f', 'tee', r'[select=\'v:0,a\']{}|[select=\'v:1,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore:queue_size=180:format_opts=flvflags=no_duration_filesize]{}'.format(self.outputFileName, rtmpUrl), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                self.LOG.info("Start streaming")
+            else:
+                rtmpLow = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName + '_low' + rtmpArgs
+                rtmpMed = 'rtmp://'+self.mediaServer+'/'+self.mediaServerApp+'/'+self.liveStreamName + '_med' + rtmpArgs
+                self.LOG.info(rtmpLow)
+                self.LOG.info(rtmpMed)
+                self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource,'-b:v', self.captureBitRate,'-filter_complex','[0:v]split=2[s0][s1];[s0]scale='+ self.captureResolution +',setsar=1,yadif[v0];[s1]scale='+ self.liveResolution +',setsar=1,yadif[v1]','-threads', '2', '-flags','+global_header','-map','[v0]','-map','[v1]','-c:v', 'libx264', '-c:a', 'aac', '-pix_fmt', 'yuv420p' ,'-map', '0:a','-preset','fast','-f', 'tee', r'[select=\'v:0,a\']{}|[select=\'v:1,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore:queue_size=180:format_opts=flvflags=no_duration_filesize]{}|[select=\'v:0,a\':f=fifo:fifo_format=flv:drop_pkts_on_overflow=1:attempt_recovery=1:recovery_wait_time=1:onfail=ignore:queue_size=180:format_opts=flvflags=no_duration_filesize]{}'.format(self.outputFileName, rtmpLow,rtmpMed), '-loglevel', self.loglevel], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
+                self.LOG.info("Start streaming ABR")
+
             time.sleep(2)
             '''result = self.kernel32.AttachConsole(self.captureAppProc.pid)
             #result = True
@@ -149,11 +161,11 @@ def main():
     captureTmpFilePath = sys.argv[8]
     clientId = sys.argv[9]
     outputFileName = sys.argv[10]
-
+    liveABR = sys.argv[11]
     capture = captureFeedApp(clientId, configPath, captureAppPath)
     capture.setCapturingTimeout(timeout)
     if liveFlag == 'True':
-        capture.fillMediaServerSettings(mediaServer, mediaServerApp, liveFlag, liveStreamName)
+        capture.fillMediaServerSettings(mediaServer, mediaServerApp, liveFlag, liveStreamName, liveABR)
 
     capture.startCapturing(outputFileName)
     captureStartTime = time.time()
