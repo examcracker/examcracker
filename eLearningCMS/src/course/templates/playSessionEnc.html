@@ -231,7 +231,7 @@ window.addEventListener('resize', function() {
     }
 	var debug = "{{debug}}";
 	var accessurl = "/access/allow/{{user.id}}/";
-	var gap = 60;
+	var gap = 6;
     var liveUrl = "";
     if (isLive == "true") {
         liveUrl = "{{liveUrl}}";
@@ -272,20 +272,71 @@ window.addEventListener('resize', function() {
 	}
 
 	function update() {
-		var durationdiff = durationplayed - lastdurationsent;
-		lastdurationsent = durationplayed;
-		var isDebug = debug;
-		var url = window.location.protocol + "//" + window.location.hostname;
-		if (isDebug == "on") {
-			url = url + ":" + window.location.port;
-		}
+        var updateThreshold = 600;
+
+        var durationdiff = durationplayed - lastdurationsent;
+        lastdurationsent = durationplayed;
+        var isDebug = debug;
+        var url = window.location.protocol + "//" + window.location.hostname;
+       if (isDebug == "on") {
+           url = url + ":" + window.location.port;
+       }
+
+        // get the cookie value
+        var expiry = 24*3600*30;
+
+        var cookies = document.cookie.split(" ");
+        var cookieKey = "gyaanhive" + enrolledcourseid;
+        if (isOwner == "yes")
+            cookieKey = "gyaanhive" + courseid;
+
+        var update = false;
+        var found = false;
+        var total = 0;
+        var s = 0;
+
+        var d = new Date();
+        d.setTime(d.getTime() + (30*24*60*60*1000)); // 30 days expiry
+        var expireStr = "expires="+ d.toUTCString();
+        var cookieToSet;
+
+        for (s = 0; s < cookies.length; s++) {
+          var KV = cookies[s].split("=");
+          if (KV[0] == cookieKey) {
+            found = true;
+
+            if (! parseInt(KV[1].split(";")[0])) {
+              found = false;
+              cookieToSet = cookieKey + "=" + Math.floor(durationdiff) + "; " + expireStr;
+              continue;
+            }
+
+            total = durationdiff + parseInt(KV[1].split(";")[0]);
+            if (total >= updateThreshold) {
+               update = true;
+               cookieToSet = cookieKey + "=0; " + expireStr;
+            }
+            else {
+               cookieToSet = cookieKey + "=" + Math.floor(total) + "; " + expireStr;
+            }
+          }
+        }
+
+        if (found == false){
+          cookieToSet = cookieKey + "=" + Math.floor(durationdiff) + ";" + expireStr;
+        }
+        document.cookie = cookieToSet;
+
+        if (update == false)
+            return;
 
 		if (isOwner != "yes") {
-			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(durationdiff) + "/" + live;
+			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(total) + "/" + live;
 		}
 		else {
-			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(durationdiff);
+			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(total);
 		}
+
 		var xmlHttp = new XMLHttpRequest();
 		xmlHttp.open("GET", url, true);
 		xmlHttp.send();
