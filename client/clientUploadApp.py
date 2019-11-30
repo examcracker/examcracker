@@ -203,6 +203,7 @@ class filedialogdemo(QFrame):
 		serviceObj.decodeClientId()
 		
 		self.capture = captureFeed.captureFeed(serviceObj.clientid, configPath, os.path.join(dir_path, "captureApp.exe"))
+		self.capture.setCapturingTimeout(14400) # 4 hours
 
 	def dailogStylesheet(self):
 		self.loginDialog.setStyleSheet("""
