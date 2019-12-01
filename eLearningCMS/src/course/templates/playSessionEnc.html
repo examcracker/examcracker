@@ -423,8 +423,8 @@ window.addEventListener('resize', function() {
             var player = new shaka.Player(video);
             //uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration','spacer', 'play_rate_label', 'mute','volume', 'fullscreen', 'overflow_menu'];
           }  else {
-                //const ui = video['ui'];
-        //var uiConfig = {};
+            const ui = video['ui'];
+            var uiConfig = {};
             uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
             uiConfig['overflowMenuButtons'] = ['quality']
             ui.configure(uiConfig);
