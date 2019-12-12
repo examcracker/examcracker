@@ -603,6 +603,15 @@ class myStats(showProviderHome):
         if planObj.live == 0:
             kwargs["liveText"] = "NA"
 
+        emailBody = '<p>Dear ' + request.user.name + '</span>,</p>\n\
+<p><span style="color: #ff0000;">You are about to exhaust your plan. Do renew it to continue the experience.</em><br />\n<span style="color: #000000;">\
+Thanks<br />\n\
+Gyaanhive Team</p>'
+        bandwidthDiff = planObj.bandwidth - totalConsumed
+        if bandwidthDiff <= 0.1*planObj.bandwidth and not planObj.reminder:
+            profiles.signals.sendMail(request.user.email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
+            planObj.reminder = True
+            planObj.save()
         return super().get(request, *args, **kwargs)
 
 class liveCapture(showProviderHome):
