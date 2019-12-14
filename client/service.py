@@ -770,7 +770,7 @@ class ClientService(object):
         self.uploadFileToCDN(self.capture.outputFileName, responseDict)
         
         try:
-            sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
+            #sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
             attachmentPath = logger.logFileName
             sendMail.sendEmail(toAddr, fromAddr, pwd, attachmentPath, subject, mailBody)
         except Exception as ex:
