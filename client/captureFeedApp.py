@@ -98,7 +98,7 @@ class captureFeedApp:
             self.LOG.info("Live streaming flag is false")
             
             self.LOG.info("Start capturing")
-            self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-pix_fmt', 'yuv420p', self.outputFileName, '-loglevel', self.loglevel], creationflags= subprocess.CREATE_NEW_PROCESS_GROUP)
+            self.captureAppProc = subprocess.Popen([self.captureAppPath, '-f', 'dshow', '-video_size', self.videoResolution, '-rtbufsize','6082560','-framerate', self.videoFramerate,'-i', 'video=' + self.videoSource + ':audio=' + self.audioSource, '-vf', 'yadif', '-b', self.captureBitRate, '-pix_fmt', 'yuv420p','-preset','fast', self.outputFileName, '-loglevel', self.loglevel], creationflags= subprocess.CREATE_NEW_PROCESS_GROUP)
             time.sleep(2)
             '''result = self.kernel32.AttachConsole(self.captureAppProc.pid)
             if not result:
