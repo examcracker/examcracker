@@ -1,0 +1,239 @@
+    1  sudo apt install zlib
+    2  sudo apt install zlibc
+    3  pwd
+    4  sudo /usr/local/nginx/sbin/nginx -s stop
+    5  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+    6  sudo /usr/local/nginx/sbin/nginx
+    7  vi nginx.conf 
+    8  sudo /usr/local/nginx/sbin/nginx
+    9  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   10  sudo /usr/local/nginx/sbin/nginx
+   11  vi nginx.conf 
+   12  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   13  sudo /usr/local/nginx/sbin/nginx
+   14  vi nginx.conf 
+   15  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   16  sudo /usr/local/nginx/sbin/nginx
+   17  sudo /usr/local/nginx/sbin/nginx -s stop
+   18  vi nginx.conf 
+   19  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   20  sudo /usr/local/nginx/sbin/nginx
+   21  sudo apt-get install psmisc
+   22  sudo fuser 80/tcp
+   23  sudo lsof -i tcp:80
+   24  sudo lsof -i tcp:80 | sudo xargs kill
+   25  killall -9 14985
+   26  sudo lsof -i tcp:80
+   27  which ngix
+   28  sudo /usr/local/nginx/sbin/nginx -s stop
+   29  sudo lsof -i tcp:80
+   30  sudo /usr/local/nginx/sbin/nginx
+   31  sudo lsof -i tcp:80
+   32  sudo /usr/local/nginx/sbin/nginx -s stop
+   33  vi nginx.conf 
+   34  sudo /usr/local/nginx/sbin/nginx -s stop
+   35  cp nginx.conf /usr/local/nginx/conf/
+   36  sudo /usr/local/nginx/sbin/nginx 
+   37  sudo /usr/local/nginx/sbin/nginx -s stop
+   38  vi nginx.conf 
+   39  cp nginx.conf /usr/local/nginx/conf/
+   40  sudo /usr/local/nginx/sbin/nginx -s stop
+   41  sudo /usr/local/nginx/sbin/nginx 
+   42  vi nginx.conf 
+   43  ls dash
+   44  ls dash/test_low/
+   45  ls dash/test_mid
+   46  ls dasdh
+   47  ls dash
+   48  ls dash/test_med
+   49  cp nginx.conf /usr/local/nginx/conf/
+   50  sudo /usr/local/nginx/sbin/nginx -s stop
+   51  sudo /usr/local/nginx/sbin/nginx
+   52  ls
+   53  ls dash
+   54  cd dash
+   55  rm -rf *
+   56  ls
+   57  cd ..
+   58  ls dash
+   59  sudo ufw status
+   60  vi nginx.conf 
+   61  cp nginx.conf /usr/local/nginx/conf/
+   62  sudo /usr/local/nginx/sbin/nginx -s stop
+   63  sudo /usr/local/nginx/sbin/nginx
+   64  ls dash
+   65  vi nginx.conf 
+   66  vi /usr/local/nginx/logs/error.log 
+   67  vi nginx.conf 
+   68  cp nginx.conf /usr/local/nginx/conf/
+   69  sudo /usr/local/nginx/sbin/nginx -s stop
+   70  sudo /usr/local/nginx/sbin/nginx
+   71  ls dash
+   72  vi nginx
+   73  vi nginx.conf 
+   74  vi /usr/local/nginx/logs/error.log 
+   75  vi nginx.conf 
+   76  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   77  sudo /usr/local/nginx/sbin/nginx -s stop
+   78  sudo /usr/local/nginx/sbin/nginx
+   79  ls dash
+   80  rm -rf dash
+   81  ls dash
+   82  vi dash/test.mpd 
+   83  vi /usr/local/nginx/logs/access.log 
+   84  vi /usr/local/nginx/logs/error.log 
+   85  vi nginx.conf 
+   86  vi /usr/local/nginx/logs/error.log 
+   87  vi nginx.conf 
+   88  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+   89  sudo /usr/local/nginx/sbin/nginx -s stop
+   90  sudo /usr/local/nginx/sbin/nginx 
+   91  ls dash
+   92  rm -rf dash
+   93  ls dash
+   94  vi /usr/local/nginx/logs/error.log 
+   95  ls dash
+   96  ls dash/test_low/
+   97  ls dash/test_med/
+   98  sudo apt-get update
+   99  sudo apt-get install unzip
+  100  sudo apt-get install build-essential libpcre3 libpcre3-dev libssl-dev
+  101  wget http://nginx.org/download/nginx-1.16.1.tar.gz
+  102  tar -zxvf nginx-1.16.1.tar.gz 
+  103  git clone https://github.com/ut0mt8/nginx-rtmp-module/
+  104  ls
+  105  cd nginx-1.16.1/
+  106  ./configure --with-http_ssl_module --with-http_auth_request_module add-module=../nginx-rtmp-module
+  107  ./configure --with-http_ssl_module --with-http_auth_request_module --add-module=../nginx-rtmp-module
+  108  pt-get install zlib
+  109  ./configure --with-http_ssl_module --with-http_auth_request_module --add-module=../nginx-rtmp-module
+  110  sudo apt-get update
+  111  sudo apt-get install software-properties-common
+  112  sudo apt-get install libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev
+  113  ./configure --with-http_ssl_module --with-http_auth_request_module --add-module=../nginx-rtmp-module
+  114  make
+  115  sudo make install
+  116  sudo /usr/local/nginx/sbin/nginx 
+  117  sudo /usr/local/nginx/sbin/nginx -s stop
+  118  pwd
+  119  cd ..
+  120  ls
+  121  mkdir dash
+  122  ls
+  123  wget https://gyaanhive2.sgp1.digitaloceanspaces.com/nginx.conf
+  124  ls
+  125  pwd
+  126  ls
+  127  sudo add-apt-repository universe
+  128  sudo add-apt-repository ppa:certbot/certbot
+  129  sudo apt-get update
+  130  sudo /usr/local/nginx/sbin/nginx 
+  131  sudo certbot certonly --standalone -d www.live3.gyaanhive.com
+  132  add-apt-repository ppa:certbot/certbot
+  133  apt-get update
+  134  which certbot
+  135  sudo certbot certonly --standalone -d www.live3.gyaanhive.com
+  136  apt-get install python-certbot-apache
+  137  sudo certbot certonly --standalone -d www.live3.gyaanhive.com
+  138  certbot certificates
+  139  netstat -tulpn > grep :80
+  140  netstat -tulpn
+  141  sudo lsof -t -i tcp:80 -s tcp:listen > sudo xargs kill
+  142  sudo certbot certonly --standalone -d www.live3.gyaanhive.com
+  143  vi nginx.conf 
+  144  ls /etc/letsencrypt/live/
+  145  ls /etc/letsencrypt/live/www.live3.gyaanhive.com/
+  146  poweroff
+  147  vi nginx.conf 
+  148  cp nginx /usr/local/nginx/conf/
+  149  cp nginx.conf /usr/local/nginx/conf/
+  150  sudo /usr/local/nginx/sbin/nginx -s stop
+  151  sudo /usr/local/nginx/sbin/nginx
+  152  ls dash
+  153  rm -rf dash
+  154  ls dash
+  155  top
+  156  ls dash
+  157  rm -rf dash
+  158  ls dash
+  159  ls dash/test_low
+  160  ls dash
+  161  ls dash/test_low/
+  162  rm -rf dash
+  163  ls dash
+  164  ls
+  165  ls dash
+  166  ls dashj
+  167  ls dash
+  168  pwd
+  169  ls
+  170  ls sudo 
+  171  sudo ls dash
+  172  ls dash
+  173  rm -rf dash
+  174  ls dash
+  175  ls dash/test_low/
+  176  ls dash
+  177  poweroff
+  178  ls
+  179  ls dash
+  180  vi grep 
+  181  vi sudo 
+  182  vi nginx.conf 
+  183  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+  184  sudo /usr/local/nginx/sbin/nginx -s stop
+  185  sudo /usr/local/nginx/sbin/nginx
+  186  vi nginx.conf 
+  187  cp nginx.conf /usr/local/nginx/conf/nginx.conf
+  188  sudo /usr/local/nginx/sbin/nginx
+  189  ls dash
+  190  ls
+  191  ls dashABR/
+  192  ls dash
+  193  ls dashABR/
+  194  vi nginx.conf 
+  195  ls dashABR/
+  196  ls dash/
+  197  ls dashABR/
+  198  ls dashABR/test_low/
+  199  vi nginx.conf 
+  200  ls dash
+  201  ls dashABR/
+  202  rm -rf dash*
+  203  ls dash
+  204  ls 
+  205  ls dashABR/
+  206  ls dashABR/1__1__1/
+  207  ls dashABR/
+  208  ls dashABR/1__1__1_low/
+  209  ls dashABR/1__1__1_med/
+  210  poweroff
+  211  vi nginx.conf 
+  212  sudo /usr/local/nginx/sbin/nginx 
+  213  ls 
+  214  ls dashABR/
+  215  ls dash/
+  216  rm -rf dash*
+  217  ls
+  218  ls dashABR/`
+  219  ls dashABR/
+  220  exit
+  221  ls dashABR/
+  222  ls
+  223  ls dashABR/
+  224  rm -rf dashABR/
+  225  poweroff
+  226  sudo /usr/local/nginx/sbin/nginx 
+  227  ls
+  228  ls dashABR/
+  229  ls
+  230  cp /usr/local/nginx/conf/nginx.conf ./
+  231  wget 
+  232  wget raw.githubusercontent.com/examcracker/examcracker/master/client/sendMail.py
+  233  ls
+  234  python
+  235  python3
+  236  sudo /usr/local/nginx/sbin/nginx -s stop
+  237  history
+  238  history | & tee history
+  239  history > commands

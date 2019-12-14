@@ -25,7 +25,7 @@
             <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
                 <h2>{{ course.name }}</h2>
                 <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
-                    <video id="encplayer" preload="auto" {% if isLive == "true" %} autoplay {% endif %} data-shaka-player>
+                    <video id="encplayer" preload="auto" {% if isLive == "true" %} autoplay controls {% else %} data-shaka-player {% endif %}>
                     </video>
                     <div class="watermarkEmail"><small>{{user_email}}</small></div>
                     <div class="watermarkIpaddress"><small>{{userip}}</small></div>
@@ -260,9 +260,9 @@ window.addEventListener('resize', function() {
 
     // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
     if (isLive == "true") {
-        document.addEventListener('shaka-ui-loaded', initPlayer);
+        //document.addEventListener('shaka-ui-loaded', initPlayer);
          live = 1;
-        //document.addEventListener('DOMContentLoaded', initApp); 
+        document.addEventListener('DOMContentLoaded', initApp); 
     }  else {
         document.addEventListener('shaka-ui-loaded', initPlayer);
     }
@@ -417,17 +417,24 @@ window.addEventListener('resize', function() {
             return;
         }
 		video = document.getElementById('encplayer');
-        const ui = video['ui'];
-        var uiConfig = {};
+        //const ui = video['ui'];
+        //var uiConfig = {};
         if (isLive == "true") {
-            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration','spacer', 'play_rate_label', 'mute','volume', 'fullscreen', 'overflow_menu'];
+            var player = new shaka.Player(video);
+            //uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration','spacer', 'play_rate_label', 'mute','volume', 'fullscreen', 'overflow_menu'];
           }  else {
+            const ui = video['ui'];
+            var uiConfig = {};
             uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
+            uiConfig['overflowMenuButtons'] = ['quality']
+            ui.configure(uiConfig);
+            const controls = ui.getControls();
+            var player = controls.getPlayer();
         }
-        uiConfig['overflowMenuButtons'] = ['quality']
-        ui.configure(uiConfig);
-        const controls = ui.getControls();
-        var player = controls.getPlayer();
+        //uiConfig['overflowMenuButtons'] = ['quality']
+        //ui.configure(uiConfig);
+        //const controls = ui.getControls();
+        //var player = controls.getPlayer();
 		if (isLive == "false") {
 			player.configure({
 				drm: {
