@@ -161,6 +161,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
               continue
             courseIdNameMap[item.id] = item.name
             sessions = strToIntList(item.sessions)
+            materials = strToIntList(item.material)
             publishedStatus = strToBoolList(item.published)
             chapterDetailMap = {}
             chapterId = item.id
@@ -173,6 +174,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
             chapterDetailMap[chapterId]["name"] = item.name
             chapterDetailMap[chapterId]["access"] = 0
             chapterDetailMap[chapterId]["sessions"] = []
+            chapterDetailMap[chapterId]["materials"] = []
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
             i = 0
@@ -185,15 +187,44 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                     continue
                 if not chapterDetailMap[chapterId]["hasUnPublishedSessions"] and not publishedStatus[pos]:
                     chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 1
-                sessionDetails = {}
+                
                 sessionObj = provider.models.Session.objects.filter(id=sess)[0]
+                sessionmaterials= strToIntList(sessionObj.material)
+                j = 0
+                sessionDetails = {}
+                sessionDetails["sessionMaterials"] = []
+                while (j < len(sessionmaterials)):
+                  mat = sessionmaterials[j]
+                  j = j+1
+                  materialObj = provider.models.Material.objects.filter(id=mat)
+                  if materialObj:
+                    materialObj = materialObj[0]
+                  else:
+                    continue
+                  sessionmaterialDetails = {}
+                  sessionmaterialDetails["name"] = materialObj.name
+                  sessionmaterialDetails["id"] = materialObj.id
+                  sessionmaterialDetails["key"] = materialObj.fileKey
+                  sessionDetails["sessionMaterials"].append(sessionmaterialDetails)
                 sessionDetails["name"] = sessionObj.name
                 sessionDetails["video"] = sessionObj.video
                 sessionDetails["id"] = sessionObj.id
                 sessionDetails["encrypted"] = sessionObj.encrypted
                 sessionDetails["published"] = publishedStatus[pos]
+                
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
+            i = 0
+            while ( (i < len(materials))):
+                mat = materials[i]
+                pos = i
+                i = i+1
+                materialDetails = {}
+                materialObj = provider.models.Material.objects.filter(id=mat)[0]
+                materialDetails["name"] = materialObj.name
+                materialDetails["id"] = materialObj.id
+                materialDetails["key"] = materialObj.fileKey
+                chapterDetailMap[chapterId]["materials"].append(materialDetails)
             courseDetailMap.append(chapterDetailMap)
     return courseDetailMap
 

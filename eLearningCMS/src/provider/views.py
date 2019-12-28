@@ -946,16 +946,20 @@ def export_users_csv(request,studentid):
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
     return response
 
-'''
-def fix_expiry(request):
-    enrollcourseObj = course.models.EnrolledCourse.objects.all()
-    for ec in enrollcourseObj:
-        #print(expiry)
-        ec.expiry = datetime(year=2019,month=12,day=31)
-        ec.save()
-        #print(expiry)
-    return redirect("provider:provider_home")
-'''
+
+def fix_expiry(request,pid,nmonths):
+    if not request.user.is_superuser:
+        raise Http404()
+    coursesObj = course.models.Course.objects.filter(provider_id = pid)
+    if coursesObj:
+        cids = coursesObj.values('id')
+        enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(course_id__in=cids)
+        for ec in enrolledCoursesObj:
+            ec.expiry = ec.expiry + relativedelta(months=nmonths)
+            ec.save()
+    response = HttpResponse(content_type='text/plain')
+    return response
+
 class clear_enrollments(viewCourses):
     http_method_names = ['post']
 
@@ -996,3 +1000,63 @@ Gyaanhive Team</p>'
             planObj.completedminuteslive =  planObj.completedminuteslive + viewMinutesLive
             planObj.save()
         return super().get(request, *args, **kwargs)
+
+class createMaterial(coursePageBase):
+    http_method_names = ['get','post']
+
+    def post(self, request,*args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        isCourseContent = request.POST.get('isCourseContent','')
+        courseId = request.POST.get('courseidForMaterial','')
+        chapterid = request.POST.get('chapterIdSelected','')
+        sessionid = request.POST.get('chapterSession','')
+        materialKeys = request.POST.getlist('materialKeys')
+        materialNames = request.POST.getlist('materialNames')
+        bucketname = request.POST.get('bucketname','')
+        providerObj = getProvider(request)
+        materialidArr = []
+        if(len(materialKeys) != len(materialNames)):
+            #print('keys and names length doesnt match')
+            raise Http404()
+        else:
+            i = 0
+            while i<len(materialKeys):
+                key = materialKeys[i]
+                name = materialNames[i]
+                materialObj = models.Material()
+                materialObj.name = name
+                materialObj.fileKey = key
+                materialObj.provider_id = providerObj.id
+                materialObj.bucketname = bucketname
+                materialObj.save()
+                materialidArr.append(materialObj.id)
+                i = i+1
+
+        materialidArrStr = getDelimiter().join([str(x) for x in materialidArr])
+        if int(sessionid) < 0 :
+            courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
+            if not courseChapterObj:
+                raise Http404()
+            courseChapterObj = courseChapterObj[0]
+            if courseChapterObj.material != '':
+                courseChapterObj.material = courseChapterObj.material + getDelimiter() + materialidArrStr
+            else:
+                courseChapterObj.material = materialidArrStr
+            courseChapterObj.save()
+        else:
+            sessionObj = models.Session.objects.filter(id=sessionid)
+            if not sessionObj:
+                raise Http404()
+            sessionObj = sessionObj[0]
+            if sessionObj.material != '':
+                sessionObj.material = sessionObj.material + getDelimiter() + materialidArrStr
+            else:
+                sessionObj.material = materialidArrStr
+            sessionObj.save()
+
+        url = "provider:edit_course"
+        #return super().get(request, *args, **kwargs)
+        return redirect(url,courseId)
+
+

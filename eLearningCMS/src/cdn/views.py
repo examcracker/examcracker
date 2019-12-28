@@ -116,6 +116,7 @@ def getVideoDuration(jwid):
         return None
 
 def createVideoUploadURL():
+    return 'dummy'
     jwplatform_client = getJWClient()
     upload_url = ''
     try:

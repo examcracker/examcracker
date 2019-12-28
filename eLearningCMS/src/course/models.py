@@ -125,6 +125,7 @@ class CourseChapter(models.Model):
     sessions = models.CharField(max_length=10000, blank=True)
     published = models.CharField(max_length=1000, blank=True)
     subject = models.CharField(max_length=100)
+    material = models.CharField(max_length=10000, blank=True) # list of material ids
 
 class LinkCourse(models.Model):
     parent = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -136,5 +137,4 @@ class CourseReview(models.Model):
     review = models.CharField(max_length=10000)
     rating = models.IntegerField(default=0)
     reviewed = models.DateTimeField(auto_now_add=True)
-
 

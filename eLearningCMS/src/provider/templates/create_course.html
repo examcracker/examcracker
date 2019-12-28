@@ -61,8 +61,12 @@
 								</li>
 								<li class="nav-item">
 										<a href="" data-target="#addContent" data-toggle="tab" 
-										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Content</a>
+										class= {% if editCourse %} {% if isCourseContent %} "nav-link active" {% else %} "nav-link" {% endif %} {% else %} "nav-link disabled" {% endif %}>Videos</a>
 								</li>
+<!-- 								<li class="nav-item">
+									<a href="" data-target="#addMaterial" data-toggle="tab" 
+									class= {% if isCourseContent %} "nav-link" {% else %} "nav-link active" {% endif %}>Material</a>
+							</li> -->
 						</ul>
 						<div class="tab-content py-4">
 
@@ -169,6 +173,9 @@
 								</div>
 								<div class="tab-pane" id="courseFromCourses">
 										{% include "create_courseFromCourses.html" %}		
+								</div>
+								<div {% if isCourseContent %} class="tab-pane" {% else %} class="tab-pane active" {% endif %} id="addMaterial">
+									{% include "create_material.html" %}	
 								</div>
 						</div>
 				</div>

@@ -66,6 +66,7 @@ class Session(models.Model):
     encrypted = models.BooleanField(default=False)
     bucketname = models.CharField(default='gyaanhive', max_length=100)
     multibitrate = models.BooleanField(default=False)
+    material = models.CharField(max_length=10000, blank=True) # list of material ids
 
 class DrmSession(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
@@ -96,4 +97,11 @@ class Plan(models.Model):
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     subdomain = models.CharField(max_length=500)
+
+class Material(models.Model):
+    name = models.CharField(max_length=500)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    uploaded = models.DateTimeField(auto_now_add=True)
+    fileKey = models.CharField(max_length=500, default='')
+    bucketname = models.CharField(default='gyaanhive', max_length=100)
 
