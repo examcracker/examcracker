@@ -280,11 +280,12 @@ class coursePageBase(showProviderHome):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-        kwargs["uploadMaterial"] = False
+        kwargs["uploadMaterial"] = 0
         planObj = models.Plan.objects.filter(id=providerObj.id)
         if planObj:
             planObj = planObj[0]
-            kwargs["uploadMaterial"] = planObj.uploadMaterial
+            if planObj.uploadMaterial == True:
+                kwargs["uploadMaterial"] = 1
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
