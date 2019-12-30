@@ -80,7 +80,7 @@
                                     {% for mat in value.materials %}
                                     <tr>
                                         <td>{{forloop.counter}} </td>
-                                        <td><a href ="https://gyaanhive20.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
+                                        <td><a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
                                        
                                     </tr>
                                     {% endfor %}
@@ -111,7 +111,7 @@
                                             {% for mat in session.sessionMaterials %}
                                             <tr>
                                                 <td>{{forloop.counter}} </td>
-                                                <td><a href ="https://gyaanhive20.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
+                                                <td><a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
                                                
                                             </tr>
                                             {% endfor %}
@@ -246,8 +246,8 @@
     var materialKeyNameMap = new Map();
     var fileMapCounter = 0;
     var failedUpload = false;
-    //var bucketname = 'xxxxxxxxxxxxxx'
-    //var accesskey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    var bucketname = 'xxxxxxxxxxxxxx'
+    var accesskey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
     function fileSelected(elmnt, courseid, coursename,sessionid=-1){
         var fileId = elmnt.id;
         var files = document.getElementById(fileId).files;
@@ -268,8 +268,8 @@
             var file = files[i]
             var goUpload = true;
             var videoName = file.name;
-            if (!(/\.(pdf)$/i).test(videoName)) {
-                alert(videoName + ' is not a valid file. You must select pdf file');
+            if (!(/\.(pdf|doc|docx)$/i).test(videoName)) {
+                alert(videoName + ' is not a valid file. You must select pdf/doc file');
                 goUpload = false;
                 return;
             }
@@ -500,14 +500,32 @@ function addAndUploadMaterial(elem,chapid,chapname) {
 }
 
 function saveAndUploadMaterial(el) {
-    // set bucket in form to save in db 
+    // set bucket in form to save in db
+    var url = window.location.protocol + "//" + window.location.hostname;
+    var isDebug = "{{debug}}";
+    if (isDebug) {
+	    url = url + ":" + window.location.port;
+    }
+    url = url + "/provider/getProviderCDNDetails";
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", url, true);
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.status == 200) {
+            var data = JSON.parse(xmlHttp.responseText);
+            if (data.status == false) {
+                return;
+            }
+            bucketname = data.bucketname;
+            accesskey = data.bucketkey;
+          }
+          document.getElementById('bucketname').value = bucketname;
+            $("#addMaterialModal").modal("hide");
+            // first upload all meterial files , then Save to DB
+            uploadLecture2(0);
+            // submit modal form after files gets uploaded
 
-    document.getElementById('bucketname').value = bucketname;
-    $("#addMaterialModal").modal("hide");
-    // first upload all meterial files , then Save to DB
-    uploadLecture2(0);
-    // submit modal form after files gets uploaded
-
+        };
+        xmlHttp.send();
 }
 
 // Function which returns datetime in specified format

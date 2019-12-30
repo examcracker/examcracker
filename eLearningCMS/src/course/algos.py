@@ -205,6 +205,11 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                   sessionmaterialDetails["name"] = materialObj.name
                   sessionmaterialDetails["id"] = materialObj.id
                   sessionmaterialDetails["key"] = materialObj.fileKey
+                  storageObj = provider.models.Storage.objects.filter(name=materialObj.bucketname)
+                  sessionmaterialDetails["bucketname"] = materialObj.bucketname
+                  if storageObj:
+                    storageObj = storageObj[0]
+                    sessionmaterialDetails["bucketname"] = storageObj.pullzone
                   sessionDetails["sessionMaterials"].append(sessionmaterialDetails)
                 sessionDetails["name"] = sessionObj.name
                 sessionDetails["video"] = sessionObj.video
@@ -221,6 +226,11 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 i = i+1
                 materialDetails = {}
                 materialObj = provider.models.Material.objects.filter(id=mat)[0]
+                storageObj = provider.models.Storage.objects.filter(name=materialObj.bucketname)
+                materialDetails["bucketname"] = materialObj.bucketname
+                if storageObj:
+                  storageObj = storageObj[0]
+                  materialDetails["bucketname"] = storageObj.pullzone
                 materialDetails["name"] = materialObj.name
                 materialDetails["id"] = materialObj.id
                 materialDetails["key"] = materialObj.fileKey

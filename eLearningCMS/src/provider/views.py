@@ -30,6 +30,11 @@ import csv
 from django.http import HttpResponse
 from datetime import date,datetime
 from dateutil.relativedelta import relativedelta
+# Rest based modules
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -275,7 +280,11 @@ class coursePageBase(showProviderHome):
         courseObj = course.models.Course()
         kwargs["allExams"] = course.models.EXAM_CHOICES
         kwargs["allSubjects"] = course.models.ExamDict
-
+        kwargs["uploadMaterial"] = False
+        planObj = models.Plan.objects.filter(id=providerObj.id)
+        if planObj:
+            planObj = planObj[0]
+            kwargs["uploadMaterial"] = planObj.uploadMaterial
         if courseId != '':
             courseObj = course.models.Course.objects.filter(id=courseId)[0]
             kwargs["editCourse"] = courseObj
@@ -955,7 +964,8 @@ def fix_expiry(request,pid,nmonths):
         cids = coursesObj.values('id')
         enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(course_id__in=cids)
         for ec in enrolledCoursesObj:
-            ec.expiry = ec.expiry + relativedelta(months=nmonths)
+            #ec.expiry = ec.expiry + relativedelta(months=nmonths)
+            ec.expiry = str(datetime.now() + relativedelta(months=nmonths))
             ec.save()
     response = HttpResponse(content_type='text/plain')
     return response
@@ -1058,5 +1068,21 @@ class createMaterial(coursePageBase):
         url = "provider:edit_course"
         #return super().get(request, *args, **kwargs)
         return redirect(url,courseId)
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, ))
+@permission_classes((IsAuthenticated, ))
+def getProviderCDNDetails(request):
+    if not request.user.is_staff:
+        return Response({"status":False})
+    providerObj = getProvider(request)
+    if not providerObj:
+        return Response({"status":False})
+    bucketname = 'gyaanhive' + str(providerObj.id)
+    storageObj = models.Storage.objects.filter(name=bucketname)
+    if not storageObj:
+        return Response({"status":False})
+    storageObj = storageObj[0]
+    return Response({"status":True, "bucketname":bucketname, "bucketkey":storageObj.key})
 
 

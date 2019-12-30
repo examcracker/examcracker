@@ -93,6 +93,7 @@ class Plan(models.Model):
     completedminuteslive = models.FloatField(default=0)
     liveABR = models.BooleanField(default=False)
     reminder = models.BooleanField(default=False)
+    uploadMaterial = models.BooleanField(default=False)
 
 class Subdomain(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)

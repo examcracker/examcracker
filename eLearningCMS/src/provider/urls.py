@@ -22,5 +22,6 @@ urlpatterns = [
      path('export_studentdata/<int:studentid>', views.export_users_csv, name='export_studentdata'),
      path('clear_enrollments/<int:id>', views.clear_enrollments.as_view(), name="clear_enrollments"),
      path('createMaterial', views.createMaterial.as_view(), name="create_material"),
-     path('fix_expiry/<int:pid>/<int:nmonths>', views.fix_expiry, name='fix_expiry')
+     path('fix_expiry/<int:pid>/<int:nmonths>', views.fix_expiry, name='fix_expiry'),
+     path('getProviderCDNDetails', views.getProviderCDNDetails, name='getProviderCDNDetails')
 ]
