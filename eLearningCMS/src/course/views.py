@@ -110,18 +110,19 @@ class courseDetails(fillCartCourses):
         # show everything to the provider
         providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)
         checkPublished = True
-        if providerObj and providerObj[0].id == courseObj.provider_id:
-            providerObj = providerObj[0]
-            checkPublished = False
-
-        if checkPublished and courseObj.published == False:
-            kwargs["not_published"] = True
-            raise Http404()
-
         courseOverviewMap = {}
         courseOverviewMap["id"] = courseid
         courseOverviewMap["myCourse"] = False
 
+        if providerObj and providerObj[0].id == courseObj.provider_id:
+            providerObj = providerObj[0]
+            checkPublished = False
+            courseOverviewMap["myCourse"] = True
+
+        if checkPublished and courseObj.published == False:
+            kwargs["not_published"] = True
+            raise Http404()
+     
         #################Get review details########################
 
         reviewSummary = {}
@@ -179,9 +180,6 @@ class courseDetails(fillCartCourses):
                 addedCourse = payments.models.Cart.objects.filter(course_id=courseid).filter(student_id=studentObj.id)
                 if len(addedCourse) > 0:
                     courseOverviewMap["addedCourse"] = True
-            else:
-                if courseObj.provider_id == providerObj.id:
-                    courseOverviewMap["myCourse"] = True
         if populateCourseDetails == False:
             courseDetailMap = algos.getCourseDetails(id,checkPublished,True,allowedModules)
             kwargs["course_detail"] = courseDetailMap
