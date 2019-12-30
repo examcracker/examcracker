@@ -425,7 +425,7 @@ window.addEventListener('resize', function() {
           }  else {
             const ui = video['ui'];
             var uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
+            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
             uiConfig['overflowMenuButtons'] = ['quality']
             ui.configure(uiConfig);
             const controls = ui.getControls();
