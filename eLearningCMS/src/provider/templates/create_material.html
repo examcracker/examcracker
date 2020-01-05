@@ -249,6 +249,8 @@
     var bucketname = 'xxxxxxxxxxxxxx'
     var accesskey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
     function fileSelected(elmnt, courseid, coursename,sessionid=-1){
+        fileIDMap.clear();
+        materialKeyNameMap.clear();
         var fileId = elmnt.id;
         var files = document.getElementById(fileId).files;
         var table = document.createElement("table");

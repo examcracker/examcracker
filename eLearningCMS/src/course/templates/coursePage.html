@@ -108,12 +108,27 @@ courses ( all courses ,course model)
             </div>
         </div>
 
-        <div class="card">
-
-            <!-- Tab panes -->
-            <div class="card-body card-course-details-body">
-                <h3 class="Text-Centre">Contents</h3>
-                        <div class="container">
+        <div class="row">
+            <div class="col">
+            <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                            <a href="" data-target="#courseVideos" data-toggle="tab" 
+                            class="nav-link">Videos</a>
+                    </li>
+                    {% if uploadMaterial  %}
+                     <li class="nav-item">
+                        <a href="" data-target="#courseMaterial" data-toggle="tab" 
+                        class= "nav-link" >Material</a>
+                    </li>
+                    {% endif %}
+                   
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane" class="tab-pane active" id="courseVideos">
+                    <div class="card">
+                    <!-- Tab panes -->
+                        <div class="card-body card-course-details-body">
+                            <div class="container">
                             <div class="panel-group" id="accordion">
                                 {% for subject, subValue in course_detail.items %}
                                 <div class="panel panel-default">
@@ -141,7 +156,7 @@ courses ( all courses ,course model)
                                             <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
                                         </a>
                                     </h6>
-                                </div>
+                                    </div>
                                    <div id="{{ value.name }}:{{ subject }}" class="collapse">
                                      <div class="panel-child-body">
                                         <div class="list-group">
@@ -177,11 +192,98 @@ courses ( all courses ,course model)
                                 {% endfor %}
                                 <br>
                             </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="courseMaterial">
+                    <div class="card">
+                        <!-- Tab panes -->
+                            <div class="card-body card-course-details-body">
+                                <div class="container">
+                                <div class="panel-group" id="accordion">
+                                    {% for subject, subValue in course_detail.items %}
+                                    <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h5 class="panel-title">
+                                        <a role="button" data-toggle="collapse"  aria-expanded="false" data-parent="#accordion" href="#{{ subject }}-material">
+                                            <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                            <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                            {{ subject }} <i class="fas fa-file"></i>
+                                        </a>
+                                        </h5>
+                                    </div>
+                                    <div id="{{ subject }}-material" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                    {% for item in subValue %}
+                                    {% for chapId, value in item.items %}
+                                     <div class="panel">
+                                       <div class="panel-heading">
+                                        <h6 class="panel-title">
+                                            <a role="button" data-toggle="collapse" aria-expanded="false" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}-material">
+                                                <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                                <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                                {{ value.name }}
+                                                <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}-material">{{value.sessions|length}} <i class="fas fa-video"></i></i></span>
+                                            </a>
+                                        </h6>
+                                        </div>
+                                       <div id="{{ value.name }}:{{ subject }}-material" class="collapse">
+                                         <div class="panel-child-body">
+                                            <div class="list-group">
+                                                <!--Materials in chapters-->
+                                                {% if course_overview.myCourse %}
+                                                    {% for mat in value.materials %}
+                                                        <a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
+                                                        {{mat.name}} </a>
+                                                    {% endfor %}
+                                                {% endif %}
 
+                                                {% for session in value.sessions %}
+                                                <div class="panel">
+                                                    <div class="panel-heading">
+                                                     <h6 class="panel-title">
+                                                         <a role="button" data-toggle="collapse" aria-expanded="false" data-parent="#accordion" href="#{{ value.name }}:{{ subject }}-{{ session.name }}-{{forloop.counter}}">
+                                                             <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                                             <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                                             {{ session.name }}
+                                                             <span class="badge badge-secondary" id="span-badge-sessionCnt-{{chapid}}-material">{{session.sessionMaterials|length}} <i class="fas fa-file"></i></i></span>
+                                                         </a>
+                                                     </h6>
+                                                     </div>
+                                                    <div id="{{ value.name }}:{{ subject }}-{{ session.name }}-{{forloop.counter}}" class="collapse">
+                                                        <div class="panel-child-body">
+                                                            <div class="list-group">
+                                                                {% if course_overview.myCourse %}
+                                                                {% for mat in session.sessionMaterials %}
+                                                                    <a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
+                                                                    {{mat.name}} </a>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                         </div>
+                                       </div>
+                                     </div>
+                                    {% endfor %}
+                                    {% endfor %}
+                                    </div>
+                                    </div>
+                                </div>
+                                    {% endfor %}
+                                    <br>
+                                </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
-
         {% endif %}
 
     {% include "courseReview.html" with course_id=course_overview.id reviewSummary=reviewSummary userReviewList=userReviewList %}

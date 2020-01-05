@@ -195,6 +195,12 @@ class courseDetails(fillCartCourses):
         kwargs["course_overview"] = courseOverviewMap
         kwargs['reviewSummary'] = reviewSummary
 
+        kwargs["uploadMaterial"] = False
+        planObj = provider.models.Plan.objects.filter(provider_id=providerObj.id)
+        if planObj:
+            planObj = planObj[0]
+            if planObj.uploadMaterial == True:
+                kwargs["uploadMaterial"] = True
         return super().get(request, id, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):
