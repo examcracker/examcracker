@@ -196,7 +196,7 @@ class courseDetails(fillCartCourses):
         kwargs['reviewSummary'] = reviewSummary
 
         kwargs["uploadMaterial"] = False
-        planObj = provider.models.Plan.objects.filter(provider_id=providerObj.id)
+        planObj = provider.models.Plan.objects.filter(provider_id=courseObj.provider_id)
         if planObj:
             planObj = planObj[0]
             if planObj.uploadMaterial == True:
@@ -420,13 +420,18 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
 def updateDuration(request, enrolledcourseid, duration, live, format=None):
-    enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
-    if live:
-        enrolledCourseObj.completedminuteslive = enrolledCourseObj.completedminuteslive + duration/60
-    else:
-        enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
-    enrolledCourseObj.save()
-    return Response({"result":True})
+    try:
+        enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
+        if live:
+            enrolledCourseObj.completedminuteslive = enrolledCourseObj.completedminuteslive + duration/60
+        else:
+            enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
+        enrolledCourseObj.save()
+        return Response({"result":True})
+    except:
+        logger.error('Update Duration failed for enrolledCourseId : {}.'.format(enrolledcourseid))
+        logger.error('Update Duration failed, Duration lost : {}.'.format(duration))
+        return Response({"result":False})
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))
