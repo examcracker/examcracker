@@ -1086,4 +1086,50 @@ def getProviderCDNDetails(request):
     storageObj = storageObj[0]
     return Response({"status":True, "bucketname":bucketname, "bucketkey":storageObj.key})
 
+class deleteMaterial(coursePageBase):
+    http_method_names = ['get']
+
+    def get(self,request,cid,mid,chapid,sid,*args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        providerObj = getProvider(request)
+        if not providerObj:
+            raise Http404()
+        courseObj = course.models.Course.objects.filter(id=int(cid))
+        if not courseObj:
+            raise Http404()
+        courseObj = courseObj[0]
+        if providerObj.id != courseObj.provider_id:
+            raise Http404()
+
+        mObj = models.Material.objects.filter(id=mid)
+        if not mObj:
+            raise Http404()
+
+        if chapid != 0:
+            chapterObj = course.models.CourseChapter.objects.filter(id=chapid,course_id=cid)
+            if not chapterObj:
+                raise Http404()
+            chapterObj = chapterObj[0]
+            mArr = chapterObj.material.split(getDelimiter())
+            mArr.remove(str(mid))
+            mArrStr = getDelimiter().join(mArr)
+            chapterObj.material = mArrStr
+            chapterObj.save()
+
+        if sid != 0:
+            sessionObj = models.Session.objects.filter(id=sid)
+            if not sessionObj:
+                raise Http404()
+            sessionObj = sessionObj[0]
+            if sessionObj.provider_id != providerObj.id:
+                raise Http404()
+            mArr = sessionObj.material.split(getDelimiter())
+            mArr.remove(str(mid))
+            mArrStr = getDelimiter().join(mArr)
+            sessionObj.material = mArrStr
+            sessionObj.save()
+
+        url = "provider:edit_course"
+        return redirect(url,cid)
 
