@@ -358,6 +358,11 @@ def getCourseDetailsForCards(request, courseList):
         courseDetails["enrolledCount"] = getEnrolledStudentsCount(item.id)
         if request.user.is_authenticated and request.user.is_staff == False:
             courseDetails["alreadyEnrolled"] = checkIfStudentEnrolledInCourse(item.id, request.user.id)
+            if courseDetails["alreadyEnrolled"]:
+              studentObj = student.models.Student.objects.filter(user_id=request.user.id)
+              studentId = studentObj[0].id
+              enrolledStudent = models.EnrolledCourse.objects.filter(course_id=item.id,student_id=studentId,active=True)
+              courseDetails["expiry"] = enrolledStudent[0].expiry.strftime('%m/%d/%Y')
         else:
             courseDetails["alreadyEnrolled"] = False
         courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))
