@@ -81,7 +81,7 @@ RECAPTCHA_PRIVATE_KEY = '6LeooVkUAAAAAPvOY22Dp8RkyIXM2d0P4opaLdcA'
 EMAIL_HOST = 'smtp.mail.yahoo.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mygyaanhive@yahoo.com'
-EMAIL_HOST_PASSWORD = 'examcracker2019'
+EMAIL_HOST_PASSWORD = 'examcracker@2020'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'GyaanHive <mygyaanhive@yahoo.com>'
 
