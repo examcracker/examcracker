@@ -1119,6 +1119,7 @@ def getProviderCDNDetails(request):
     if not storageObj:
         return Response({"status":False})
     storageObj = storageObj[0]
+    #bucketname = storageObj.pullzone
     return Response({"status":True, "bucketname":bucketname, "bucketkey":storageObj.key})
 
 class deleteMaterial(coursePageBase):

@@ -372,8 +372,8 @@
         }, false);
         //Load Listener
         ajax.addEventListener("load", function (e) {
-            var responseXml = $.parseXML(e.target.responseText);
-            var xml = $(responseXml);
+            //var responseXml = $.parseXML(e.target.responseText);
+            //var xml = $(responseXml);
             //var uploadedKey = xml.find('video').attr("key");
             //document.getElementById(tempSessionId).value = uploadedKey + '?' + videoName;
 
@@ -437,10 +437,9 @@
         var filekey = d + '__' + file.name;
         materialKeyNameMap.set(filekey,file.name);
         uploadURL = "https://storage.bunnycdn.com/" + bucketname + "/Material/" + filekey
+        document.getElementById('bucketname').value = bucketname;
         ajax.open("PUT", uploadURL); // Your API .net, php
         ajax.setRequestHeader("AccessKey", accesskey);
-        url = "https://gyaanhive20.b-cdn.net/Material/file1.pdf"
-        //ajax.open("GET", url);
         var uploaderForm = new FormData(); // Create new FormData
         uploaderForm.append("file", file); // append the next file for upload
         ajax.send(uploaderForm);
@@ -518,7 +517,7 @@ function saveAndUploadMaterial(el) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", url, true);
     xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.status == 200) {
+        if ( xmlHttp.status == 200) {
             var data = JSON.parse(xmlHttp.responseText);
             if (data.status == false) {
                 return;

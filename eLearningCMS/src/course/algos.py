@@ -230,9 +230,11 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 materialObj = provider.models.Material.objects.filter(id=mat)[0]
                 storageObj = provider.models.Storage.objects.filter(name=materialObj.bucketname)
                 materialDetails["bucketname"] = materialObj.bucketname
+                materialDetails["cdnname"] = 'cdn' + materialObj.bucketname.replace(cdnSubstr,'')
                 if storageObj:
                   storageObj = storageObj[0]
                   materialDetails["bucketname"] = storageObj.pullzone
+                  materialDetails["cdnname"] = 'cdn' + storageObj.pullzone.replace(cdnSubstr,'')
                 materialDetails["name"] = materialObj.name
                 materialDetails["id"] = materialObj.id
                 materialDetails["key"] = materialObj.fileKey
