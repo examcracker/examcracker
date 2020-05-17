@@ -25,4 +25,5 @@ urlpatterns = [
      path('fix_expiry/<int:pid>/<int:nmonths>', views.fix_expiry, name='fix_expiry'),
      path('getProviderCDNDetails', views.getProviderCDNDetails, name='getProviderCDNDetails'),
      path('deleteMaterial/<int:cid>/<int:mid>/<int:chapid>/<int:sid>', views.deleteMaterial.as_view(), name="delete_material"),
+     path('export_all_students_data', views.export_all_students_data, name='export_all_students_data'),
 ]

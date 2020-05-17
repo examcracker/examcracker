@@ -35,6 +35,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+import xlsxwriter
+import calendar
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -954,6 +956,39 @@ def export_users_csv(request,studentid):
     studentStatsObj = student.models.StudentPlayStats.objects.filter(student_id=studentid)
     for stat in studentStatsObj:
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
+    return response
+
+def export_all_students_data(request):
+    if not request.user.is_staff:
+        raise Http404()
+    response = HttpResponse(content_type='text/csv')
+    providerObj = getProvider(request)
+    providerId = providerObj.id
+    workbook = xlsxwriter.Workbook(response, {'in_memory': True})
+    coursesObj = course.models.Course.objects.filter(Q(provider_id=providerId) & Q(published=1))
+    for courseObj in coursesObj:
+        worksheet = workbook.add_worksheet(courseObj.name)
+        row = 0
+        col = 0
+        rowHeaders = ['#','Name','Email','Joined','Status','Available(Hrs)','Expiry']
+        worksheet.write_row(row, col,  tuple(rowHeaders))
+        ecObjs = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
+        i = 0
+        for ec in ecObjs:
+            i = i+1
+            studentObj = student.models.Student.objects.filter(id=ec.student_id)[0]
+            userDetails = course.algos.getUserNameAndPic(studentObj.user_id)
+            Name = userDetails['name']
+            Email = userDetails['email']
+            Joined = str(ec.enrolled.day) + " " + calendar.month_name[ec.enrolled.month][:3] + " " + str(ec.enrolled.year)
+            Status = ec.remarks
+            AvailableHrs = ec.viewhours
+            expiryDate = str(ec.expiry.day) + " " + calendar.month_name[ec.expiry.month][:3] + " " + str(ec.expiry.year)
+            rowValues = [i,Name,Email,Joined,Status,AvailableHrs,expiryDate ]
+            row += 1
+            worksheet.write_row(row, col, tuple(rowValues))
+    workbook.close()
+    response['Content-Disposition'] = 'attachment; filename=all_students_data.xlsx'
     return response
 
 

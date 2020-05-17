@@ -250,7 +250,9 @@ function showAllCourses() {
     <li class="breadcrumb-item active">My Students</li>
   </ol>
 </div>
-<button onclick="calltablestoexcel()" class="btn btn-outline-info btn-md mx-2 px-2" aria-pressed="true"><i class="far fa-file-excel"></i> Export data</button>
+<a class="btn btn-outline-info btn-md mx-2 px-2" href="{% url 'provider:export_all_students_data' %}" title="Exports all students data">
+  <i class="far fa-file-excel"></i> Export data</a>
+<!-- <button onclick="calltablestoexcel()" class="btn btn-outline-info btn-md mx-2 px-2" aria-pressed="true"><i class="far fa-file-excel"></i> Export data</button> -->
 
 </nav>
 <!-- Modal -->
