@@ -234,7 +234,7 @@ courses ( all courses ,course model)
                                                 <!--Materials in chapters-->
                                                 {% if course_overview.myCourse %}
                                                     {% for mat in value.materials %}
-                                                        <a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
+                                                        <a href ="https://{{mat.cdnname}}.gyaanhive.com/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
                                                         {{mat.name}} </a>
                                                     {% endfor %}
                                                 {% endif %}
@@ -256,7 +256,7 @@ courses ( all courses ,course model)
                                                             <div class="list-group">
                                                                 {% if course_overview.myCourse %}
                                                                 {% for mat in session.sessionMaterials %}
-                                                                    <a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
+                                                                    <a href ="https://{{mat.cdnname}}.gyaanhive.com/Material/{{mat.key}}" download="{{mat.name}}" class="box-no-border list-group-item">
                                                                     {{mat.name}} </a>
                                                                 {% endfor %}
                                                             {% endif %}

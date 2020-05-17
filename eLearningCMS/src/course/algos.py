@@ -154,6 +154,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
     if len(allowedModules)>0:
       allowedModulesList = list(map(int,allowedModules))
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
+    cdnSubstr = 'gyaanhive'
     if len(chapters) > 0:
         courseIdNameMap = {}
         for item in chapters:
@@ -211,6 +212,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                     storageObj = storageObj[0]
                     sessionmaterialDetails["bucketname"] = storageObj.pullzone
                   sessionDetails["sessionMaterials"].append(sessionmaterialDetails)
+                  sessionmaterialDetails["cdnname"] = 'cdn' + sessionmaterialDetails["bucketname"].replace(cdnSubstr,'')
                 sessionDetails["name"] = sessionObj.name
                 sessionDetails["video"] = sessionObj.video
                 sessionDetails["id"] = sessionObj.id
