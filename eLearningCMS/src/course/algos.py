@@ -178,6 +178,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
             chapterDetailMap[chapterId]["materials"] = []
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
+            chapterDetailMap[chapterId]["hasMaterial"] = 0
             i = 0
             while ( (i < len(sessions)) and (getSessions == True) ):
                 sess = sessions[i]
@@ -194,6 +195,9 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 j = 0
                 sessionDetails = {}
                 sessionDetails["sessionMaterials"] = []
+                sessionDetails["hasMaterial"] = 0
+                if j < len(sessionmaterials):
+                  sessionDetails["hasMaterial"] = 1
                 while (j < len(sessionmaterials)):
                   mat = sessionmaterials[j]
                   j = j+1
@@ -222,6 +226,8 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
             i = 0
+            if i < len(materials):
+              chapterDetailMap[chapterId]["hasMaterial"] = 1
             while ( (i < len(materials))):
                 mat = materials[i]
                 pos = i

@@ -217,6 +217,7 @@ courses ( all courses ,course model)
                                     <div class="panel-body">
                                     {% for item in subValue %}
                                     {% for chapId, value in item.items %}
+                                    {% if value.hasMaterial %}
                                      <div class="panel">
                                        <div class="panel-heading">
                                         <h6 class="panel-title">
@@ -238,8 +239,9 @@ courses ( all courses ,course model)
                                                         {{mat.name}} </a>
                                                     {% endfor %}
                                                 {% endif %}
-
+                                            </div>
                                                 {% for session in value.sessions %}
+                                                {% if session.hasMaterial %}
                                                 <div class="panel">
                                                     <div class="panel-heading">
                                                      <h6 class="panel-title">
@@ -264,11 +266,13 @@ courses ( all courses ,course model)
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {% endif %}
                                                 {% endfor %}
-                                            </div>
+
                                          </div>
                                        </div>
                                      </div>
+                                     {% endif %}
                                     {% endfor %}
                                     {% endfor %}
                                     </div>
