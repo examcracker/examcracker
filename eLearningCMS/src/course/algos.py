@@ -198,6 +198,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 sessionDetails["hasMaterial"] = 0
                 if j < len(sessionmaterials):
                   sessionDetails["hasMaterial"] = 1
+                  chapterDetailMap[chapterId]["hasMaterial"] = 1
                 while (j < len(sessionmaterials)):
                   mat = sessionmaterials[j]
                   j = j+1
