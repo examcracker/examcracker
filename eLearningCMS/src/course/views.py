@@ -275,6 +275,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         user_email = request.user.email
         kwargs["userip"] = user_ip
         kwargs["user_email"] = user_email
+        kwargs["user_name"] = request.user.name
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
