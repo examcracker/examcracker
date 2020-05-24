@@ -595,6 +595,9 @@ class myStats(showProviderHome):
 
         if not providerObj.approved:
             raise Http404()
+        p_email = request.user.email
+        if providerObj.email != '':
+            p_email = providerObj.email
 
         statsObj = cdn.views.getBunnyStats(providerObj.id)
 
@@ -622,11 +625,11 @@ Gyaanhive Team</p>'
         timeDiff = datetime.timestamp(planObj.expiry) - datetime.timestamp(datetime.now())
         bandwidthDiff = planObj.bandwidth - totalConsumed
         if timeDiff <= 3600*24*10 and not planObj.reminder: # send email before 10 days
-            profiles.signals.sendMail(request.user.email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
+            profiles.signals.sendMail(p_email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
             planObj.reminder = True
             planObj.save()
         elif bandwidthDiff <= 0.1*planObj.bandwidth and not planObj.reminder: # send email when 90% bandwidth used
-            profiles.signals.sendMail(request.user.email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
+            profiles.signals.sendMail(p_email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
             planObj.reminder = True
             planObj.save()
         return super().get(request, *args, **kwargs)
@@ -841,6 +844,8 @@ Gyaanhive Team</p>'
                     cd.save()
                 #coursesToDelete.delete()
             cc = request.user.email
+            if providerObj.email != '':
+                cc = providerObj.email
             profiles.signals.sendMail(fixedEmail, subject, emailBody, cc)
         return self.get(request, *args, **kwargs)
 
