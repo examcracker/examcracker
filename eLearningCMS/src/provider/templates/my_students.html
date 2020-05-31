@@ -252,6 +252,9 @@ function showAllCourses() {
 </div>
 <a class="btn btn-outline-info btn-md mx-2 px-2" href="{% url 'provider:export_all_students_data' %}" title="Exports all students data">
   <i class="far fa-file-excel"></i> Export data</a>
+  <a class="btn btn-outline-info btn-md mx-2 px-2" href="{% url 'provider:delete_expired_students' %}" title="Remove all enrollments whose courses are expired"
+  onclick="return confirm('Do you want to delete all students whose enrollments have expired?')">
+    <i class="far fa-file-excel"></i> Delete expired</a>
 <!-- <button onclick="calltablestoexcel()" class="btn btn-outline-info btn-md mx-2 px-2" aria-pressed="true"><i class="far fa-file-excel"></i> Export data</button> -->
 
 </nav>

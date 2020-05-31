@@ -26,4 +26,5 @@ urlpatterns = [
      path('getProviderCDNDetails', views.getProviderCDNDetails, name='getProviderCDNDetails'),
      path('deleteMaterial/<int:cid>/<int:mid>/<int:chapid>/<int:sid>', views.deleteMaterial.as_view(), name="delete_material"),
      path('export_all_students_data', views.export_all_students_data, name='export_all_students_data'),
+     path('delete_expired_students', views.delete_expired_students, name='delete_expired_students'),
 ]

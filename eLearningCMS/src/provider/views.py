@@ -1174,3 +1174,27 @@ class deleteMaterial(coursePageBase):
         url = "provider:edit_course"
         return redirect(url,cid)
 
+def delete_expired_students(request):
+    if not request.user.is_staff:
+        raise Http404()
+    providerObj = getProvider(request)
+    providerId = providerObj.id
+    # find enrollments whose expiry is today
+    providerCourses = course.models.Course.objects.filter(provider_id=providerId,published=1)
+    myec = course.models.EnrolledCourse.objects.filter(course_id__in=providerCourses.values('id'),expiry__lt=datetime.now())
+    viewMinutesLive = 0
+    viewMinutes = 0
+    for ec in myec:
+        viewMinutes = viewMinutes + int(ec.completedminutes)
+        viewMinutesLive = viewMinutesLive + int(ec.completedminuteslive)
+    if myec:
+        planObj = models.Plan.objects.filter(provider_id=providerId)
+        #Save view minutes data
+        if planObj:
+            planObj = planObj[0]
+            planObj.completedminutes = planObj.completedminutes + viewMinutes
+            planObj.completedminuteslive =  planObj.completedminuteslive + viewMinutesLive
+            planObj.save()
+        myec.delete()
+    url = "provider:my_students"
+    return redirect(url)
