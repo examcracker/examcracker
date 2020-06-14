@@ -255,6 +255,14 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             kwargs["debug"] = "on"
         else:
             kwargs["debug"] = "off"
+        # Allow playSession to super users
+        # for debugging
+        isAdmin = False
+        if request.user.is_superuser:
+            isAdmin = True
+            kwargs["isOwner"] = 'yes'
+            checkPublished = False
+
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
         checkPublished = True
         if len(courseChapterObj) == 0:
@@ -280,7 +288,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
-        if courseOwnerObj.approved == False:
+        if isAdmin == False and courseOwnerObj.approved == False:
             raise Http404()
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
@@ -342,7 +350,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
 
         
-        if request.user.is_staff:
+        if isAdmin == False and request.user.is_staff:
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
             
             if courseObj.provider_id != providerObj.id:
