@@ -256,6 +256,7 @@
     function fileSelected(elmnt, courseid, coursename,sessionid=-1){
         fileIDMap.clear();
         materialKeyNameMap.clear();
+        fileMapCounter = 0;
         var fileId = elmnt.id;
         var files = document.getElementById(fileId).files;
         var table = document.createElement("table");
@@ -415,6 +416,8 @@
                         materialForm.appendChild(input2);
                     }
                     materialKeyNameMap.clear();
+                    fileMapCounter = 0;
+                    fileIDMap.clear();
                     $("#addMaterialToChapter").submit();
                     
                 }
@@ -490,6 +493,7 @@ function addAndUploadMaterial(elem,chapid,chapname) {
     document.getElementById('chapterSelected').value = chapname;
     fileIDMap.clear();
     materialKeyNameMap.clear();
+    fileMapCounter = 0;
     document.getElementById('chapterIdSelectedId').value = chapid;
     
     $('#chapterSessions').find('option:not(:first)').remove();

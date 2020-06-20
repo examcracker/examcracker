@@ -1198,3 +1198,22 @@ def delete_expired_students(request):
         myec.delete()
     url = "provider:my_students"
     return redirect(url)
+
+def migrate_course(request,old_provider,old_prov_cid,to_provider, to_prov_cid):
+    if not request.user.is_superuser:
+        raise Http404()
+    coursesObj = course.models.Course.objects.filter(provider_id = to_provider, id=to_prov_cid)
+    if not courseObj:
+        raise Http404()
+    coursesObj = course.models.Course.objects.filter(provider_id = to_provider, id=to_prov_cid)
+    if not courseObj:
+        raise Http404()       
+    if coursesObj:
+        cids = coursesObj.values('id')
+        enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(course_id__in=cids)
+        for ec in enrolledCoursesObj:
+            #ec.expiry = ec.expiry + relativedelta(months=nmonths)
+            ec.expiry = str(datetime.now() + relativedelta(months=nmonths))
+            ec.save()
+    response = HttpResponse(content_type='text/plain')
+    return response
