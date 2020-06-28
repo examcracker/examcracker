@@ -154,6 +154,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
     if len(allowedModules)>0:
       allowedModulesList = list(map(int,allowedModules))
     chapters = models.CourseChapter.objects.filter(course_id=courseid,subject=subj).order_by('sequence')
+    cdnSubstr = 'gyaanhive'
     if len(chapters) > 0:
         courseIdNameMap = {}
         for item in chapters:
@@ -177,6 +178,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
             chapterDetailMap[chapterId]["materials"] = []
             chapterDetailMap[chapterId]["duration"] = 0
             chapterDetailMap[chapterId]["hasUnPublishedSessions"] = 0
+            chapterDetailMap[chapterId]["hasMaterial"] = 0
             i = 0
             while ( (i < len(sessions)) and (getSessions == True) ):
                 sess = sessions[i]
@@ -193,6 +195,10 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 j = 0
                 sessionDetails = {}
                 sessionDetails["sessionMaterials"] = []
+                sessionDetails["hasMaterial"] = 0
+                if j < len(sessionmaterials):
+                  sessionDetails["hasMaterial"] = 1
+                  chapterDetailMap[chapterId]["hasMaterial"] = 1
                 while (j < len(sessionmaterials)):
                   mat = sessionmaterials[j]
                   j = j+1
@@ -211,6 +217,7 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                     storageObj = storageObj[0]
                     sessionmaterialDetails["bucketname"] = storageObj.pullzone
                   sessionDetails["sessionMaterials"].append(sessionmaterialDetails)
+                  sessionmaterialDetails["cdnname"] = 'cdn' + sessionmaterialDetails["bucketname"].replace(cdnSubstr,'')
                 sessionDetails["name"] = sessionObj.name
                 sessionDetails["video"] = sessionObj.video
                 sessionDetails["id"] = sessionObj.id
@@ -220,6 +227,8 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 chapterDetailMap[chapterId]["sessions"].append(sessionDetails)
                 chapterDetailMap[chapterId]["duration"] = chapterDetailMap[chapterId]["duration"] + sessionObj.duration
             i = 0
+            if i < len(materials):
+              chapterDetailMap[chapterId]["hasMaterial"] = 1
             while ( (i < len(materials))):
                 mat = materials[i]
                 pos = i
@@ -228,9 +237,11 @@ def getCourseDetailsBySubject(courseid, subj, onlyPublished = True, getSessions 
                 materialObj = provider.models.Material.objects.filter(id=mat)[0]
                 storageObj = provider.models.Storage.objects.filter(name=materialObj.bucketname)
                 materialDetails["bucketname"] = materialObj.bucketname
+                materialDetails["cdnname"] = 'cdn' + materialObj.bucketname.replace(cdnSubstr,'')
                 if storageObj:
                   storageObj = storageObj[0]
                   materialDetails["bucketname"] = storageObj.pullzone
+                  materialDetails["cdnname"] = 'cdn' + storageObj.pullzone.replace(cdnSubstr,'')
                 materialDetails["name"] = materialObj.name
                 materialDetails["id"] = materialObj.id
                 materialDetails["key"] = materialObj.fileKey
@@ -358,6 +369,11 @@ def getCourseDetailsForCards(request, courseList):
         courseDetails["enrolledCount"] = getEnrolledStudentsCount(item.id)
         if request.user.is_authenticated and request.user.is_staff == False:
             courseDetails["alreadyEnrolled"] = checkIfStudentEnrolledInCourse(item.id, request.user.id)
+            if courseDetails["alreadyEnrolled"]:
+              studentObj = student.models.Student.objects.filter(user_id=request.user.id)
+              studentId = studentObj[0].id
+              enrolledStudent = models.EnrolledCourse.objects.filter(course_id=item.id,student_id=studentId,active=True)
+              courseDetails["expiry"] = enrolledStudent[0].expiry.strftime('%m/%d/%Y')
         else:
             courseDetails["alreadyEnrolled"] = False
         courseDetails["cost"] = '{:,}'.format(int(courseDetails["cost"]))

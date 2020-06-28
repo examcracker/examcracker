@@ -26,6 +26,7 @@ class Provider(models.Model):
     approved = models.BooleanField(default=False)
     encryptedid = models.CharField(default='', max_length=30)
     bucketname = models.CharField(default='', max_length=100,blank=True)
+    email = models.CharField(default='', max_length=200,blank=True)
 
     def save(self):
         super().save()

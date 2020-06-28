@@ -195,6 +195,12 @@ class courseDetails(fillCartCourses):
         kwargs["course_overview"] = courseOverviewMap
         kwargs['reviewSummary'] = reviewSummary
 
+        kwargs["uploadMaterial"] = False
+        planObj = provider.models.Plan.objects.filter(provider_id=courseObj.provider_id)
+        if planObj:
+            planObj = planObj[0]
+            if planObj.uploadMaterial == True:
+                kwargs["uploadMaterial"] = True
         return super().get(request, id, *args, **kwargs)
 
     def post(self, request, id, *args, **kwargs):
@@ -249,6 +255,14 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
             kwargs["debug"] = "on"
         else:
             kwargs["debug"] = "off"
+        # Allow playSession to super users
+        # for debugging
+        isAdmin = False
+        if request.user.is_superuser:
+            isAdmin = True
+            kwargs["isOwner"] = 'yes'
+            checkPublished = False
+
         courseChapterObj = course.models.CourseChapter.objects.filter(id=chapterid)
         checkPublished = True
         if len(courseChapterObj) == 0:
@@ -269,11 +283,12 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         user_email = request.user.email
         kwargs["userip"] = user_ip
         kwargs["user_email"] = user_email
+        kwargs["user_name"] = request.user.name
 
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
-        if courseOwnerObj.approved == False:
+        if isAdmin == False and courseOwnerObj.approved == False:
             raise Http404()
         # if user is student, allow only if enrolled for the course and session is published
         if request.user.is_staff == False:
@@ -335,7 +350,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
 
 
         
-        if request.user.is_staff:
+        if isAdmin == False and request.user.is_staff:
             providerObj = provider.models.Provider.objects.filter(user_id=request.user.id)[0]
             
             if courseObj.provider_id != providerObj.id:
@@ -414,13 +429,18 @@ class addReview(LoginRequiredMixin, generic.TemplateView):
 @authentication_classes((SessionAuthentication, ))
 @permission_classes((IsAuthenticated, ))
 def updateDuration(request, enrolledcourseid, duration, live, format=None):
-    enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
-    if live:
-        enrolledCourseObj.completedminuteslive = enrolledCourseObj.completedminuteslive + duration/60
-    else:
-        enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
-    enrolledCourseObj.save()
-    return Response({"result":True})
+    try:
+        enrolledCourseObj = models.EnrolledCourse.objects.filter(id=enrolledcourseid)[0]
+        if live:
+            enrolledCourseObj.completedminuteslive = enrolledCourseObj.completedminuteslive + duration/60
+        else:
+            enrolledCourseObj.completedminutes = enrolledCourseObj.completedminutes + duration/60
+        enrolledCourseObj.save()
+        return Response({"result":True})
+    except:
+        logger.error('Update Duration failed for enrolledCourseId : {}.'.format(enrolledcourseid))
+        logger.error('Update Duration failed, Duration lost : {}.'.format(duration))
+        return Response({"result":False})
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, ))

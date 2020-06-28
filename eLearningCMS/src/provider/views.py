@@ -35,6 +35,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+import xlsxwriter
+import calendar
 
 def pwd_generator(size=6, chars=string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -593,6 +595,9 @@ class myStats(showProviderHome):
 
         if not providerObj.approved:
             raise Http404()
+        p_email = request.user.email
+        if providerObj.email != '':
+            p_email = providerObj.email
 
         statsObj = cdn.views.getBunnyStats(providerObj.id)
 
@@ -620,11 +625,11 @@ Gyaanhive Team</p>'
         timeDiff = datetime.timestamp(planObj.expiry) - datetime.timestamp(datetime.now())
         bandwidthDiff = planObj.bandwidth - totalConsumed
         if timeDiff <= 3600*24*10 and not planObj.reminder: # send email before 10 days
-            profiles.signals.sendMail(request.user.email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
+            profiles.signals.sendMail(p_email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
             planObj.reminder = True
             planObj.save()
         elif bandwidthDiff <= 0.1*planObj.bandwidth and not planObj.reminder: # send email when 90% bandwidth used
-            profiles.signals.sendMail(request.user.email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
+            profiles.signals.sendMail(p_email, "Renew your Subscription", emailBody, settings.EMAIL_TO_USER)
             planObj.reminder = True
             planObj.save()
         return super().get(request, *args, **kwargs)
@@ -839,6 +844,8 @@ Gyaanhive Team</p>'
                     cd.save()
                 #coursesToDelete.delete()
             cc = request.user.email
+            if providerObj.email != '':
+                cc = providerObj.email
             profiles.signals.sendMail(fixedEmail, subject, emailBody, cc)
         return self.get(request, *args, **kwargs)
 
@@ -954,6 +961,39 @@ def export_users_csv(request,studentid):
     studentStatsObj = student.models.StudentPlayStats.objects.filter(student_id=studentid)
     for stat in studentStatsObj:
         writer.writerow([studentname, stat.date, stat.ipaddress,stat.sessionname,stat.deviceinfo])
+    return response
+
+def export_all_students_data(request):
+    if not request.user.is_staff:
+        raise Http404()
+    response = HttpResponse(content_type='text/csv')
+    providerObj = getProvider(request)
+    providerId = providerObj.id
+    workbook = xlsxwriter.Workbook(response, {'in_memory': True})
+    coursesObj = course.models.Course.objects.filter(Q(provider_id=providerId) & Q(published=1))
+    for courseObj in coursesObj:
+        worksheet = workbook.add_worksheet(courseObj.name)
+        row = 0
+        col = 0
+        rowHeaders = ['#','Name','Email','Joined','Status','Available(Hrs)','Expiry']
+        worksheet.write_row(row, col,  tuple(rowHeaders))
+        ecObjs = course.models.EnrolledCourse.objects.filter(course_id=courseObj.id)
+        i = 0
+        for ec in ecObjs:
+            i = i+1
+            studentObj = student.models.Student.objects.filter(id=ec.student_id)[0]
+            userDetails = course.algos.getUserNameAndPic(studentObj.user_id)
+            Name = userDetails['name']
+            Email = userDetails['email']
+            Joined = str(ec.enrolled.day) + " " + calendar.month_name[ec.enrolled.month][:3] + " " + str(ec.enrolled.year)
+            Status = ec.remarks
+            AvailableHrs = ec.viewhours
+            expiryDate = str(ec.expiry.day) + " " + calendar.month_name[ec.expiry.month][:3] + " " + str(ec.expiry.year)
+            rowValues = [i,Name,Email,Joined,Status,AvailableHrs,expiryDate ]
+            row += 1
+            worksheet.write_row(row, col, tuple(rowValues))
+    workbook.close()
+    response['Content-Disposition'] = 'attachment; filename=all_students_data.xlsx'
     return response
 
 
@@ -1084,6 +1124,96 @@ def getProviderCDNDetails(request):
     if not storageObj:
         return Response({"status":False})
     storageObj = storageObj[0]
+    #bucketname = storageObj.pullzone
     return Response({"status":True, "bucketname":bucketname, "bucketkey":storageObj.key})
 
+class deleteMaterial(coursePageBase):
+    http_method_names = ['get']
 
+    def get(self,request,cid,mid,chapid,sid,*args, **kwargs):
+        if not request.user.is_staff:
+            raise Http404()
+        providerObj = getProvider(request)
+        if not providerObj:
+            raise Http404()
+        courseObj = course.models.Course.objects.filter(id=int(cid))
+        if not courseObj:
+            raise Http404()
+        courseObj = courseObj[0]
+        if providerObj.id != courseObj.provider_id:
+            raise Http404()
+
+        mObj = models.Material.objects.filter(id=mid)
+        if not mObj:
+            raise Http404()
+
+        if chapid != 0:
+            chapterObj = course.models.CourseChapter.objects.filter(id=chapid,course_id=cid)
+            if not chapterObj:
+                raise Http404()
+            chapterObj = chapterObj[0]
+            mArr = chapterObj.material.split(getDelimiter())
+            mArr.remove(str(mid))
+            mArrStr = getDelimiter().join(mArr)
+            chapterObj.material = mArrStr
+            chapterObj.save()
+
+        if sid != 0:
+            sessionObj = models.Session.objects.filter(id=sid)
+            if not sessionObj:
+                raise Http404()
+            sessionObj = sessionObj[0]
+            if sessionObj.provider_id != providerObj.id:
+                raise Http404()
+            mArr = sessionObj.material.split(getDelimiter())
+            mArr.remove(str(mid))
+            mArrStr = getDelimiter().join(mArr)
+            sessionObj.material = mArrStr
+            sessionObj.save()
+
+        url = "provider:edit_course"
+        return redirect(url,cid)
+
+def delete_expired_students(request):
+    if not request.user.is_staff:
+        raise Http404()
+    providerObj = getProvider(request)
+    providerId = providerObj.id
+    # find enrollments whose expiry is today
+    providerCourses = course.models.Course.objects.filter(provider_id=providerId,published=1)
+    myec = course.models.EnrolledCourse.objects.filter(course_id__in=providerCourses.values('id'),expiry__lt=datetime.now())
+    viewMinutesLive = 0
+    viewMinutes = 0
+    for ec in myec:
+        viewMinutes = viewMinutes + int(ec.completedminutes)
+        viewMinutesLive = viewMinutesLive + int(ec.completedminuteslive)
+    if myec:
+        planObj = models.Plan.objects.filter(provider_id=providerId)
+        #Save view minutes data
+        if planObj:
+            planObj = planObj[0]
+            planObj.completedminutes = planObj.completedminutes + viewMinutes
+            planObj.completedminuteslive =  planObj.completedminuteslive + viewMinutesLive
+            planObj.save()
+        myec.delete()
+    url = "provider:my_students"
+    return redirect(url)
+
+def migrate_course(request,old_provider,old_prov_cid,to_provider, to_prov_cid):
+    if not request.user.is_superuser:
+        raise Http404()
+    coursesObj = course.models.Course.objects.filter(provider_id = to_provider, id=to_prov_cid)
+    if not courseObj:
+        raise Http404()
+    coursesObj = course.models.Course.objects.filter(provider_id = to_provider, id=to_prov_cid)
+    if not courseObj:
+        raise Http404()       
+    if coursesObj:
+        cids = coursesObj.values('id')
+        enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(course_id__in=cids)
+        for ec in enrolledCoursesObj:
+            #ec.expiry = ec.expiry + relativedelta(months=nmonths)
+            ec.expiry = str(datetime.now() + relativedelta(months=nmonths))
+            ec.save()
+    response = HttpResponse(content_type='text/plain')
+    return response

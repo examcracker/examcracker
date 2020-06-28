@@ -218,10 +218,17 @@
   <script src="{% static 'provider/js/createCourseContent.js' %}">
   </script>
 <script>
+    var refreshCount = "{{refreshScreen}}";
     window.onload = function() {
+      setTimeout(function () {
+        if(window.location.hash != '#refresh') {
+          window.location.hash = 'refresh';
+          window.location.reload(1);
+        }
+      }, 3000);  // After 5 secs
+    }
     var selectElement = document.getElementById('courseName');
     fillSelectByName(selectElement,'courseSubjectName','courseChapterName');
-};
 </script>
 {% endblock active %}
 

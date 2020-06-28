@@ -71,6 +71,7 @@
                                     <table class="table table-striped table-bordered table-sm">
                                         <thead>
                                             <tr>
+                                              <th></th>
                                               <th scope="col">#</th>
                                               <th scope="col">Filename</th>
                                             </tr>
@@ -79,8 +80,10 @@
                                     <tbody>
                                     {% for mat in value.materials %}
                                     <tr>
+                                        <td><span title="Delete This File"><a href ="{% url 'provider:delete_material' editCourse.id mat.id chapid 0 %}" onclick="return confirm('Do you want to delete this file from your course?')">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-trash"></i></button></a></span></td>
                                         <td>{{forloop.counter}} </td>
-                                        <td><a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
+                                        <td><a href ="https://{{mat.cdnname}}.gyaanhive.com/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
                                        
                                     </tr>
                                     {% endfor %}
@@ -102,6 +105,7 @@
                                             <table class="table table-striped table-bordered table-sm">
                                                 <thead>
                                                     <tr>
+                                                      <th></th>
                                                       <th scope="col">#</th>
                                                       <th scope="col">Filename</th>
                                                     </tr>
@@ -110,8 +114,9 @@
                                             <tbody>
                                             {% for mat in session.sessionMaterials %}
                                             <tr>
+                                                <td><span title="Delete This File"><a href ="{% url 'provider:delete_material' editCourse.id mat.id 0 session.id %}" onclick="return confirm('Do you want to delete this file from your course?')"><button type="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-trash"></i></button></a></span></td>
                                                 <td>{{forloop.counter}} </td>
-                                                <td><a href ="https://{{mat.bucketname}}.b-cdn.net/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
+                                                <td><a href ="https://{{mat.cdnname}}.gyaanhive.com/Material/{{mat.key}}" download="{{mat.name}}" class="">{{mat.name}} </a></td>
                                                
                                             </tr>
                                             {% endfor %}
@@ -244,11 +249,16 @@
 <script>
     var fileIDMap = new Map();
     var materialKeyNameMap = new Map();
+    var fileSet = new Set();
     var fileMapCounter = 0;
     var failedUpload = false;
     var bucketname = 'xxxxxxxxxxxxxx'
     var accesskey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
     function fileSelected(elmnt, courseid, coursename,sessionid=-1){
+        fileIDMap.clear();
+        materialKeyNameMap.clear();
+        fileMapCounter = 0;
+        fileSet.clear();
         var fileId = elmnt.id;
         var files = document.getElementById(fileId).files;
         var table = document.createElement("table");
@@ -350,6 +360,9 @@
     }
 
     function uploadSingleFile(file, i, uploadURL, mapKey,publish) {
+        if (fileSet.has(file.name)) {
+            return;
+        }
         var fileId = i;
         var videoName = file.name;
         var tempSessionId = mapKey.toString() +"-"+ videoName;
@@ -365,8 +378,8 @@
         }, false);
         //Load Listener
         ajax.addEventListener("load", function (e) {
-            var responseXml = $.parseXML(e.target.responseText);
-            var xml = $(responseXml);
+            //var responseXml = $.parseXML(e.target.responseText);
+            //var xml = $(responseXml);
             //var uploadedKey = xml.find('video').attr("key");
             //document.getElementById(tempSessionId).value = uploadedKey + '?' + videoName;
 
@@ -408,6 +421,9 @@
                         materialForm.appendChild(input2);
                     }
                     materialKeyNameMap.clear();
+                    fileMapCounter = 0;
+                    fileIDMap.clear();
+                    fileSet.clear();
                     $("#addMaterialToChapter").submit();
                     
                 }
@@ -426,14 +442,15 @@
             fileMapCounter = fileMapCounter-1;
             failedUpload = true;
         }, false);
+
+        fileSet.add(file.name);
         var d = formatDate();
         var filekey = d + '__' + file.name;
         materialKeyNameMap.set(filekey,file.name);
         uploadURL = "https://storage.bunnycdn.com/" + bucketname + "/Material/" + filekey
+        document.getElementById('bucketname').value = bucketname;
         ajax.open("PUT", uploadURL); // Your API .net, php
         ajax.setRequestHeader("AccessKey", accesskey);
-        url = "https://gyaanhive20.b-cdn.net/Material/file1.pdf"
-        //ajax.open("GET", url);
         var uploaderForm = new FormData(); // Create new FormData
         uploaderForm.append("file", file); // append the next file for upload
         ajax.send(uploaderForm);
@@ -483,11 +500,15 @@ function addAndUploadMaterial(elem,chapid,chapname) {
     var uploadMaterial = "{{uploadMaterial}}";
     document.getElementById('chapterSelected').value = chapname;
     fileIDMap.clear();
+    fileSet.clear();
     materialKeyNameMap.clear();
+    fileMapCounter = 0;
     document.getElementById('chapterIdSelectedId').value = chapid;
     
     $('#chapterSessions').find('option:not(:first)').remove();
     $('#selectedFilesList').empty();
+	var selectedFilesList = document.getElementById("selectedFilesList");
+	selectedFilesList.innerHTML = "";
     var sessions = "forMaterial--" + chapid + "--";
     queryselect = '[id^="'+sessions+'"]';
     var query = document.querySelectorAll(queryselect);
@@ -511,7 +532,7 @@ function saveAndUploadMaterial(el) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", url, true);
     xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.status == 200) {
+        if ( xmlHttp.status == 200) {
             var data = JSON.parse(xmlHttp.responseText);
             if (data.status == false) {
                 return;
@@ -555,4 +576,4 @@ function downloadURI(uri, name) {
   document.body.removeChild(link);
   delete link;
 }
-  </script>
+ </script>

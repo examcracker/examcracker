@@ -199,8 +199,10 @@ If you have not enabled <em>auto publish</em> for your schedule, kindly go to yo
 For any issues, kindly contact us.<br />\n\
 Thanks</p>\
 <p>GyaanHive Team</p>'
-
-    sendMail(userObj.email, subject, emailBody)
+    p_email = userObj.email
+    if providerObj.email != '':
+        p_email = providerObj.email
+    sendMail(p_email, subject, emailBody)
 
 def saveLiveSessionInt(videoKey, chapterId):
     saveSession(videoKey, chapterId)

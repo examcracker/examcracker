@@ -23,5 +23,8 @@ urlpatterns = [
      path('clear_enrollments/<int:id>', views.clear_enrollments.as_view(), name="clear_enrollments"),
      path('createMaterial', views.createMaterial.as_view(), name="create_material"),
      path('fix_expiry/<int:pid>/<int:nmonths>', views.fix_expiry, name='fix_expiry'),
-     path('getProviderCDNDetails', views.getProviderCDNDetails, name='getProviderCDNDetails')
+     path('getProviderCDNDetails', views.getProviderCDNDetails, name='getProviderCDNDetails'),
+     path('deleteMaterial/<int:cid>/<int:mid>/<int:chapid>/<int:sid>', views.deleteMaterial.as_view(), name="delete_material"),
+     path('export_all_students_data', views.export_all_students_data, name='export_all_students_data'),
+     path('delete_expired_students', views.delete_expired_students, name='delete_expired_students'),
 ]
