@@ -326,6 +326,20 @@ def getProviders(havingPublishedCourses = False):
         providerObjs = providerObjs.filter(Q(id__in = providerUserIds))
     return providerObjs
 
+def getLogoForProvider(user_id):
+    logo = '/static/ec/img/GyaanHive.png'
+    providerObj = provider.models.Provider.objects.filter(user_id=user_id)
+    # Get provider logo only if used in sub domain
+    if providerObj:
+      providerObj = providerObj[0]
+      subDomainObj = provider.models.Subdomain.objects.filter(provider_id = providerObj.id)
+      if subDomainObj:
+        profileObj = profiles.models.Profile.objects.filter(user_id=user_id)[0]
+        picture = profileObj.picture
+        if picture.name != '':
+          logo = picture.url
+    return logo
+
 def getUserNameAndPic(user_id):
     userDetails = {}
     profileObj = profiles.models.Profile.objects.filter(user_id=user_id)[0]

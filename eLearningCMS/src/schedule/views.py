@@ -397,10 +397,12 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
         userString = '?'
         courseChapterObj = course.models.CourseChapter.objects.filter(id=scheduleObj.chapter_id)
         providerid = 0
+        provider_user_id = 0
         if request.user.is_staff:
             courseChapterObj = courseChapterObj[0]
             # Get Live events of Scheduled courses
             providerObj = getProvider(request)
+            provider_user_id = providerObj.user_id
             providerid = providerObj.id
             if scheduleObj.provider_id != providerObj.id:
                 raise Http404()
@@ -438,7 +440,8 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
             if allotedHours > 0 and viewMinutes >= allotedHours*60:
                 raise Http404()
             userString = userString+'studentid='+str(studentObj.id)+'&'
-
+            providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
+            provider_user_id = providerObj.user_id
             # delete all access enteries for this student for this schedule
             schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleObj.id,student_id=studentObj.id)
             schedule_liveaccessObj.delete()
@@ -459,7 +462,7 @@ class playStream(LoginRequiredMixin, generic.TemplateView):
         kwargs["liveUrl"] = getStreamUrl(scheduleObj.streamname,providerid) + userString + 'scheduleid=' + str(scheduleObj.id)+'&userIP='+ ip
         kwargs["user_email"] = request.user.email
         kwargs["userip"] = ip
-
+        kwargs["providerLogo"] = course.algos.getLogoForProvider(providerObj.user_id)
         self.check(kwargs)
 
         response = super().get(request, scheduleid, *args, **kwargs)

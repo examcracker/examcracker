@@ -118,6 +118,9 @@ class courseDetails(fillCartCourses):
             providerObj = providerObj[0]
             checkPublished = False
             courseOverviewMap["myCourse"] = True
+        else:
+            providerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)
+            providerObj = providerObj[0]
 
         if checkPublished and courseObj.published == False:
             kwargs["not_published"] = True
@@ -196,6 +199,7 @@ class courseDetails(fillCartCourses):
         kwargs['reviewSummary'] = reviewSummary
 
         kwargs["uploadMaterial"] = False
+        kwargs["providerLogo"] = algos.getLogoForProvider(providerObj.user_id)
         planObj = provider.models.Plan.objects.filter(provider_id=courseObj.provider_id)
         if planObj:
             planObj = planObj[0]
@@ -288,6 +292,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
         # if user is provider, allow only if he is the course owner and session is added to the course (draft or published)
         courseObj = course.models.Course.objects.filter(id=courseChapterObj.course_id)[0]
         courseOwnerObj = provider.models.Provider.objects.filter(id=courseObj.provider_id)[0]
+        kwargs["providerLogo"] = algos.getLogoForProvider(courseOwnerObj.user_id)
+
         if isAdmin == False and courseOwnerObj.approved == False:
             raise Http404()
         # if user is student, allow only if enrolled for the course and session is published
@@ -377,7 +383,7 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 kwargs["bucketname"] = sessionObj.bucketname
         kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
-
+        kwargs["providerLogo"] = algos.getLogoForProvider(courseOwnerObj.user_id)
         return super().get(request, chapterid, sessionid, *args, **kwargs)
 
 class playSessionEnc(playSession):

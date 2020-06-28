@@ -34,7 +34,7 @@
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark sticky-top">
 	<div class="container-fluid">
 		<a class="navbar-brand" href="{% url 'home' %}">
-				<img src="{% static 'ec/img/GyaanHive.png' %}" alt="logo"/>
+				<img src= {% if providerLogo %} "{{providerLogo}}" {% else %} "{% static 'ec/img/GyaanHive.png' %}" {% endif %} alt="logo"/>
 				
 		</a> 
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
@@ -278,7 +278,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-md-3 footer-about wow fadeInUp">
-						<img class="logo-footer" src="{% static 'ec/img/GyaanHive.png' %}" >
+						<img class="logo-footer" src= {% if providerLogo %} "{{providerLogo}}" {% else %} "{% static 'ec/img/GyaanHive.png' %}" {% endif %} >
 						<p>
 							We are a young company always looking for new and creative ideas to provide seemless learning experience.
 						</p>
