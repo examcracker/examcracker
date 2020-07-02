@@ -972,7 +972,8 @@ def export_all_students_data(request):
     workbook = xlsxwriter.Workbook(response, {'in_memory': True})
     coursesObj = course.models.Course.objects.filter(Q(provider_id=providerId) & Q(published=1))
     for courseObj in coursesObj:
-        worksheet = workbook.add_worksheet(courseObj.name)
+        worksheetname = courseObj.name[0:30]
+        worksheet = workbook.add_worksheet(worksheetname)
         row = 0
         col = 0
         rowHeaders = ['#','Name','Email','Joined','Status','Available(Hrs)','Expiry']
