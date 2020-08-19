@@ -459,12 +459,19 @@ class filedialogdemo(QFrame):
 
 		self.uploadProgressLabel =  QLabel('Upload Status')
 		self.uploadProgressLabel.setMinimumSize( 130,40)
+		self.btnLogout = QPushButton('Logout', self)
+		self.btnLogout.setFixedSize( 130,40)
+		self.btnLogout.clicked.connect(self.logout)
+		layoutBottom = QHBoxLayout()
+		layoutBottom.addWidget(self.uploadProgressLabel, 0, Qt.AlignLeft)
+		layoutBottom.addWidget(self.btnLogout, 0, Qt.AlignRight)
+
 		self.outputLabel =  QLabel('Upload process details:')
 		self.output = QTextEdit()
 		self.output.setReadOnly(True)
 		layoutV.addWidget(self.outputLabel)
 		layoutV.addWidget(self.output)
-		layoutV.addWidget(self.uploadProgressLabel)
+		layoutV.addLayout(layoutBottom)
 		
 		self.setLayout(layoutV)
 		self.setWindowTitle("GyaanHive upload application")
@@ -520,6 +527,13 @@ class filedialogdemo(QFrame):
 			self.btnCapture.setText("Start Capture")
 			self.labelFilePath.setText(self.capture.outputFileName)
 			self.startProcess()
+
+	def logout(self):
+		self.settings.setValue('username', '')
+		self.settings.setValue('password', '')
+		self.createLoginDialog()
+		self.comboBoxCourse.clear()
+		self.populateCourseOptions()
 
 	def addMediaFileIntoQueue(self):
 		mediaFile = self.labelFilePath.text()
