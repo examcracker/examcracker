@@ -17,7 +17,8 @@ from .serializers import uploadURLSerializer
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
-from datetime import datetime
+from datetime import date,datetime
+from dateutil.relativedelta import relativedelta
 import calendar
 import logging
 import hashlib
@@ -38,6 +39,7 @@ import pysher
 import os
 # http
 import requests
+
 
 logger = logging.getLogger("project")
 
@@ -469,11 +471,25 @@ def getBunnyStats(providerid):
     p = ProviderStats()
     planObj = provider.models.Plan.objects.filter(provider_id=providerid)
     providerObj = provider.models.Provider.objects.filter(id=providerid)[0]
-    
+    bandwidthObj = provider.models.Bandwidth.objects.filter(provider_id=providerid)
+    #todayDateTime_minus_1 = str(datetime.datetime.now() + relativedelta(days=-1))
+    todayDateTime_minus_1 = str(datetime.datetime.now())
+    startDateTime = todayDateTime_minus_1
     # not need to return stats if plan is not set
     if not planObj:
         return p
+    date_minus_1 = str(todayDateTime_minus_1).split(" ")[0]
     planObj = planObj[0]
+    startDateTime = planObj.startdate
+    if bandwidthObj:
+        bandwidthObj = bandwidthObj[0]
+        startDateTime = bandwidthObj.lastUpdateDate
+    else :
+        bandwidthObj = provider.models.Bandwidth()
+        bandwidthObj.provider_id = providerid
+        bandwidthObj.lastUpdateDate = todayDateTime_minus_1
+        bandwidthObj.bandwidthValue = 0
+
     storagename = 'gyaanhive' + str(providerid)
     pullzoneUrl = 'https://bunnycdn.com/api/pullzone/'
     headers = {'content-type': 'application/json', 'Accept': 'application/json', 'AccessKey': settings.BUNNY_API_KEY}
@@ -522,7 +538,7 @@ def getBunnyStats(providerid):
                 p.files = int(d["FilesStored"])
 
         p.storage = p.storage + planObj.offsetStorage
-    startdate = str(planObj.startdate).split(" ")[0]
+    startdate = str(startDateTime).split(" ")[0]
     for pid in pullzoneids:
         apiUrl = 'https://bunnycdn.com/api/statistics?dateFrom=' + startdate + '&pullZone=' + str(pid)
         try:
@@ -531,7 +547,14 @@ def getBunnyStats(providerid):
             continue
         data = r.json()
         p.bandwidth = p.bandwidth + float("{0:.2f}".format(float(data["TotalBandwidthUsed"])/(1000*1000*1000)))
-    p.bandwidth = p.bandwidth + planObj.offsetBandwidth
+    
+    calculatedBandwidth = p.bandwidth
+    p.bandwidth = p.bandwidth + planObj.offsetBandwidth + bandwidthObj.bandwidthValue
+    # Store bandwidth in table
+    if str(todayDateTime_minus_1).split(" ")[0] != startdate :
+        bandwidthObj.lastUpdateDate = todayDateTime_minus_1
+        bandwidthObj.bandwidthValue = bandwidthObj.bandwidthValue + calculatedBandwidth
+        bandwidthObj.save()
     return p
 
 def createStorageZone(providerId):

@@ -107,3 +107,9 @@ class Material(models.Model):
     fileKey = models.CharField(max_length=500, default='')
     bucketname = models.CharField(default='gyaanhive', max_length=100)
 
+class Bandwidth(models.Model):
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
+    lastUpdateDate = models.DateTimeField(default=datetime.now())
+    bandwidthValue = models.FloatField(default=0)
+
+
