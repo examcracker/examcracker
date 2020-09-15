@@ -501,7 +501,7 @@ class viewCourses(showProviderHome):
 
     def get(self, request, *args, **kwargs):
         providerObj = getProvider(request)
-        if providerObj:
+        if providerObj and providerObj.approved:
             kwargs["providerId"] = providerObj.id
             courseList = course.models.Course.objects.filter(provider_id=providerObj.id)
             kwargs["courses"] = course.algos.getCourseDetailsForCards(request, courseList)
