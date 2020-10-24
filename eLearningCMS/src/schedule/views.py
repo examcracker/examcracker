@@ -590,3 +590,12 @@ class deleteSchedule(addShowSchedule):
         if scheduleObj:
             scheduleObj.delete()
         return redirect("schedule:add_show_schedule")
+
+def delete_schedule(pid):
+    scheduleObjs = schedule.models.Schedule.objects.filter(provider_id=pid)
+    for scheduleObj in scheduleObjs:
+        schedule_liveaccessObj = models.Schedule_liveaccess.objects.filter(schedule_id=scheduleObj.id)
+        schedule_liveaccessObj.delete()
+    if scheduleObjs:
+        scheduleObjs.delete()
+

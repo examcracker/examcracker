@@ -1218,3 +1218,110 @@ def migrate_course(request,old_provider,old_prov_cid,to_provider, to_prov_cid):
             ec.save()
     response = HttpResponse(content_type='text/plain')
     return response
+
+def delete_course (cid, pid):
+    courseid = cid
+    courseObj = course.models.Course.objects.filter(id=courseid)
+    if len(courseObj) == 0:
+        return
+    courseObj = courseObj[0]
+
+    if courseObj.provider_id != pid:
+        return
+
+    # now delete everything related to this course
+    courseChapterObj  = course.models.CourseChapter.objects.filter(course_id=courseid)
+    if courseChapterObj:
+        courseChapterObj.delete()
+        
+    courseReviewObj = course.models.CourseReview.objects.filter(course_id=courseid)
+    if courseReviewObj:
+        courseReviewObj.delete()
+    courseObj.delete()
+
+def reset_provider (pid):
+
+    providerObj = models.Provider.objects.filter(id=pid)
+    if not providerObj:
+        return
+
+    # Delete all schedules
+    schedule.views.delete_schedule(pid)
+
+    # clear student enrollments for his courses and student playstats
+    coursesObj = course.models.Course.objects.filter(provider_id = pid)
+    cids = []
+    if coursesObj:
+        cids = coursesObj.values('id')
+    enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(course_id__in=cids)
+    if enrolledCoursesObj:
+        for ec in enrolledCoursesObj:
+            studentStatsObj = student.models.StudentPlayStats.objects.filter(student_id=ec.student_id)
+            if studentStatsObj:
+                studentStatsObj.delete()
+        enrolledCoursesObj.delete()
+
+    # clear course chapters and course
+    for cid in cids:
+        delete_course(cid['id'],pid)
+    
+    # clear materials
+    mObjs = models.Material.objects.filter(provider_id = pid)
+    if mObjs:
+        mObjs.delete()
+
+    # clear sessions/DRM Sessions
+    sessionsObj = models.Session.objects.filter(provider_id=pid)
+    for sessionObj in sessionsObj:
+        drmsessionObj = models.DrmSession.objects.filter(session_id=sessionObj.id)
+        if drmsessionObj:
+            drmsessionObj.delete()
+    sessionsObj.delete() 
+
+    # RISKY
+    # Delete students if students doesnt have any other course enrolled
+    #studentsObj = student.models.Student.objects.all()
+    #User = get_user_model()
+    #for studentObj in studentsObj:
+    #    enrolledCoursesObj = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id)
+    #    if not enrolledCoursesObj:
+    #        userObj = User.objects.filter(id=studentObj.user_id)
+    #        studentObj.delete()
+    #        userObj.delete()
+    
+    # clear bandwidths
+    bandwidthObj = models.Bandwidth.objects.filter(provider_id=pid)
+    if bandwidthObj:
+        bandwidthObj.delete()
+    
+    # clear Plans
+    planObj = models.Plan.objects.filter(provider_id=pid)
+    if planObj:
+        planObj = planObj[0]
+        planObj.completedminutes = 0
+        planObj.completedminuteslive = 0
+        planObj.cost = 0
+        planObj.bandwidth = 0
+        planObj.space = 0
+        planObj.live = False
+        planObj.multibitrate = False
+        planObj.expiry = datetime.now()
+        planObj.startdate = datetime.now()
+        planObj.completedminutes = 0
+        planObj.offsetStorage = 0
+        planObj.offsetBandwidth =0
+        planObj.offsetBandwidthlive = 0
+        planObj.completedminuteslive = 0
+        planObj.liveABR = False
+        planObj.reminder = False
+        planObj.uploadMaterial = True
+        planObj.save()
+
+def refresh_provider(request,pid,secretkey):
+    if not request.user.is_superuser:
+        raise Http404()
+    if secretkey != datetime.today().day:
+        raise Http404()
+    reset_provider(pid)
+    response = HttpResponse(content_type='text/plain')
+    return response
