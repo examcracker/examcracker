@@ -512,10 +512,11 @@ def getBunnyStats(providerid):
 
     # To fetch data from pullzones connected to DO spaces
     # bucketname = pullzonename
-
     if providerObj.bucketname != '':
         pullzones.append(providerObj.bucketname)
+        pullzones.append('gyaanhivedo')
     pullzones.append(storageObj.pullzone)
+    #print(pullzones)
     for d in data:
         if d["Name"] in pullzones :
             sid = int(d["StorageZoneId"])

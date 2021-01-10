@@ -381,6 +381,8 @@ class playSession(LoginRequiredMixin, generic.TemplateView):
                 kwargs["bucketname"] = storageObj.pullzone
             else:
                 kwargs["bucketname"] = sessionObj.bucketname
+        else:
+            kwargs["bucketname"] = 'gyaanhivedo'
         kwargs["videokey"] = sessionObj.videoKey
         kwargs["isLive"] = "false"
         kwargs["providerLogo"] = algos.getLogoForProvider(courseOwnerObj.user_id)
