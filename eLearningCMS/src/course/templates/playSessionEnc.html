@@ -451,14 +451,14 @@ window.addEventListener('resize', function() {
 					}
 				},
                 streaming: {
-                    bufferingGoal: 300,
+                    bufferingGoal: 60,
                     rebufferingGoal: 5,
-                    bufferBehind:10,
+                    bufferBehind:0,
                     jumpLargeGaps: true,
                     retryParameters: {
-                        timeout: 5000,       // timeout in ms, after which we abort; 0 means never
+                        timeout: 3000,       // timeout in ms, after which we abort; 0 means never
                         maxAttempts: 5,   // the maximum number of requests before we fail
-                        baseDelay: 2000,  // the base delay in ms between retries
+                        baseDelay: 500,  // the base delay in ms between retries
                     }
                 }
 			});
