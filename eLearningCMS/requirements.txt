@@ -17,7 +17,7 @@ environ==1.0
 Flask==1.0.2
 idna==2.6
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.11.3
 jwplatform==1.2.2
 MarkupSafe==1.0
 Pillow==5.1.0
