@@ -106,7 +106,7 @@ class HomePage(fillCartCourses):
         
     
     def post(self, request):
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         name = self.request.POST.get('name','')
         email = self.request.POST.get('email','')
         phone = self.request.POST.get('phone','')
@@ -127,7 +127,7 @@ class HomePage(fillCartCourses):
             emailBody = emailBody + 'Phone : ' + phone + '\n'
             emailBody = emailBody + 'Email : ' + email + '\n'
             emailBody = emailBody + 'Message : ' + message + '\n'
-            sendMail(settings.EMAIL_TO_USER,emailSub,emailBody)
+            profiles.signals.sendMail(settings.EMAIL_TO_USER,emailSub,emailBody)
             data = {'result':'success'}
         except:
             data = {'result':'failure'}
