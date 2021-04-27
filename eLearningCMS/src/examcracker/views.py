@@ -106,12 +106,17 @@ class HomePage(fillCartCourses):
         
     
     def post(self, request):
+        import pdb; pdb.set_trace()
         name = self.request.POST.get('name','')
         email = self.request.POST.get('email','')
         phone = self.request.POST.get('phone','')
         message = self.request.POST.get('message','')
         subject = self.request.POST.get('subject','')
-        userDetails = course.algos.getUserNameAndPic(request.user.id)
+        userDetails = None
+        try:
+            userDetails = course.algos.getUserNameAndPic(request.user.id)
+        except:
+            pass
         if userDetails :
             email = userDetails['email']
         try:
