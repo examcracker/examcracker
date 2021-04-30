@@ -456,9 +456,9 @@ window.addEventListener('resize', function() {
                     bufferBehind:0,
                     jumpLargeGaps: true,
                     retryParameters: {
-                        timeout: 3000,       // timeout in ms, after which we abort; 0 means never
+                        timeout: 6000,       // timeout in ms, after which we abort; 0 means never
                         maxAttempts: 5,   // the maximum number of requests before we fail
-                        baseDelay: 500,  // the base delay in ms between retries
+                        baseDelay: 100,  // the base delay in ms between retries
                     }
                 }
 			});
