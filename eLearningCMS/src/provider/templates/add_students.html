@@ -233,7 +233,9 @@ function Upload() {
 	<hr>
 </div>
 {% endfor %}
-
+  {% if studentname %} 
+  <input type="hidden" value= "1" name="isEditStudentEnrollment" />
+  {% endif %}
 <button type="submit" {% if submitDisabled %} disabled {% endif %} >Submit</button><br>
 </form>
 {% if submitDisabled %}

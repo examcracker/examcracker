@@ -715,7 +715,9 @@ class addStudents(showProviderHome):
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             raise Http404()
-
+        isDeleteCourses = True
+        if 'isEditStudentEnrollment' not in request.POST:
+            isDeleteCourses = False
         #providerObj = getProvider(request)
         emails = self.request.POST.get('email', '')
         studentnames = self.request.POST.get('studentname', '')
@@ -837,7 +839,7 @@ Gyaanhive Team</p>'
             coursesToDelete = course.models.EnrolledCourse.objects.filter(student_id=studentObj.id,course_id__in=allcourses.values('id'))
             if len(courseEnrolledList) != 0:
                 coursesToDelete = coursesToDelete.exclude(course_id__in=courseEnrolledList)
-            if  coursesToDelete:
+            if  coursesToDelete and isDeleteCourses == True:
                 for cd in coursesToDelete:
                     cd.active= False
                     cd.remarks = "Enrolled removed"
