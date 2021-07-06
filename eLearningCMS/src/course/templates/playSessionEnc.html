@@ -138,10 +138,10 @@ var browser = getBrowser().toLowerCase();
 var os = getOS().toLowerCase();
 var supported = true;
 if (browser != 'chrome' && browser != 'firefox') {
-    supported = false;
+    supported = true;
 }
 if (os == 'ios') {
-    supported = false;
+    supported = true;
 }
 
 var inFullScreenMode = false;
