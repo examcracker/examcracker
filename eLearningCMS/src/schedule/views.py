@@ -22,8 +22,9 @@ import base64
 import student
 import cdn
 from django.db.models import Q
-
+from django.urls import reverse
 from access.views import parse_user_agents
+from urllib.parse import urlencode
 
 PUSHER_APP_ID = "656749"
 PUSHER_KEY = "3ff394e3371be28d8abd"
@@ -278,6 +279,8 @@ class addShowSchedule(showProviderHome):
                 scheduleInfo['start'] = schedule.start
                 schedules.append(scheduleInfo)
             kwargs['schedules'] = schedules
+            kwargs['doRefresh'] = request.GET.get('doRefresh','0')
+            #kwargs['doRefresh'] = 10
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -510,7 +513,11 @@ class startCapture(LoginRequiredMixin, generic.TemplateView):
             scheduleDict["mediaServer"] = settings.MEDIA_SERVER_IP_ABR
             scheduleDict["mediaServerApp"] = settings.MEDIA_SERVER_APP_ABR
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), scheduleDict)
-        return redirect("schedule:add_show_schedule")
+        base_url = reverse('schedule:add_show_schedule')
+        query_string =  urlencode({'doRefresh': 1})
+        url = '{}?{}'.format(base_url, query_string)
+        return redirect(url)
+        #return redirect("schedule:add_show_schedule?doRefresh=1")
 
 class stopCapture(LoginRequiredMixin, generic.TemplateView):
     http_method_names = ['get']
@@ -521,7 +528,11 @@ class stopCapture(LoginRequiredMixin, generic.TemplateView):
 
         pusherObj = pusher.Pusher(app_id=settings.PUSHER_APP_ID, key=settings.PUSHER_KEY, secret=settings.PUSHER_SECRET, cluster=settings.PUSHER_CLUSTER, ssl=True)
         pusherObj.trigger(str(providerObj.id), str(providerObj.id), createDictSchedule(scheduleObj, command_stop))
-        return redirect("schedule:add_show_schedule")
+        base_url = reverse('schedule:add_show_schedule')
+        query_string =  urlencode({'doRefresh': 1})
+        url = '{}?{}'.format(base_url, query_string)
+        return redirect(url)
+        #return redirect("schedule:add_show_schedule")
 
 class addSystem(generic.TemplateView):
     http_method_names = ['get']

@@ -218,10 +218,10 @@
   <script src="{% static 'provider/js/createCourseContent.js' %}">
   </script>
 <script>
-    var refreshCount = "{{refreshScreen}}";
+    var doRefresh = "{{doRefresh}}";
     window.onload = function() {
       setTimeout(function () {
-        if(window.location.hash != '#refresh') {
+        if(window.location.hash != '#refresh' && doRefresh == "1") {
           window.location.hash = 'refresh';
           window.location.reload(1);
         }
