@@ -1,0 +1,533 @@
+{% extends "__ecBase.html" %}
+<html>
+    {% load staticfiles %}
+
+    {% block ImageSlider %}
+    {% endblock ImageSlider %}
+
+    {% block jumbotronBlock %}
+    {% endblock jumbotronBlock %}
+
+    {% block container %}
+
+    {% block content %}
+
+    <link href="{% static 'shaka/controls.css' %}" rel="stylesheet">
+
+    <script src="{% static 'access/access.js' %}" type="text/javascript"></script>
+    <script src="{% static 'rest_framework/coreapi-0.1.1.js' %}" type="text/javascript"></script>
+
+    <Script src="{% static 'shaka/shaka-player.ui.js' %}" type="text/javascript"></Script>
+
+
+<div class="container-full" oncontextmenu="return false;">
+    <div class="row">
+            <div class="testi col-lg-8 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ course.name }}</h2>
+                <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
+                    <video id="encplayer" preload="auto" {% if isLive == "true" %} autoplay {% endif %} data-shaka-player>
+                    </video>
+                    <div class="watermarkEmail"><small>{{user_email}}</small></div>
+                    <div class="watermarkIpaddress"><small>{{userip}}</small></div>
+                </div>
+                <h4>{{ session.name }}</h4>
+
+            </div>
+            <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
+                <h2>{{ ContentHeading }}</h2>
+                <div class="container">
+                <div class="panel-group" id="accordion">
+                {% for subj, subjdetails in coursedetails.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h6 class="panel-title">
+                                <a role="button" data-toggle="collapse"  aria-expanded="true" data-parent="#accordion" href="#{{ subj }}">
+                                    <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                    <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                    <font size="4"> {{ subj }}</font>
+                                </a>
+                            </h6>
+                        </div>
+                        <div id="{{ subj }}" class="collapse show">
+                        <div class="panel-body">
+                    {% for s in subjdetails %}
+                    {% for chapid, chapdetails in s.items %}
+
+                    <div class="panel">
+                            <div class="panel-heading">
+                             <h6 class="panel-title">
+                                 <a role="button" data-toggle="collapse" aria-expanded="true" data-parent="#accordion" href="#{{ chapdetails.name }}:{{ subj }}">
+                                     <span class="accordion-title-icon-background collapsed"><i class="accordion-title-icon fas fa-plus"></i></span>
+                                     <span class="accordion-title-icon-background expanded"><i class="accordion-title-icon fas fa-minus"></i></span>
+                                     <font size="3"> {{ chapdetails.name }}</font>
+                                 </a>
+                             </h6>
+                         </div>
+                        <div id="{{ chapdetails.name }}:{{ subj }}" class="collapse show">
+                            <div class="panel-child-body">
+                                <div class="list-group">
+                        {% for sess in chapdetails.sessions %}
+                        {% if sess.id == session.id %}
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="selected-item box-no-border list-group-item">
+                                <i class="fa fa-pause fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
+                        {% else %}
+                            {% if sess.encrypted %}
+                            <a href="{% url 'course:playSessionEnc' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% else %}
+                                <a href="{% url 'course:playSession' chapid sess.id %}" class="box-no-border list-group-item">
+                                <i class="fa fa-play fa-fw" style="padding-right:10px"></i><font size="2"> {{ sess.name }}</font></a>
+                            {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                </div>
+        </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.watermarkEmail {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 2px;
+    font-size: 12px;
+    font-family: Helvetica;
+    color:rgb(241, 214, 214);
+    z-index: 2147483647;
+}
+.watermarkIpaddress {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 2px;
+    font-size: 12px;
+    font-family: Helvetica;
+    color:rgb(241, 214, 214);
+    z-index: 2147483647;
+}
+
+
+</style>
+
+<script type="text/javascript">
+var browser = getBrowser().toLowerCase();
+var os = getOS().toLowerCase();
+var supported = true;
+if (browser != 'chrome' && browser != 'firefox') {
+    supported = true;
+}
+if (os == 'ios') {
+    supported = true;
+}
+
+var inFullScreenMode = false;
+var showpopup= true;
+document.addEventListener("keypress", function(event) {
+    if (event.key === "F" || event.key === "f") {
+        var elem = document.getElementById('shakaplayer');
+        inFullScreenMode = true;
+        elem.requestFullscreen();
+    }
+});
+function getRandomInRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+function moveWatermarks() {
+    if (email_name == 0) {
+        email_name = 1;
+        $(".watermarkEmail").text("{{user_name}}");
+    } else {
+        email_name = 0;
+        $(".watermarkEmail").text("{{user_email}}");
+    }
+    var offsetLeft = document.getElementById("encplayer").offsetLeft;
+    var offsetTop = document.getElementById("encplayer").offsetTop;
+    var watermarkTextWidth = $(".watermarkEmail").width();
+    var vWidth = $("video#encplayer").width();
+    var vHeight = $("video#encplayer").height();
+    var leftMax = vWidth+offsetLeft-watermarkTextWidth;
+    var topMax = vHeight+offsetTop;
+    //var leftDelta = leftMax/10;
+    var topDelta = topMax/10;
+    var left = getRandomInRange(offsetLeft,leftMax);
+    var top = getRandomInRange(offsetTop,topMax-topDelta);
+    $(".watermarkEmail").css({"left" : left + "px",
+                            "top" : top+"px"
+                        })
+    $(".watermarkIpaddress").css({"left" : left + "px",
+                            "top" : top+20 + "px"
+                        })
+}
+
+// Entering fullscreen mode
+$('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(e) {
+
+    if(inFullScreenMode){
+        inFullScreenMode = false;
+        showpopup = true;
+        return;
+    }
+   var elem = document.getElementById('shakaplayer');
+   var state = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+   if (state) {
+        document.exitFullscreen();
+       //document.webkitCancelFullScreen();
+        inFullScreenMode = true;
+		} 
+    else {
+        elem.requestFullscreen().catch(err => {
+        if (showpopup) {
+            alert('Press F or f key for Fullscreen');
+            showpopup = false;
+        }
+    });
+	}
+
+    // mobile screens detection
+    if( navigator.userAgent.match(/Android/i)
+ || navigator.userAgent.match(/webOS/i)
+ || navigator.userAgent.match(/iPhone/i)
+ || navigator.userAgent.match(/iPad/i)
+ || navigator.userAgent.match(/iPod/i)
+ || navigator.userAgent.match(/BlackBerry/i)
+ || navigator.userAgent.match(/Windows Phone/i)
+ ){
+    return ;
+  }
+});
+window.addEventListener('resize', function() {
+    moveWatermarks();
+});
+
+    setInterval(moveWatermarks, 5000);
+    moveWatermarks();
+
+    // django variables
+	var isOwner = "{{isOwner}}";
+	var isLive = "{{isLive}}";
+    var email_name = 0;
+	var disableaccess = "{{disableaccess}}";
+	var enrolledcourseid = "{{enrolledcourseid}}";
+	var courseid = "{{course.id}}";
+    if (isLive == "true") {
+        courseid = "{{courseid}}";
+    }
+	var debug = "{{debug}}";
+	var accessurl = "/access/allow/{{user.id}}/";
+	var gap = 6;
+    var liveUrl = "";
+    if (isLive == "true") {
+        liveUrl = "{{liveUrl}}";
+    };
+    var bucketname = "{{bucketname}}";
+    var videokey = "{{videokey}}";
+
+	if (isOwner == "yes") {
+		gap = 10;
+    }
+	
+	var video;
+	var manifest;
+	var lastplayertime = 0;
+	var nowplayer = 0;
+	var now = 0;
+	var lasttime = 0;
+	var lastdurationplayed = 0
+	var durationplayed = 0;
+	var coreapi = window.coreapi;
+	var client = new coreapi.Client();
+	var lastdurationsent = 0;
+	var playergap = 0;
+	var player;
+	var live = 0;
+
+    // Listen to the custom shaka-ui-loaded event, to wait until the UI is loaded.
+    if (isLive == "true") {
+        //document.addEventListener('shaka-ui-loaded', initPlayer);
+         live = 1;
+        //document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('shaka-ui-loaded', initPlayer); 
+    }  else {
+        document.addEventListener('shaka-ui-loaded', initPlayer);
+    }
+
+    function getUTCTimeSecs() {
+		return new Date().getTime()/1000;
+	}
+
+	function update() {
+        var updateThreshold = 180;
+
+        var durationdiff = durationplayed - lastdurationsent;
+        lastdurationsent = durationplayed;
+        var isDebug = debug;
+        var url = window.location.protocol + "//" + window.location.hostname;
+       if (isDebug == "on") {
+           url = url + ":" + window.location.port;
+       }
+
+        // get the cookie value
+        var expiry = 24*3600*30;
+
+        var cookies = document.cookie.split(" ");
+        var cookieKey = "gyaanhive" + enrolledcourseid;
+        if (isOwner == "yes")
+            cookieKey = "gyaanhive" + courseid;
+
+        var update = false;
+        var found = false;
+        var total = 0;
+        var s = 0;
+
+        var d = new Date();
+        d.setTime(d.getTime() + (30*24*60*60*1000)); // 30 days expiry
+        var expireStr = "expires="+ d.toUTCString();
+        var cookieToSet;
+
+        for (s = 0; s < cookies.length; s++) {
+          var KV = cookies[s].split("=");
+          if (KV[0] == cookieKey) {
+            found = true;
+
+            if (! parseInt(KV[1].split(";")[0])) {
+              found = false;
+              cookieToSet = cookieKey + "=" + Math.floor(durationdiff) + "; " + expireStr;
+              continue;
+            }
+
+            total = durationdiff + parseInt(KV[1].split(";")[0]);
+            if (total >= updateThreshold) {
+               update = true;
+               cookieToSet = cookieKey + "=0; " + expireStr;
+            }
+            else {
+               cookieToSet = cookieKey + "=" + Math.floor(total) + "; " + expireStr;
+            }
+          }
+        }
+
+        if (found == false){
+          cookieToSet = cookieKey + "=" + Math.floor(durationdiff) + ";" + expireStr;
+        }
+        document.cookie = cookieToSet;
+
+        if (update == false)
+            return;
+
+		if (isOwner != "yes") {
+			url = url + "/course/updateDurationPlayed/" + enrolledcourseid + "/" + Math.floor(total) + "/" + live;
+		}
+		else {
+			url = url + "/course/updateDurationPlayedProvider/" + courseid + "/" + Math.floor(total);
+		}
+
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", url, true);
+		xmlHttp.send();
+	}
+
+	function onPlaying() {
+		now = getUTCTimeSecs();
+		nowplayer = video.currentTime;
+
+		if (lasttime == 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		playergap = nowplayer - lastplayertime;
+		if(playergap < 0) {
+			lastplayertime = nowplayer;
+			lasttime = now;
+			return;
+		}
+
+		var systemgap = now - lasttime;
+		if(Math.abs(systemgap - playergap) < 3) {
+			durationplayed = durationplayed + playergap;
+			lastplayertime = nowplayer;
+			lasttime = now;
+
+			//console.log(durationplayed);
+
+			if(durationplayed - lastdurationplayed > gap) {
+				lastdurationplayed = durationplayed;
+				update();
+			}
+			return;
+		}
+
+		// system time and player time deviations are different, either its paused, stalled or sought forward
+		if(systemgap > playergap) {
+			durationplayed = durationplayed + playergap;
+		}
+
+		//console.log(durationplayed);
+
+		lastplayertime = nowplayer;
+		lasttime = now;
+
+		if(durationplayed - lastdurationplayed > gap) {
+			lastdurationplayed = durationplayed;
+			update();
+		}
+	}
+
+	function onErrorEvent(event) {
+		onError(event.detail);
+	}
+
+	function onError(error) {
+		console.error('Error code', error.code, 'object', error);
+	}
+
+	function initApp() {
+		shaka.polyfill.installAll();
+
+		if (shaka.Player.isBrowserSupported()) {
+            if (isLive == "true") {
+			  //initPlayer();
+            }
+		} else {
+            alert('This browser or device based on iOS is not supported. Use Chrome or firefox.');
+			console.error('Browser not supported!');
+		}
+	}
+
+	function initPlayer() {
+		if(!supported) {
+            alert('This browser or device based on iOS is not supported. Use Chrome or firefox.');
+            return;
+        }
+		video = document.getElementById('encplayer');
+        //const ui = video['ui'];
+        //var uiConfig = {};
+        if (isLive == "true") {
+            //var player = new shaka.Player(video);
+            const ui = video['ui'];
+            var uiConfig = {};
+            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
+            uiConfig['overflowMenuButtons'] = ['quality']
+            ui.configure(uiConfig);
+            const controls = ui.getControls();
+            var player = controls.getPlayer();
+            //uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration','spacer', 'play_rate_label', 'mute','volume', 'fullscreen', 'overflow_menu'];
+          }  else {
+            const ui = video['ui'];
+            var uiConfig = {};
+            uiConfig['controlPanelElements'] = ['play_pause','time_and_duration', 'rewind', 'fast_rewind', 'fast_forward', 'spacer', 'play_rate_label', 'mute', 'volume', 'fullscreen', 'overflow_menu'];
+            uiConfig['overflowMenuButtons'] = ['quality']
+            ui.configure(uiConfig);
+            const controls = ui.getControls();
+            var player = controls.getPlayer();
+        }
+        //uiConfig['overflowMenuButtons'] = ['quality']
+        //ui.configure(uiConfig);
+        //const controls = ui.getControls();
+        //var player = controls.getPlayer();
+		if (isLive == "false") {
+			player.configure({
+				drm: {
+					clearKeys: {
+						"{{keyid}}" : "{{key}}",
+						"{{keyid}}" : "{{key}}"
+					}
+				},
+                streaming: {
+                    bufferingGoal: 300,
+                    rebufferingGoal: 5,
+                    bufferBehind:0,
+                    jumpLargeGaps: true,
+                    retryParameters: {
+                        timeout: 6000,       // timeout in ms, after which we abort; 0 means never
+                        maxAttempts: 5,   // the maximum number of requests before we fail
+                        baseDelay: 100,  // the base delay in ms between retries
+                    }
+                }
+			});
+		}
+
+		video.addEventListener('timeupdate', onPlaying);
+		window.player = player;
+
+		player.addEventListener('error', onErrorEvent);
+		player.load(manifest).then(function() {
+		}).catch(onError);
+	}
+
+    if (isOwner == "yes") {
+        if (isLive == "true") {
+			manifest = liveUrl;
+        }
+        else {
+            manifest = "https://"+ bucketname + "." + "{{cdnName}}" + "/" + videokey + "/" + videokey + ".mpd";
+        }
+		document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+		var accepted = 0;
+        var tracktime = 0;
+
+        if (disableaccess) {
+            accepted = 1;
+            tracktime = 1;
+        } else {
+            var deviceJSON = "DUMMYSTRING";
+            var isDebug = debug;
+            var url = window.location.protocol + "//" + window.location.hostname;
+            if (isDebug == "on") {
+                url = url + ":" + window.location.port;
+            }
+            url = url + accessurl + deviceJSON;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", url, false);
+            xmlHttp.send(null);
+            accepted = (/True/).test(xmlHttp.responseText);
+        }
+
+		if (accepted) {
+			if (isLive == "true") {
+				manifest = liveUrl;
+			} else {
+				manifest = "https://"+ bucketname + "." + "{{cdnName}}" + "/" + videokey + "/" + videokey + ".mpd";
+			}
+
+			if(tracktime) {
+				document.addEventListener('DOMContentLoaded', initApp);
+			}
+        }
+        else {
+            alert("This device is unknown. Authenticate yourself by the link sent to your email.");
+        }
+	}
+
+    //var _0x6731=["\x79\x65\x73","\x63\x6F\x72\x65\x61\x70\x69","\x74\x72\x75\x65","\x44\x4F\x4D\x43\x6F\x6E\x74\x65\x6E\x74\x4C\x6F\x61\x64\x65\x64","\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72","\x73\x68\x61\x6B\x61\x2D\x75\x69\x2D\x6C\x6F\x61\x64\x65\x64","\x67\x65\x74\x54\x69\x6D\x65","\x70\x72\x6F\x74\x6F\x63\x6F\x6C","\x6C\x6F\x63\x61\x74\x69\x6F\x6E","\x2F\x2F","\x68\x6F\x73\x74\x6E\x61\x6D\x65","\x6F\x6E","\x3A","\x70\x6F\x72\x74","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x2F","\x2F","\x66\x6C\x6F\x6F\x72","\x2F\x63\x6F\x75\x72\x73\x65\x2F\x75\x70\x64\x61\x74\x65\x44\x75\x72\x61\x74\x69\x6F\x6E\x50\x6C\x61\x79\x65\x64\x50\x72\x6F\x76\x69\x64\x65\x72\x2F","\x47\x45\x54","\x6F\x70\x65\x6E","\x73\x65\x6E\x64","\x63\x75\x72\x72\x65\x6E\x74\x54\x69\x6D\x65","\x61\x62\x73","\x64\x65\x74\x61\x69\x6C","\x45\x72\x72\x6F\x72\x20\x63\x6F\x64\x65","\x63\x6F\x64\x65","\x6F\x62\x6A\x65\x63\x74","\x65\x72\x72\x6F\x72","\x69\x6E\x73\x74\x61\x6C\x6C\x41\x6C\x6C","\x70\x6F\x6C\x79\x66\x69\x6C\x6C","\x69\x73\x42\x72\x6F\x77\x73\x65\x72\x53\x75\x70\x70\x6F\x72\x74\x65\x64","\x50\x6C\x61\x79\x65\x72","\x42\x72\x6F\x77\x73\x65\x72\x20\x6E\x6F\x74\x20\x73\x75\x70\x70\x6F\x72\x74\x65\x64\x21","\x65\x6E\x63\x70\x6C\x61\x79\x65\x72","\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64","\x75\x69","\x63\x6F\x6E\x74\x72\x6F\x6C\x50\x61\x6E\x65\x6C\x45\x6C\x65\x6D\x65\x6E\x74\x73","\x70\x6C\x61\x79\x5F\x70\x61\x75\x73\x65","\x74\x69\x6D\x65\x5F\x61\x6E\x64\x5F\x64\x75\x72\x61\x74\x69\x6F\x6E","\x72\x65\x77\x69\x6E\x64","\x66\x61\x73\x74\x5F\x66\x6F\x72\x77\x61\x72\x64","\x73\x70\x61\x63\x65\x72","\x6D\x75\x74\x65","\x76\x6F\x6C\x75\x6D\x65","\x66\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E","\x63\x6F\x6E\x66\x69\x67\x75\x72\x65","\x67\x65\x74\x43\x6F\x6E\x74\x72\x6F\x6C\x73","\x67\x65\x74\x50\x6C\x61\x79\x65\x72","\x66\x61\x6C\x73\x65","\x74\x69\x6D\x65\x75\x70\x64\x61\x74\x65","\x70\x6C\x61\x79\x65\x72","\x63\x61\x74\x63\x68","\x74\x68\x65\x6E","\x6C\x6F\x61\x64","\x68\x74\x74\x70\x73\x3A\x2F\x2F","\x2E\x73\x67\x70\x31\x2E\x63\x64\x6E\x2E\x64\x69\x67\x69\x74\x61\x6C\x6F\x63\x65\x61\x6E\x73\x70\x61\x63\x65\x73\x2E\x63\x6F\x6D\x2F","\x2E\x6D\x70\x64","\x44\x55\x4D\x4D\x59\x53\x54\x52\x49\x4E\x47","\x72\x65\x73\x70\x6F\x6E\x73\x65\x54\x65\x78\x74","\x74\x65\x73\x74","\x54\x68\x69\x73\x20\x64\x65\x76\x69\x63\x65\x20\x69\x73\x20\x75\x6E\x6B\x6E\x6F\x77\x6E\x2E\x20\x41\x75\x74\x68\x65\x6E\x74\x69\x63\x61\x74\x65\x20\x79\x6F\x75\x72\x73\x65\x6C\x66\x20\x62\x79\x20\x74\x68\x65\x20\x6C\x69\x6E\x6B\x20\x73\x65\x6E\x74\x20\x74\x6F\x20\x79\x6F\x75\x72\x20\x65\x6D\x61\x69\x6C\x2E"];if(isOwner== _0x6731[0]){gap= 10};var video;var manifest;var lastplayertime=0;var nowplayer=0;var now=0;var lasttime=0;var lastdurationplayed=0;var durationplayed=0;var coreapi=window[_0x6731[1]];var client= new coreapi.Client();var lastdurationsent=0;var playergap=0;if(isLive== _0x6731[2]){document[_0x6731[4]](_0x6731[3],initApp)}else {document[_0x6731[4]](_0x6731[5],initPlayer)};function getUTCTimeSecs(){return  new Date()[_0x6731[6]]()/ 1000}function update(){var _0xece9xf=durationplayed- lastdurationsent;lastdurationsent= durationplayed;var isDebug=debug;var url=window[_0x6731[8]][_0x6731[7]]+ _0x6731[9]+ window[_0x6731[8]][_0x6731[10]];if(isDebug== _0x6731[11]){url= url+ _0x6731[12]+ window[_0x6731[8]][_0x6731[13]]};if(isOwner!= _0x6731[0]){url= url+ _0x6731[14]+ enrolledcourseid+ _0x6731[15]+ Math[_0x6731[16]](_0xece9xf)}else {url= url+ _0x6731[17]+ courseid+ _0x6731[15]+ Math[_0x6731[16]](_0xece9xf)};var xmlHttp= new XMLHttpRequest();xmlHttp[_0x6731[19]](_0x6731[18],url,true);xmlHttp[_0x6731[20]]()}function onPlaying(){now= getUTCTimeSecs();nowplayer= video[_0x6731[21]];if(lasttime== 0){lastplayertime= nowplayer;lasttime= now;return};playergap= nowplayer- lastplayertime;if(playergap< 0){lastplayertime= nowplayer;lasttime= now;return};var _0xece9x14=now- lasttime;if(Math[_0x6731[22]](_0xece9x14- playergap)< 3){durationplayed= durationplayed+ playergap;lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()};return};if(_0xece9x14> playergap){durationplayed= durationplayed+ playergap};lastplayertime= nowplayer;lasttime= now;if(durationplayed- lastdurationplayed> gap){lastdurationplayed= durationplayed;update()}}function onErrorEvent(_0xece9x16){onError(_0xece9x16[_0x6731[23]])}function onError(_0xece9x18){console[_0x6731[27]](_0x6731[24],_0xece9x18[_0x6731[25]],_0x6731[26],_0xece9x18)}function initApp(){shaka[_0x6731[29]][_0x6731[28]]();if(shaka[_0x6731[31]][_0x6731[30]]()){if(isLive== _0x6731[2]){initPlayer()}}else {console[_0x6731[27]](_0x6731[32])}}function initPlayer(){video= document[_0x6731[34]](_0x6731[33]);var _0xece9x1b;if(isLive== _0x6731[2]){var _0xece9x1b= new shaka.Player(video)}else {const _0xece9x1c=video[_0x6731[35]];var _0xece9x1d={};_0xece9x1d[_0x6731[36]]= [_0x6731[37],_0x6731[38],_0x6731[39],_0x6731[40],_0x6731[41],_0x6731[42],_0x6731[43],_0x6731[44]];_0xece9x1c[_0x6731[45]](_0xece9x1d);const _0xece9x1e=_0xece9x1c[_0x6731[46]]();var _0xece9x1b=_0xece9x1e[_0x6731[47]]()};if(isLive== _0x6731[48]){_0xece9x1b[_0x6731[45]]({drm:{clearKeys:{"{{keyid}}":"{{key}}","{{keyid}}":"{{key}}"}}})};video[_0x6731[4]](_0x6731[49],onPlaying);window[_0x6731[50]]= _0xece9x1b;_0xece9x1b[_0x6731[4]](_0x6731[27],onErrorEvent);_0xece9x1b[_0x6731[53]](manifest)[_0x6731[52]](function(){})[_0x6731[51]](onError)}if(isOwner== _0x6731[0]){if(isLive== _0x6731[2]){manifest= liveUrl}else {manifest= _0x6731[54]+ bucketname+ _0x6731[55]+ videokey+ _0x6731[15]+ videokey+ _0x6731[56]};document[_0x6731[4]](_0x6731[3],initApp)}else {var accepted=0;var tracktime=0;if(disableaccess){accepted= 1;tracktime= 1}else {var deviceJSON=_0x6731[57];var isDebug=debug;var url=window[_0x6731[8]][_0x6731[7]]+ _0x6731[9]+ window[_0x6731[8]][_0x6731[10]];if(isDebug== _0x6731[11]){url= url+ _0x6731[12]+ window[_0x6731[8]][_0x6731[13]]};url= url+ accessurl+ deviceJSON;var xmlHttp= new XMLHttpRequest();xmlHttp[_0x6731[19]](_0x6731[18],url,false);xmlHttp[_0x6731[20]](null);accepted= (/True/)[_0x6731[59]](xmlHttp[_0x6731[58]])};if(accepted){if(isLive== _0x6731[2]){manifest= liveUrl}else {manifest= _0x6731[54]+ bucketname+ _0x6731[55]+ videokey+ _0x6731[15]+ videokey+ _0x6731[56]};if(tracktime){document[_0x6731[4]](_0x6731[3],initApp)}}else {alert(_0x6731[60])}}
+</script>
+
+    {%  endblock %}
+    {%  endblock container %}
+</html>
