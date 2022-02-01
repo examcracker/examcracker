@@ -27,8 +27,8 @@
                 <div id="shakaplayer" onfullscreenchange="moveWatermarks()">
                     <video id="encplayer" preload="auto" {% if isLive == "true" %} autoplay controls {% else %} data-shaka-player {% endif %}>
                     </video>
-                    <div class="watermarkEmail"><small>{{user_email}}</small></div>
-                    <div class="watermarkIpaddress"><small>{{userip}}</small></div>
+                    <!--<div class="watermarkEmail"><small>{{user_email}}</small></div>
+                    <div class="watermarkIpaddress"><small>{{userip}}</small></div> !-->
                 </div>
                 <h4>{{ session.name }}</h4>
 
@@ -134,6 +134,13 @@ video {
 </style>
 
 <script type="text/javascript">
+var inFullScreenMode = false;
+document.addEventListener('fullscreenchange', onFullScreenChange, false);
+document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+
+
+
 var browser = getBrowser().toLowerCase();
 var os = getOS().toLowerCase();
 var supported = true;
@@ -144,7 +151,7 @@ if (os == 'ios') {
     supported = true;
 }
 
-var inFullScreenMode = false;
+
 var showpopup= true;
 document.addEventListener("keypress", function(event) {
     if (event.key === "F" || event.key === "f") {
@@ -182,30 +189,18 @@ function moveWatermarks() {
                             "top" : top+20 + "px"
                         })
 }
-
-// Entering fullscreen mode
-$('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(e) {
-
-    if(inFullScreenMode){
-        inFullScreenMode = false;
-        showpopup = true;
-        return;
+function onFullScreenChange() {
+  var fullscreenElement =
+    document.fullscreenElement ||
+    document.mozFullScreenElement ||
+    document.webkitFullscreenElement;
+    var actualElement = document.getElementById('shakaplayer');
+    if (fullscreenElement != actualElement) {
+        // Add watermark elements
+        //var watermarkEmail = document.getElementsByClassName("watermarkEmail");
+        var toAdd = '<div class="watermarkEmail"><small>{{user_email}}</small></div><div class="watermarkIpaddress"><small>{{userip}}</small></div>'
+        fullscreenElement.insertAdjacentHTML('beforeend', toAdd);
     }
-   var elem = document.getElementById('shakaplayer');
-   var state = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-   if (state) {
-        document.exitFullscreen();
-       //document.webkitCancelFullScreen();
-        inFullScreenMode = true;
-		} 
-    else {
-        elem.requestFullscreen().catch(err => {
-        if (showpopup) {
-            alert('Press F or f key for Fullscreen');
-            showpopup = false;
-        }
-    });
-	}
 
     // mobile screens detection
     if( navigator.userAgent.match(/Android/i)
@@ -218,7 +213,9 @@ $('video#encplayer').bind('webkitfullscreenchange mozfullscreenchange fullscreen
  ){
     return ;
   }
-});
+  // if in fullscreen mode fullscreenElement won't be null
+}
+
 window.addEventListener('resize', function() {
     moveWatermarks();
 });
@@ -424,6 +421,14 @@ window.addEventListener('resize', function() {
             return;
         }
 		video = document.getElementById('encplayer');
+        var shakaPlayer = document.getElementById("shakaplayer");
+        var hasChild = shakaPlayer.querySelector(".watermarkEmail");
+        if (hasChild == null) {
+            var toAdd = '<div class="watermarkEmail"><small>{{user_email}}</small></div><div class="watermarkIpaddress"><small>{{userip}}</small></div>'
+            shakaPlayer.insertAdjacentHTML('beforeend', toAdd);
+        }
+        // check if it has watermark children
+
         //const ui = video['ui'];
         //var uiConfig = {};
         if (isLive == "true") {
